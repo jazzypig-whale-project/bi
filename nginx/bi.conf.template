@@ -1,0 +1,49 @@
+# Шаблон TLS-vhost для nginx-certbot. Makefile `tls-up` рендерит его → bi.conf (git-ignored),
+# подставляя ${BI_DOMAIN} из .env (envsubst только по BI_DOMAIN, nginx-$переменные не трогает).
+# jonasal/nginx-certbot сам выпускает/продлевает серт для server_name ниже (DNS-01 Spaceship),
+# редирект http→https и т.п. — из своего встроенного конфига. Мы объявляем только TLS-vhost.
+
+# WebSocket-апгрейд: Connection проставляем ТОЛЬКО когда клиент реально просит upgrade
+# (иначе форс `Connection: upgrade` на каждый запрос рвёт keep-alive). map — http-уровень,
+# user_conf.d включается внутри http{}, так что здесь валиден. $http_upgrade envsubst не трогает.
+map $http_upgrade $bi_conn_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+server {
+    listen 443 ssl default_server reuseport;
+    listen [::]:443 ssl default_server reuseport;
+    http2 on;
+
+    server_name ${BI_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${BI_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${BI_DOMAIN}/privkey.pem;
+    ssl_dhparam         /etc/letsencrypt/dhparams/dhparam.pem;
+
+    client_max_body_size 100m;
+
+    # Health без авторизации (для мониторинга площадки) — отдаёт только {"status":...}.
+    location = /api/health {
+        auth_basic off;
+        proxy_pass http://metabase:3000/api/health;
+        proxy_set_header Host $host;
+    }
+
+    # Всё остальное — за basic-auth (доступ с разных IP → фильтр = пароль, не iptables).
+    location / {
+        auth_basic "BI — restricted";
+        auth_basic_user_file /etc/nginx/creds.htpasswd;
+
+        proxy_pass http://metabase:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        $bi_conn_upgrade;
+        proxy_read_timeout 300s;
+    }
+}

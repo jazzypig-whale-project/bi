@@ -1,0 +1,7 @@
+# Образец. Реальный nginx/spaceship.ini — git-ignored (0600), рендерится `make tls-up` из
+# SPACESHIP_API_KEY/SPACESHIP_API_SECRET в .env. Имя ровно `spaceship.ini` — так jonasal ищет
+# креды (`<authenticator>.ini`). Или положи вручную по этому формату.
+# ⚠ Ключ правит зону apple-certificate.solutions целиком — обращаться как с секретом.
+[spaceship]
+api_key = <SPACESHIP_API_KEY>
+api_secret = <SPACESHIP_API_SECRET>

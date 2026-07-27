@@ -1,0 +1,7 @@
+# Локальный режим (тесты на рабочей машине): metabase публикуется НАПРЯМУЮ на loopback :3000,
+# БЕЗ nginx/basic-auth и БЕЗ подключения к app-БД. Запуск: docker-compose.makefile.yaml + этот файл
+# через `make up` (ENV=local, дефолт). Порт — только 127.0.0.1 (наружу не торчит).
+services:
+  metabase:
+    ports:
+      - "127.0.0.1:${BI_LOCAL_PORT:-3000}:3000"

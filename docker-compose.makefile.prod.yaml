@@ -1,0 +1,53 @@
+# Прод-режим (co-located на api рядом с приложением): TLS-nginx (nginx-certbot, DNS-01 Spaceship)
+# на :8443 + basic-auth, и metabase подключён к сети приложения `orchestrator_default` для чтения
+# app-БД `orchestrator` под READ-ONLY ролью `metabase`. Запуск: docker-compose.makefile.yaml + этот
+# файл (см. `make up ENV=prod`). ⛔ app-БД — ТОЛЬКО read-only роль; источник настраивается в UI.
+services:
+  metabase:
+    networks:
+      - bi                     # своя метадата (bi-postgres)
+      - orchestrator_default   # app-БД приложения (postgres:5432, read-only)
+    environment:
+      # Боевой URL с портом :8443 ОБЯЗАТЕЛЕН — без порта Metabase уводит на :443 → 403 nginx приложения.
+      MB_SITE_URL: ${MB_SITE_URL:-https://bi.apple-certificate.solutions:8443/}
+
+  nginx-tls:
+    build:
+      context: ./nginx
+      args:
+        NGINX_CERTBOT_BASE_TAG: ${NGINX_CERTBOT_BASE_TAG:-6.2.0}
+        CERTBOT_DNS_SPACESHIP_VERSION: ${CERTBOT_DNS_SPACESHIP_VERSION:-1.0.4}
+    image: bi-nginx-certbot-spaceship:${NGINX_CERTBOT_BASE_TAG:-6.2.0}
+    restart: unless-stopped
+    depends_on:
+      metabase:
+        condition: service_healthy
+    ports:
+      - "${BI_HTTPS_PORT:-8443}:443"
+    environment:
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL:-jazzypig-whale-project@proton.me}
+      STAGING: ${STAGING:-0}                  # 0 = боевой серт; тест — STAGING=1 make up ENV=prod (staging-ACME)
+      USE_ECDSA: "1"
+      CERTBOT_AUTHENTICATOR: dns-spaceship
+      # jonasal валидирует dns-<x> против CERTBOT_DNS_AUTHENTICATORS; в стоке spaceship нет → оверрайдим.
+      CERTBOT_DNS_AUTHENTICATORS: spaceship
+      CERTBOT_DNS_PROPAGATION_SECONDS: ${CERTBOT_DNS_PROPAGATION_SECONDS:-60}
+    volumes:
+      - bi-letsencrypt:/etc/letsencrypt                          # серты + dhparam (переживают рестарт)
+      # jonasal ждёт креды `<authenticator>.ini` = spaceship.ini в /etc/letsencrypt (рендерится скриптом).
+      - ./nginx/spaceship.ini:/etc/letsencrypt/spaceship.ini:ro
+      - ./nginx/user_conf.d:/etc/nginx/user_conf.d:ro            # TLS-vhost (bi.conf, рендерится)
+      - ./nginx/creds.htpasswd:/etc/nginx/creds.htpasswd:ro
+    networks: [bi]
+    deploy:
+      resources:
+        limits:
+          memory: ${BI_NGINX_TLS_MEM_LIMIT:-128M}
+
+networks:
+  orchestrator_default:
+    external: true             # создаётся деплоем приложения (репо orchestrator), не нами
+
+volumes:
+  bi-letsencrypt:
+    name: bi-letsencrypt       # серты Let's Encrypt + dhparam

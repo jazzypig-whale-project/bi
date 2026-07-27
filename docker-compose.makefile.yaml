@@ -1,0 +1,81 @@
+# BI-стек, БАЗА: Metabase + отдельный Postgres под его метаданные. Общее для обоих режимов.
+# nginx — в оверрайдах: docker-compose.local.yaml (plain http, loopback :8080, тесты на рабочей
+# машине) и docker-compose.prod.yaml (nginx-certbot, TLS :8443, + подключение к app-БД). Метадата
+# Metabase живёт в СВОЁМ bi-postgres; app-БД `orchestrator` трогаем только read-only (prod-оверрайд).
+# ⛔ См. CLAUDE.md: не уронить прод-БД ни в каком виде.
+name: bi
+
+# label-schema: версия/дата/ref прокидываются из Makefile-макроса (BUILD_DATE/VERSION/VCS_REF).
+x-labels: &x-labels
+  labels:
+    org.label-schema.schema-version: "1.0"
+    org.label-schema.name: "bi-metabase"
+    org.label-schema.vendor: "jazzypig"
+    org.label-schema.build-date: "${BUILD_DATE:-unknown}"
+    org.label-schema.version: "${VERSION:-unknown}"
+    org.label-schema.vcs-ref: "${VCS_REF:-unknown}"
+
+services:
+  bi-postgres:
+    image: postgres:${POSTGRES_TAG:-16.11}
+    <<: *x-labels
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MB_DB_DBNAME:-metabase}
+      POSTGRES_USER: ${MB_DB_USER:-metabase}
+      POSTGRES_PASSWORD: ${MB_DB_PASS:?MB_DB_PASS required (см. .env.example)}
+    volumes:
+      - bi-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MB_DB_USER:-metabase} -d ${MB_DB_DBNAME:-metabase}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [bi]
+    deploy:
+      resources:
+        limits:
+          memory: ${BI_POSTGRES_MEM_LIMIT:-512M}
+
+  metabase:
+    image: metabase/metabase:${METABASE_TAG:-v0.60.7}
+    <<: *x-labels
+    restart: unless-stopped
+    depends_on:
+      bi-postgres:
+        condition: service_healthy
+    environment:
+      # Метаданные Metabase — в ОТДЕЛЬНОМ bi-postgres (H2 в проде запрещена).
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: bi-postgres
+      MB_DB_PORT: 5432
+      MB_DB_DBNAME: ${MB_DB_DBNAME:-metabase}
+      MB_DB_USER: ${MB_DB_USER:-metabase}
+      MB_DB_PASS: ${MB_DB_PASS:?MB_DB_PASS required (см. .env.example)}
+      # Кап JVM явно (иначе heap до 25% RAM хоста). mem_limit ниже — второй рубеж через cgroup.
+      MB_JAVA_OPTS: -Xmx${METABASE_XMX:-1g}
+      # База = локальный тест (metabase напрямую на loopback); prod-оверрайд ставит https://<домен>:8443/.
+      MB_SITE_URL: ${MB_SITE_URL:-http://localhost:3000/}
+      MB_JETTY_HOST: 0.0.0.0
+    volumes:
+      # Entropy-фикс: без него старт JVM блокируется на /dev/random.
+      - /dev/urandom:/dev/random:ro
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "-I", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+    networks: [bi]
+    deploy:
+      resources:
+        limits:
+          memory: ${METABASE_MEM_LIMIT:-2048M}
+
+networks:
+  bi:
+    name: bi
+
+volumes:
+  bi-pgdata:
+    name: bi-pgdata

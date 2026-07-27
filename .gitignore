@@ -1,0 +1,25 @@
+# Секреты — НИКОГДА в git (см. CLAUDE.md, железное условие)
+.env
+*.env
+!.env.example
+nginx/creds.htpasswd
+!nginx/creds.htpasswd.example
+# TLS: креды Spaceship (секрет) и рендерённый per-env vhost — не в git; шаблоны/примеры — да
+nginx/spaceship.ini
+nginx/user_conf.d/bi.conf
+*.key
+*.pem
+secrets/
+
+# Бэкапы метадата-БД (могут содержать данные) + ключ шифрования
+*.dump
+*.dump.enc
+backups/
+
+# Данные Postgres-метаданных (том)
+pgdata/
+data/
+
+# Мусор
+*.log
+.DS_Store
