@@ -27,7 +27,8 @@ dataset_query:
         FROM order_ o
         LEFT JOIN api_client c ON c.client_id = o.client_id
         WHERE o.status NOT IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL')
-          AND c.name = 'sber')
+          AND c.name = 'sber'
+          AND (o.completed_at IS NULL OR o.completed_at >= date_trunc('hour', (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day'))))
       SELECT s.h AS hour,
              CASE
                WHEN s.h - o.created_at < INTERVAL '1 minute'   THEN '01 <1m'

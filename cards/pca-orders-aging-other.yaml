@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-aging-other
 name: Orders aging — Other partners
-description: How old the open non-Sber orders were at each hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp.
+description: How old the open non-Sber orders were at each hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp. An empty chart means no non-Sber order was open at any hour in the window, not a broken query.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Open interval is [created_at, completed_at), left open while completed_at is null.
+      -- COMPLETED orders always carry completed_at and non-terminal ones are genuinely still
+      -- open, so within the remaining set the interval is exact.
       WITH spine AS (
         SELECT generate_series(
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
@@ -24,7 +27,8 @@ dataset_query:
         FROM order_ o
         LEFT JOIN api_client c ON c.client_id = o.client_id
         WHERE o.status NOT IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL')
-          AND c.name IS DISTINCT FROM 'sber')
+          AND c.name IS DISTINCT FROM 'sber'
+          AND (o.completed_at IS NULL OR o.completed_at >= date_trunc('hour', (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day'))))
       SELECT s.h AS hour,
              CASE
                WHEN s.h - o.created_at < INTERVAL '1 minute'   THEN '01 <1m'
