@@ -41,3 +41,74 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-production-queue-depth
+  card: pca-production-queue-depth
+  tab: overview
+  row: 8
+  col: 0
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-certificates-sent-window
+  card: pca-certificates-sent-window
+  tab: overview
+  row: 8
+  col: 6
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-time-since-last-certificate
+  card: pca-time-since-last-certificate
+  tab: overview
+  row: 8
+  col: 12
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-orders-in-progress
+  card: pca-orders-in-progress
+  tab: overview
+  row: 8
+  col: 18
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-topups-in-progress-count
+  card: pca-topups-in-progress-count
+  tab: overview
+  row: 11
+  col: 0
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-topups-in-progress-rub
+  card: pca-topups-in-progress-rub
+  tab: overview
+  row: 11
+  col: 6
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []

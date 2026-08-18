@@ -48,6 +48,24 @@ cards:
   pca-certificate-face-value-by-day:
     id: 69
     entity_id: wxRwMtMsjYI_je9wMBSAU
+  pca-certificates-sent-window:
+    id: 70
+    entity_id: 26Ug3kduLS_Y9CZFSbha-
+  pca-orders-in-progress:
+    id: 71
+    entity_id: VwyYgEfkaSBM0ecicLyAQ
+  pca-production-queue-depth:
+    id: 72
+    entity_id: v_h6XLVa_yHaoT-ByyuY6
+  pca-time-since-last-certificate:
+    id: 73
+    entity_id: XqiuHTogyFwcQYl3dVvk2
+  pca-topups-in-progress-count:
+    id: 74
+    entity_id: g9ZOGVLwFAX55MLKTeORR
+  pca-topups-in-progress-rub:
+    id: 75
+    entity_id: t3SZnYs-bMfgntMNwvlz5
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -98,5 +116,11 @@ dashboards:
       topups: 9
     dashcards:
       dc-certificate-face-value-by-day: 54
+      dc-production-queue-depth: 55
+      dc-certificates-sent-window: 56
+      dc-time-since-last-certificate: 57
+      dc-orders-in-progress: 58
+      dc-topups-in-progress-count: 59
+      dc-topups-in-progress-rub: 60
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
