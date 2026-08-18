@@ -111,6 +111,18 @@ cards:
   pca-sales-distribution-by-partner:
     id: 90
     entity_id: XvFWm2OmgphFx0Tr2WQXf
+  pca-certificates-in-pool-by-denomination:
+    id: 91
+    entity_id: fppSmpJ3RLZ2UAM_QyTEJ
+  pca-pool-total-value:
+    id: 92
+    entity_id: 9JqEcyK8jU21VJBX2gEwp
+  pca-production-queue-by-denomination:
+    id: 93
+    entity_id: 9esrdt1Jpa16sjeoviPlb
+  pca-production-requests-by-hour:
+    id: 94
+    entity_id: NimzWtkdLs5Ay3dILoqtO
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -182,5 +194,9 @@ dashboards:
       dc-average-check-by-day: 73
       dc-certificates-sold-by-denomination: 74
       dc-certificate-turnover-by-denomination: 75
+      dc-production-requests-by-hour: 76
+      dc-certificates-in-pool-by-denomination: 77
+      dc-production-queue-by-denomination: 78
+      dc-pool-total-value: 79
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

@@ -1,0 +1,23 @@
+kind: card
+key: pca-production-queue-by-denomination
+name: Production queue by denomination
+description: Pending production requests per face value. An empty chart means an empty queue.
+collection: pear-cider-automated
+type: question
+display: pie
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT amount AS denomination, count(*) AS requests
+      FROM production_request
+      WHERE status = 'PENDING'
+      GROUP BY 1
+      ORDER BY 1
+visualization_settings:
+  pie.slice_threshold: 0
+parameters: []
