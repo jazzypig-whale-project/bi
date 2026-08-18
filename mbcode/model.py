@@ -96,6 +96,26 @@ def desired_tabs(doc: dict, resolver: Resolver) -> list:
     ]
 
 
+def resolved_parameter_mappings(dc: dict, card_id) -> list:
+    """dc's `parameter_mappings`, each entry's `card_id` filled in from the dashcard's
+    already-resolved `card_id` when the entry omits it (or carries it as None); an entry
+    with an explicit `card_id` is left exactly as written.
+
+    Metabase's dashcard-query endpoint silently falls back to a card's default template-tag
+    value when a mapping omits `card_id`, so `mbc` must inject it on every write. YAML source
+    stays id-free (matching the rest of this repo's server-ids-live-in-.state/ convention);
+    `card_id` may be a real id, a '<new:card:...>' placeholder (dry-run), or None (the
+    dashcard has no `card`), in which case entries are returned unchanged.
+    """
+    mappings = dc.get("parameter_mappings") or []
+    if card_id is None:
+        return mappings
+    return [
+        mapping if mapping.get("card_id") is not None else {**mapping, "card_id": card_id}
+        for mapping in mappings
+    ]
+
+
 def desired_dashcards(doc: dict, resolver: Resolver) -> list:
     """[(dashcard_key, write-shape dict without 'id'), ...] in YAML order."""
     out = []
@@ -110,7 +130,7 @@ def desired_dashcards(doc: dict, resolver: Resolver) -> list:
             "size_x": dc.get("size_x"),
             "size_y": dc.get("size_y"),
             "visualization_settings": dc.get("visualization_settings") or {},
-            "parameter_mappings": dc.get("parameter_mappings") or [],
+            "parameter_mappings": resolved_parameter_mappings(dc, card_id),
             "series": [{"id": resolver.card_id(k)} for k in dc.get("series") or []],
             "inline_parameters": dc.get("inline_parameters") or [],
         }))

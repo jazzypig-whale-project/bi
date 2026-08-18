@@ -71,27 +71,41 @@ Card side, in the 14 time-windowed cards only:
         default: '7'
 ```
 
-Dashcard side, on those same 14 dashcards only:
+Dashcard side, on those same 14 dashcards only — the mapping in YAML stays id-free, exactly as this
+shape shows:
 
 ```yaml
   parameter_mappings:
   - parameter_id: 821ec3b1
-    card_id: <the card's server id, from the state file>
     target:
     - variable
     - - template-tag
       - days
 ```
 
-**UPDATE (Task 1, verified live):** `card_id` was originally assumed omittable from the mapping, since
-`metabase.parameters.schema/::parameter-mapping` (v0.60.7) declares it `{:optional true}`. Task 1 proved
-this assumption wrong: with `card_id` omitted, `POST /api/dashboard/:id/dashcard/:id/card/:id/query` ran
-the card with its *default* `days` value regardless of the `days` value passed in the request (both
-`days=1` and `days=30` returned the same row count as the untouched default). Adding
-`card_id: <card id>` to the mapping and re-applying fixed it — `days=1` then returned 2 rows and
-`days=30` returned 24 rows, matching the card's raw SQL for those windows. **Every later dashcard's
-`parameter_mappings` entry must include `card_id`, sourced from the state file after that card is
-created**, not omitted as originally planned.
+**UPDATE (Task 1, verified live, resolved):** `card_id` is `{:optional true}` in
+`metabase.parameters.schema/::parameter-mapping` (v0.60.7), so the plan assumed it could simply be
+omitted from every mapping. Task 1 proved the *storage* half of that right but the *behaviour* half
+wrong: with `card_id` omitted from the write, `POST /api/dashboard/:id/dashcard/:id/card/:id/query`
+silently ran the card with its default `days` value regardless of the `days` value passed in the request
+— both `days=1` and `days=30` returned the same row count as the untouched default (8 rows, matching the
+default 7-day window). Hand-adding a literal `card_id: 69` to the YAML made it work, but that would have
+put a server id in `dashboards/*.yaml`, which no dashboard file in this repo does and which breaks
+silently on any state reset, re-create, or fresh instance — so the fix moved into the tool instead of the
+file.
+
+`mbc` now injects the dashcard's resolved `card_id` into every `parameter_mappings` entry that omits it
+(or carries it as `None`) at write time, via one shared helper,
+`model.resolved_parameter_mappings(dc, card_id)`. An entry that already carries an explicit `card_id` is
+left untouched. Two call sites use it: `model.desired_dashcards` (the diff engine's desired-state side,
+so the comparison already expects what the server will store) and `apply._dashboard_put_body` (the
+actual PUT body). Because both sides inject the same id, the round trip stays clean
+(`./mbc diff` → 0 differences) even though the YAML source never mentions a card id.
+
+Re-verified after the fix: `days=1` returned 2 rows and `days=30` returned 24 rows — matching the card's
+raw SQL for those windows, and different from each other, proving the parameter reaches the card. **Every
+later dashcard's `parameter_mappings` entry should stay id-free, exactly like the shape above** — `mbc`
+resolves `card_id` automatically; no later task needs to (or should) hand-write one.
 
 Window predicate, uniformly:
 

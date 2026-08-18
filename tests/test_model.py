@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from mbcode.model import Resolver, desired_dashcards, desired_tabs, slugify, unique_slug
+from mbcode.model import (Resolver, desired_dashcards, desired_tabs,
+                          resolved_parameter_mappings, slugify, unique_slug)
 from mbcode.state import State
 
 
@@ -122,3 +123,51 @@ def test_desired_dashcards_virtual_dashcard_has_null_card_id():
     pairs = desired_dashcards(doc, resolver)
     _, written = pairs[0]
     assert written["card_id"] is None
+
+
+# --- resolved_parameter_mappings: card_id injection -----------------------------
+
+def test_resolved_parameter_mappings_fills_in_card_id_when_omitted():
+    dc = {"parameter_mappings": [
+        {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]]},
+    ]}
+    mappings = resolved_parameter_mappings(dc, 69)
+    assert mappings == [
+        {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]], "card_id": 69},
+    ]
+
+
+def test_resolved_parameter_mappings_treats_explicit_none_like_omitted():
+    dc = {"parameter_mappings": [{"parameter_id": "days", "card_id": None, "target": []}]}
+    mappings = resolved_parameter_mappings(dc, 69)
+    assert mappings[0]["card_id"] == 69
+
+
+def test_resolved_parameter_mappings_leaves_an_explicit_card_id_untouched():
+    dc = {"parameter_mappings": [{"parameter_id": "days", "card_id": 5, "target": []}]}
+    mappings = resolved_parameter_mappings(dc, 69)
+    assert mappings[0]["card_id"] == 5
+
+
+def test_resolved_parameter_mappings_no_mappings_yields_empty_list():
+    assert resolved_parameter_mappings({}, 69) == []
+    assert resolved_parameter_mappings({"parameter_mappings": []}, 69) == []
+
+
+def test_resolved_parameter_mappings_none_card_id_does_not_crash():
+    dc = {"parameter_mappings": [{"parameter_id": "days", "target": []}]}
+    mappings = resolved_parameter_mappings(dc, None)
+    assert mappings == dc["parameter_mappings"]
+
+
+def test_desired_dashcards_injects_card_id_into_parameter_mappings():
+    state = _state(cards={"card-a": {"id": 69}})
+    resolver = Resolver(state)
+    doc = {"key": "overview", "dashcards": [
+        {"key": "chart", "card": "card-a", "row": 0, "col": 0, "size_x": 4, "size_y": 4,
+         "parameter_mappings": [
+             {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]]},
+         ]},
+    ]}
+    _, written = desired_dashcards(doc, resolver)[0]
+    assert written["parameter_mappings"][0]["card_id"] == 69

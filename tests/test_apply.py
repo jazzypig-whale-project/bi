@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from helpers import FakeClient, minimal_card, minimal_dashboard
+from helpers import FakeClient, minimal_card, minimal_dashboard, minimal_dashcard
 from mbcode import apply as apply_mod
 from mbcode.client import ApiError
 from mbcode import repo
@@ -272,6 +272,30 @@ def test_dashboard_put_body_never_sends_null_for_a_field_the_server_ignores_null
                             auto_apply_filters=None, parameters=None)
     body, _, _ = apply_mod._dashboard_put_body(doc, {}, apply_mod.StrictLookup(_state()))
     assert not (apply_mod.DASHBOARD_NON_NIL & {k for k, v in body.items() if v is None})
+
+
+# --- card_id injection into parameter_mappings on write ------------------------
+
+def test_dashboard_put_body_injects_card_id_into_a_mapping_that_omits_it():
+    doc = minimal_dashboard(key="overview", collection="root", dashcards=[
+        minimal_dashcard(parameter_mappings=[
+            {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]]},
+        ]),
+    ])
+    state = _state(cards={"daily-revenue": {"id": 69}})
+    body, _, _ = apply_mod._dashboard_put_body(doc, {}, apply_mod.StrictLookup(state))
+    assert body["dashcards"][0]["parameter_mappings"][0]["card_id"] == 69
+
+
+def test_dashboard_put_body_leaves_an_explicit_card_id_in_a_mapping_untouched():
+    doc = minimal_dashboard(key="overview", collection="root", dashcards=[
+        minimal_dashcard(parameter_mappings=[
+            {"parameter_id": "days", "card_id": 5, "target": []},
+        ]),
+    ])
+    state = _state(cards={"daily-revenue": {"id": 69}})
+    body, _, _ = apply_mod._dashboard_put_body(doc, {}, apply_mod.StrictLookup(state))
+    assert body["dashcards"][0]["parameter_mappings"][0]["card_id"] == 5
 
 
 # --- Fix 2: id recording after a PUT -------------------------------------------

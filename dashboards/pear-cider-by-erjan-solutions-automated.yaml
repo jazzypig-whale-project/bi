@@ -35,7 +35,6 @@ dashcards:
   visualization_settings: {}
   parameter_mappings:
   - parameter_id: 821ec3b1
-    card_id: 69
     target:
     - variable
     - - template-tag
