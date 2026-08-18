@@ -96,6 +96,21 @@ cards:
   pca-orders-aging-sber:
     id: 85
     entity_id: tlhsJgSvM4sgfSVK89eFh
+  pca-average-check-by-day:
+    id: 86
+    entity_id: dNHrCtsFEdzQRW0GdP1ov
+  pca-certificate-turnover-by-denomination:
+    id: 87
+    entity_id: zzSNfhUMyXbeqEzRIIxxq
+  pca-certificates-sent-by-hour:
+    id: 88
+    entity_id: TP1s2jADr5lQJPgc9rU9o
+  pca-certificates-sold-by-denomination:
+    id: 89
+    entity_id: X3h3bWC4Dycu-bXIWWNBS
+  pca-sales-distribution-by-partner:
+    id: 90
+    entity_id: XvFWm2OmgphFx0Tr2WQXf
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -162,5 +177,10 @@ dashboards:
       dc-completion-time-percentiles: 68
       dc-orders-aging-sber: 69
       dc-orders-aging-other: 70
+      dc-certificates-sent-by-hour: 71
+      dc-sales-distribution-by-partner: 72
+      dc-average-check-by-day: 73
+      dc-certificates-sold-by-denomination: 74
+      dc-certificate-turnover-by-denomination: 75
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

@@ -252,3 +252,68 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-certificates-sent-by-hour
+  card: pca-certificates-sent-by-hour
+  tab: orders
+  row: 20
+  col: 0
+  size_x: 24
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-sales-distribution-by-partner
+  card: pca-sales-distribution-by-partner
+  tab: orders
+  row: 26
+  col: 0
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-average-check-by-day
+  card: pca-average-check-by-day
+  tab: orders
+  row: 26
+  col: 12
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-certificates-sold-by-denomination
+  card: pca-certificates-sold-by-denomination
+  tab: orders
+  row: 33
+  col: 0
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-certificate-turnover-by-denomination
+  card: pca-certificate-turnover-by-denomination
+  tab: orders
+  row: 33
+  col: 12
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
