@@ -72,6 +72,12 @@ cards:
   pca-capacity-now-quota:
     id: 77
     entity_id: YzVBCewnbHVl7Rvf9LhQZ
+  pca-flow-by-hour:
+    id: 78
+    entity_id: jiM4gR4TMHV-9UPdP2M1y
+  pca-time-since-last-order-by-partner:
+    id: 79
+    entity_id: k3UwF_75vnhK0WiZH_ZTe
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -130,5 +136,7 @@ dashboards:
       dc-topups-in-progress-rub: 60
       dc-capacity-now-quota: 61
       dc-capacity-now-quota-balance: 62
+      dc-time-since-last-order-by-partner: 63
+      dc-flow-by-hour: 64
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
