@@ -220,3 +220,35 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-orders-aging-sber
+  card: pca-orders-aging-sber
+  tab: orders
+  row: 13
+  col: 0
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-orders-aging-other
+  card: pca-orders-aging-other
+  tab: orders
+  row: 13
+  col: 12
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []

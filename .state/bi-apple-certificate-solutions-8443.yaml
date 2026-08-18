@@ -90,6 +90,12 @@ cards:
   pca-completion-time-percentiles:
     id: 83
     entity_id: uPgIXYhS7pJxQjycG8YFI
+  pca-orders-aging-other:
+    id: 84
+    entity_id: lalfOLUOqi0oEUWD1mqO8
+  pca-orders-aging-sber:
+    id: 85
+    entity_id: tlhsJgSvM4sgfSVK89eFh
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -154,5 +160,7 @@ dashboards:
       dc-orders-by-hour-other: 66
       dc-orders-in-progress-by-status-partner: 67
       dc-completion-time-percentiles: 68
+      dc-orders-aging-sber: 69
+      dc-orders-aging-other: 70
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
