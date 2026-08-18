@@ -1,8 +1,11 @@
 """apply.py: payload building, with the HTTP client stubbed via FakeClient."""
 from __future__ import annotations
 
+import pytest
+
 from helpers import FakeClient, minimal_card, minimal_dashboard
 from mbcode import apply as apply_mod
+from mbcode.client import ApiError
 from mbcode import repo
 from mbcode.diff import _collections_parent_first
 from mbcode.state import State
@@ -469,3 +472,88 @@ def test_two_unmatched_keys_and_two_unmatched_rows_record_nothing(tmp_path):
     apply_mod._update_dashboard(tree, state, client, "overview")
 
     assert _recorded(state)["dashcards"] == {}
+
+
+# --- archived cascade: a 404 `archived` on a doc that wants archiving is a no-op ---
+
+ARCHIVED_404_BODY = '{"message":"The object has been archived.","error_code":"archived"}'
+
+
+def _archive_tree_and_state(tmp_path):
+    """Collection + dashboard inside it, both marked archived, both already live."""
+    tree = repo.Tree(
+        root=str(tmp_path),
+        collections={"examples": {"kind": "collection", "key": "examples", "name": "Examples",
+                                  "description": None, "parent": None, "archived": True}},
+        dashboards={"overview": minimal_dashboard(collection="examples", archived=True,
+                                                  dashcards=[])},
+        cards={},
+    )
+    state = State(str(tmp_path / ".state" / "test.yaml"), {
+        "version": 1, "instance": "http://x", "metabase_version": None,
+        "collections": {"examples": {"id": 2, "entity_id": "col-2"}}, "cards": {},
+        "dashboards": {"overview": {"id": 1, "entity_id": "dash-1", "tabs": {}, "dashcards": {}}},
+    })
+    return tree, state
+
+
+def _archived_put(path):
+    def handler(body):
+        raise ApiError("PUT", path, 404, ARCHIVED_404_BODY)
+    return handler
+
+
+def test_archived_404_on_a_doc_that_wants_archiving_is_not_an_error(tmp_path):
+    tree, state = _archive_tree_and_state(tmp_path)
+    client = FakeClient(puts={"/api/collection/2": {"id": 2, "archived": True},
+                              "/api/dashboard/1": _archived_put("/api/dashboard/1")})
+    plan = {"creates": [], "updates": [{"section": "collections", "key": "examples"},
+                                       {"section": "dashboards", "key": "overview"}],
+            "orphans": []}
+
+    rc = apply_mod.run_apply(tree, state, client, plan, yes=True, dry_run=False)
+
+    assert rc == 0
+    assert ("PUT", "/api/collection/2", {"name": "Examples", "description": None,
+                                         "parent_id": None, "archived": True}) in client.calls
+
+
+def test_archived_404_still_raises_when_the_doc_wants_the_entity_alive(tmp_path):
+    tree, state = _archive_tree_and_state(tmp_path)
+    tree.dashboards["overview"]["archived"] = False
+    client = FakeClient(puts={"/api/collection/2": {"id": 2, "archived": True},
+                              "/api/dashboard/1": _archived_put("/api/dashboard/1")})
+    plan = {"creates": [], "updates": [{"section": "dashboards", "key": "overview"}], "orphans": []}
+
+    with pytest.raises(ApiError):
+        apply_mod.run_apply(tree, state, client, plan, yes=True, dry_run=False)
+
+
+def test_a_non_archived_404_always_raises(tmp_path):
+    tree, state = _archive_tree_and_state(tmp_path)
+
+    def gone(body):
+        raise ApiError("PUT", "/api/dashboard/1", 404, '{"message":"Not found."}')
+
+    client = FakeClient(puts={"/api/dashboard/1": gone})
+    plan = {"creates": [], "updates": [{"section": "dashboards", "key": "overview"}], "orphans": []}
+
+    with pytest.raises(ApiError):
+        apply_mod.run_apply(tree, state, client, plan, yes=True, dry_run=False)
+
+
+def test_archived_404_on_a_create_always_raises(tmp_path):
+    """A create that 404s left no entity and no state id: never swallow it."""
+    tree, state = _archive_tree_and_state(tmp_path)
+    state.data["collections"] = {}
+
+    def refused(body):
+        raise ApiError("POST", "/api/collection", 404, ARCHIVED_404_BODY)
+
+    client = FakeClient(posts={"/api/collection": refused})
+    plan = {"creates": [{"section": "collections", "key": "examples"}], "updates": [], "orphans": []}
+
+    with pytest.raises(ApiError):
+        apply_mod.run_apply(tree, state, client, plan, yes=True, dry_run=False)
+
+    assert state.data["collections"] == {}

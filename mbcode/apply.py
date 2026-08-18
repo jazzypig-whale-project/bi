@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 
 from . import model
+from .client import ApiError
 from .model import Resolver
 
 
@@ -49,11 +51,44 @@ def run_apply(tree, state, client, plan, yes: bool, dry_run: bool) -> int:
         ("dashboards", "create"): _create_dashboard,
         ("dashboards", "update"): _update_dashboard,
     }
+    skipped = 0
     for section, verb, key in ops:
         print(f"{verb} {section[:-1]} {key} ...")
-        executors[(section, verb)](tree, state, client, key)
-    print(f"applied {len(ops)} change(s); state saved to {state.path}")
+        skipped += _execute(executors[(section, verb)], tree, state, client, section, verb, key)
+    applied = len(ops) - skipped
+    note = f", skipped {skipped} already-archived" if skipped else ""
+    if not applied:
+        print(f"applied 0 change(s){note}")
+        return 0
+    print(f"applied {applied} change(s){note}; state saved to {state.path}")
     return 0
+
+
+def _execute(executor, tree, state, client, section, verb, key) -> int:
+    """Run one op; return 1 if it was skipped as already done by the archive cascade.
+
+    Archiving a collection archives its contents too, and Metabase then answers any
+    write to those children with 404 `archived`. For an UPDATE whose YAML asks for
+    exactly that state, the cascade already delivered it, so the failure is a no-op.
+    A CREATE is never swallowed: nothing was created and no id was recorded, so the
+    run must fail loudly instead of hiding a missing entity behind a later apply.
+    """
+    try:
+        executor(tree, state, client, key)
+        return 0
+    except ApiError as err:
+        if verb != "update":
+            raise
+        if not _archived_404(err):
+            raise
+        if not tree.section(section)[key].get("archived"):
+            raise
+        print("  already archived by the collection cascade; nothing to do")
+        return 1
+
+
+def _archived_404(err) -> bool:
+    return err.status == 404 and re.search(r'"error_code"\s*:\s*"archived"', err.body) is not None
 
 
 def _ordered_ops(plan):

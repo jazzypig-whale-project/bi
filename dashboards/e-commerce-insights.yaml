@@ -6,7 +6,7 @@ collection: examples
 width: fixed
 auto_apply_filters: true
 cache_ttl: null
-archived: false
+archived: true
 parameters:
 - id: 81cd957
   name: Date Range
