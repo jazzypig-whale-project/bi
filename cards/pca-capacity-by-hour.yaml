@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
-name: Capacity by hour (upper bound)
-description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Keep Days at 14 or below on this tab.
+name: Capacity by hour (upper bound — fleet gates not historised)
+description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter.
 collection: pear-cider-automated
 type: question
 display: line
@@ -26,7 +26,7 @@ dataset_query:
       ),
       spine AS (
         SELECT generate_series(
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - (least({{days}}, 14) * INTERVAL '1 day')),
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
           INTERVAL '1 hour') AS h),
       subject AS (

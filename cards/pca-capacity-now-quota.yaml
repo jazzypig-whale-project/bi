@@ -29,11 +29,7 @@ dataset_query:
       ),
       placeable AS (
         SELECT DISTINCT d.active_account_id AS account_id,
-               acc.current_number_id        AS number_id,
-               n.balance - COALESCE((SELECT sum(l.amount) FROM quota_ledger l
-                                     WHERE l.subject_type = 'NUMBER'
-                                       AND l.subject_id = n.number_id
-                                       AND l.status = 'RESERVED'), 0) AS available_balance
+               acc.current_number_id        AS number_id
         FROM device d
         JOIN agent a     ON a.agent_id = d.agent_id
         JOIN account acc ON acc.account_id = d.active_account_id

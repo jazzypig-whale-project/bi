@@ -19,5 +19,8 @@ dataset_query:
       GROUP BY 1
       ORDER BY 1
 visualization_settings:
+  pie.dimension:
+  - denomination
+  pie.metric: requests
   pie.slice_threshold: 0
 parameters: []

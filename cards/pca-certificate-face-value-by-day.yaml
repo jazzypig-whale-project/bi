@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day
 name: Certificate face value by day
-description: Sum of SENT certificate face values per day, over the last {{days}} days.
+description: Sum of SENT certificate face values per day, over the Days window.
 collection: pear-cider-automated
 type: question
 display: bar

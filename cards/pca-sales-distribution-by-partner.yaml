@@ -1,6 +1,6 @@
 kind: card
 key: pca-sales-distribution-by-partner
-name: Sales distribution by partner
+name: Sales distribution by partner (all time)
 description: Order value per API client, all clients, all time. Translated from "Распределение продаж по партнерам".
 collection: pear-cider-automated
 type: question

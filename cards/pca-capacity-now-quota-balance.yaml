@@ -19,6 +19,8 @@ dataset_query:
       -- from number.balance, the same expression placement itself uses.
       WITH limits AS (
         -- orchestrator/src/main/resources/application.yml, app.quota (lines 159-167).
+        -- bufferAccount is deliberately NOT applied: it belongs to evaluateExhaustion,
+        -- not to the admission rule this card reports.
         SELECT 6::bigint      AS max_tasks_per_account,   -- maxTasksPerAccount
                35000::bigint  AS day_limit_account,       -- dayLimitAccount
                500000::bigint AS day_limit_number,        -- dayLimitNumber
