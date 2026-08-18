@@ -204,3 +204,19 @@ dashcards:
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-completion-time-percentiles
+  card: pca-completion-time-percentiles
+  tab: orders
+  row: 7
+  col: 12
+  size_x: 12
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
