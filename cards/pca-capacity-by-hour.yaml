@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
 name: Capacity by hour (upper bound)
-description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. Keep Days at 14 or below on this tab.
+description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Keep Days at 14 or below on this tab.
 collection: pear-cider-automated
 type: question
 display: line
@@ -40,7 +40,7 @@ dataset_query:
                (ts AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') AS ts
         FROM quota_ledger
         WHERE status IN ('RESERVED', 'COMMITTED')
-          AND ts > (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day') - INTERVAL '30 days'),
+          AND ts > (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day') - INTERVAL '31 days'),
       account_window AS (
         SELECT s.h, l.subject_id, count(*) AS count24h, sum(l.amount) AS money24h
         FROM spine s
@@ -59,9 +59,9 @@ dataset_query:
         SELECT s.h, c.account_id
         FROM spine s
         JOIN account_cooldown c
-          ON (c.applied_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') <= s.h
-         AND (c.until      IS NULL OR (c.until      AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') > s.h)
-         AND (c.cleared_at IS NULL OR (c.cleared_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') > s.h)
+          ON c.applied_at <= (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+         AND (c.until      IS NULL OR c.until      > (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
+         AND (c.cleared_at IS NULL OR c.cleared_at > (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
         GROUP BY 1, 2),
       balance AS (
         -- Last balance_after per number at or before the hour. balance_ledger.created_at is timestamptz.
@@ -72,7 +72,7 @@ dataset_query:
           SELECT bl.balance_after
           FROM balance_ledger bl
           WHERE bl.number_id = sn.number_id
-            AND (bl.created_at AT TIME ZONE 'Europe/Moscow') <= s.h
+            AND bl.created_at <= (s.h AT TIME ZONE 'Europe/Moscow')
           ORDER BY bl.created_at DESC
           LIMIT 1) bal ON true),
       account_headroom AS (
@@ -100,7 +100,7 @@ dataset_query:
                                  floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
                                  floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount)))
                  AS quota_capacity,
-               floor(pn.balance / lim.min_certificate_amount) AS balance_capacity
+               greatest(0, floor(pn.balance / lim.min_certificate_amount)) AS balance_capacity
         FROM per_number pn
         CROSS JOIN limits lim
         LEFT JOIN number_window nw ON nw.h = pn.h AND nw.subject_id = pn.number_id)
