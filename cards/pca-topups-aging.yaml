@@ -16,6 +16,11 @@ dataset_query:
       -- Interval is [created_at, updated_at) for rows that reached a terminal status and
       -- [created_at, now()) for rows still in CREATE_RETRY / PENDING_POLL.
       -- Both columns are timestamptz.
+      -- A row still open (CREATE_RETRY/PENDING_POLL) is kept no matter how old, since it may be
+      -- open at every spine hour. A closed row is kept only if it could still have been open at
+      -- the window's first spine hour, i.e. closed_at is at or after that hour's floor -- not the
+      -- unrounded {{days}}-ago instant, which is later than the floor and would drop rows that
+      -- closed in the gap between the floor and the unrounded instant.
       WITH spine AS (
         SELECT generate_series(
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
@@ -26,7 +31,8 @@ dataset_query:
                CASE WHEN status IN ('CREATE_RETRY', 'PENDING_POLL') THEN NULL
                     ELSE (updated_at AT TIME ZONE 'Europe/Moscow') END AS closed_at
         FROM topup_payout
-        WHERE created_at >= now() - ({{days}} * INTERVAL '1 day') - INTERVAL '30 days')
+        WHERE status IN ('CREATE_RETRY', 'PENDING_POLL')
+           OR updated_at >= (date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow'))
       SELECT s.h AS hour,
              CASE
                WHEN s.h - tp.created_at < INTERVAL '1 minute'   THEN '01 <1m'
