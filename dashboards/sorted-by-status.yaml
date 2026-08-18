@@ -1,0 +1,11 @@
+kind: dashboard
+key: sorted-by-status
+name: Sorted by status
+description: null
+collection: certs-business-analytics
+width: fixed
+auto_apply_filters: true
+cache_ttl: null
+archived: false
+parameters: []
+dashcards: []

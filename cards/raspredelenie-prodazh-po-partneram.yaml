@@ -1,0 +1,66 @@
+kind: card
+key: raspredelenie-prodazh-po-partneram
+name: Распределение продаж по партнерам
+description: null
+collection: root
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/mbql
+    breakout:
+    - - field
+      - base-type: type/Text
+        effective-type: type/Text
+        join-alias: Api Client - Client
+      - 100
+    source-table: 27
+    aggregation:
+    - - sum
+      - {}
+      - - field
+        - effective-type: type/BigInteger
+          base-type: type/BigInteger
+        - 164
+    joins:
+    - lib/type: mbql/join
+      fields: all
+      conditions:
+      - - '='
+        - {}
+        - - field
+          - effective-type: type/UUID
+            base-type: type/UUID
+          - 175
+        - - field
+          - effective-type: type/UUID
+            base-type: type/UUID
+            join-alias: Api Client - Client
+          - 99
+      strategy: left-join
+      stages:
+      - lib/type: mbql.stage/mbql
+        lib/options: {}
+        source-table: 24
+      lib/options: {}
+      alias: Api Client - Client
+    order-by:
+    - - desc
+      - {}
+      - - aggregation
+        - base-type: type/Decimal
+          effective-type: type/Decimal
+          lib/source-name: sum
+        - 28d22107-cfad-4bdf-b3eb-1ba04f8d433b
+visualization_settings:
+  graph.show_values: true
+  graph.x_axis.scale: ordinal
+  graph.dimensions:
+  - name
+  graph.metrics:
+  - sum
+parameters: []

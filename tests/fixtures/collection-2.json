@@ -1,0 +1,36 @@
+{
+  "authority_level": null,
+  "description": "Some examples to get started with",
+  "archived": false,
+  "workspace_id": null,
+  "slug": "examples",
+  "archive_operation_id": null,
+  "can_write": true,
+  "name": "Examples",
+  "is_remote_synced": false,
+  "personal_owner_id": null,
+  "type": null,
+  "effective_ancestors": [
+    {
+      "metabase.collections.models.collection.root/is-root?": true,
+      "authority_level": null,
+      "name": "Our analytics",
+      "is_personal": false,
+      "id": "root",
+      "is_remote_synced": false,
+      "can_write": true
+    }
+  ],
+  "can_restore": false,
+  "is_sample": true,
+  "effective_location": "/",
+  "parent_id": null,
+  "id": 2,
+  "archived_directly": null,
+  "entity_id": "HyB3nRtqb7pBPhFG26evI",
+  "location": "/",
+  "namespace": null,
+  "is_personal": false,
+  "created_at": "2026-07-27T16:34:53.168244Z",
+  "can_delete": false
+}

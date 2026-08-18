@@ -1,0 +1,101 @@
+kind: dashboard
+key: pear-cider-by-erjan-solutions
+name: 'Pear Cider by Erjan.Solutions '
+description: null
+collection: root
+width: fixed
+auto_apply_filters: true
+cache_ttl: null
+archived: false
+parameters: []
+dashcards:
+- key: summa-nominalov-sertifikatov-po-dnyam
+  card: summa-nominalov-sertifikatov-po-dnyam
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 9
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: kolichestvo-otpravlennykh-sertifikatov
+  card: kolichestvo-otpravlennykh-sertifikatov
+  row: 9
+  col: 0
+  size_x: 24
+  size_y: 9
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: oborot-sertifikatov-po-nominalam
+  card: oborot-sertifikatov-po-nominalam
+  row: 18
+  col: 0
+  size_x: 12
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: kolichestvo-prodannykh-sertifikatov-po-nominalam
+  card: kolichestvo-prodannykh-sertifikatov-po-nominalam
+  row: 18
+  col: 12
+  size_x: 12
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: raspredelenie-prodazh-po-partneram
+  card: raspredelenie-prodazh-po-partneram
+  row: 26
+  col: 0
+  size_x: 24
+  size_y: 10
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: sredniy-chek-po-dnyam
+  card: sredniy-chek-po-dnyam
+  row: 36
+  col: 0
+  size_x: 24
+  size_y: 9
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dostupnye-sertifikaty-v-pule
+  card: dostupnye-sertifikaty-v-pule
+  row: 45
+  col: 0
+  size_x: 9
+  size_y: 17
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: ochered-generatsii-sertifikatov
+  card: ochered-generatsii-sertifikatov
+  row: 45
+  col: 9
+  size_x: 15
+  size_y: 11
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: summa-pula-sertifikatov
+  card: summa-pula-sertifikatov
+  row: 56
+  col: 9
+  size_x: 15
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []

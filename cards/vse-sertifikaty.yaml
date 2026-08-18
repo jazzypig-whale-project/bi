@@ -1,0 +1,40 @@
+kind: card
+key: vse-sertifikaty
+name: Все сертификаты
+description: null
+collection: certs-business-analytics
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/mbql
+    source-table: 23
+visualization_settings:
+  table.columns:
+  - name: certificate_id
+    enabled: true
+  - name: amount
+    enabled: true
+  - name: status
+    enabled: true
+  - name: source
+    enabled: false
+  - name: reserved_order_id
+    enabled: false
+  - name: created_at
+    enabled: true
+  - name: reserved_at
+    enabled: true
+  - name: sent_at
+    enabled: true
+  - name: certificate_number_enc
+    enabled: false
+  - name: certificate_number_hash
+    enabled: false
+  table.pivot_column: status
+  table.cell_column: amount
+parameters: []

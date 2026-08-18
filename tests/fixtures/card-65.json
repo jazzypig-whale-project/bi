@@ -1,0 +1,281 @@
+{
+  "cache_invalidated_at": null,
+  "description": null,
+  "archived": false,
+  "view_count": 95,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 27,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "text",
+      "semantic_type": "type/Name",
+      "table_id": 24,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "name",
+      "lib/original-name": "name",
+      "lib/breakout?": true,
+      "name": "name",
+      "lib/source": "source/joins",
+      "lib/source-column-alias": "name",
+      "lib/original-display-name": "Name",
+      "source": "breakout",
+      "lib/original-join-alias": "Api Client - Client",
+      "field_ref": [
+        "field",
+        100,
+        {
+          "join-alias": "Api Client - Client"
+        }
+      ],
+      "effective_type": "type/Text",
+      "active": true,
+      "id": 100,
+      "lib/join-alias": "Api Client - Client",
+      "lib/desired-column-alias": "Api Client - Client__name",
+      "position": 2,
+      "visibility_type": "normal",
+      "display_name": "Api Client - Client → Name",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 2,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Text": {
+            "percent-json": 0.0,
+            "percent-url": 0.0,
+            "percent-email": 0.0,
+            "percent-state": 0.0,
+            "average-length": 10.0
+          }
+        }
+      },
+      "base_type": "type/Text"
+    },
+    {
+      "database_type": "numeric",
+      "semantic_type": null,
+      "lib/deduplicated-name": "sum",
+      "lib/original-name": "sum",
+      "name": "sum",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "sum",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/Decimal",
+      "lib/desired-column-alias": "sum",
+      "display_name": "Sum of Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 3,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 1000.0,
+            "q1": 17750.0,
+            "q3": 14274125,
+            "max": 1.90095E+7,
+            "sd": 10955272.577622157,
+            "avg": 6359500.0
+          }
+        }
+      },
+      "base_type": "type/Decimal"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": null,
+  "query_type": "query",
+  "name": "Распределение продаж по партнерам",
+  "last_query_start": "2026-08-18T11:54:40.601522Z",
+  "is_remote_synced": false,
+  "dashboard_count": 1,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:54:40.712597Z",
+  "dashboard": {
+    "name": "Pear Cider by Erjan.Solutions ",
+    "id": 5,
+    "moderation_status": null
+  },
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 175.6421052631578947,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-08-14T10:30:31.506194Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "lib/type": "mbql.stage/mbql",
+        "breakout": [
+          [
+            "field",
+            {
+              "base-type": "type/Text",
+              "lib/uuid": "2b73c034-350c-4cad-8683-9ccfdaff647e",
+              "effective-type": "type/Text",
+              "join-alias": "Api Client - Client"
+            },
+            100
+          ]
+        ],
+        "source-table": 27,
+        "aggregation": [
+          [
+            "sum",
+            {
+              "lib/uuid": "28d22107-cfad-4bdf-b3eb-1ba04f8d433b"
+            },
+            [
+              "field",
+              {
+                "effective-type": "type/BigInteger",
+                "lib/uuid": "4079304a-07c7-4233-89c7-99949c6605a3",
+                "base-type": "type/BigInteger"
+              },
+              164
+            ]
+          ]
+        ],
+        "joins": [
+          {
+            "lib/type": "mbql/join",
+            "fields": "all",
+            "conditions": [
+              [
+                "=",
+                {
+                  "lib/uuid": "38015215-9e1c-4919-86e9-82d5743ba6e4"
+                },
+                [
+                  "field",
+                  {
+                    "lib/uuid": "f6a4686e-51de-4d63-971a-b6d3d08611b8",
+                    "effective-type": "type/UUID",
+                    "base-type": "type/UUID"
+                  },
+                  175
+                ],
+                [
+                  "field",
+                  {
+                    "effective-type": "type/UUID",
+                    "base-type": "type/UUID",
+                    "lib/uuid": "07ebc97a-277b-408f-9468-0104bfcb52c5",
+                    "join-alias": "Api Client - Client"
+                  },
+                  99
+                ]
+              ]
+            ],
+            "strategy": "left-join",
+            "stages": [
+              {
+                "lib/type": "mbql.stage/mbql",
+                "lib/options": {
+                  "lib/uuid": "7b8fa242-959c-45db-9a16-5377900a4b00"
+                },
+                "source-table": 24
+              }
+            ],
+            "lib/options": {
+              "lib/uuid": "bbb9a0db-aa6b-4ea7-b56a-ec1bcd76f769"
+            },
+            "alias": "Api Client - Client"
+          }
+        ],
+        "order-by": [
+          [
+            "desc",
+            {
+              "lib/uuid": "3636a9da-4e09-4bb8-9294-fd99d152f361"
+            },
+            [
+              "aggregation",
+              {
+                "base-type": "type/Decimal",
+                "effective-type": "type/Decimal",
+                "lib/uuid": "0bc678de-63ad-4539-8429-a9a2816a39b2",
+                "lib/source-name": "sum"
+              },
+              "28d22107-cfad-4bdf-b3eb-1ba04f8d433b"
+            ]
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 65,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "bar",
+  "archived_directly": false,
+  "entity_id": "5pvrGOYfMkT0dKeE2vJcz",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-08-14T10:30:31.600941Z"
+  },
+  "visualization_settings": {
+    "graph.show_values": true,
+    "graph.x_axis.scale": "ordinal",
+    "graph.dimensions": [
+      "name"
+    ],
+    "graph.metrics": [
+      "sum"
+    ]
+  },
+  "collection": {
+    "metabase.collections.models.collection.root/is-root?": true,
+    "authority_level": null,
+    "name": "Our analytics",
+    "is_personal": false,
+    "id": "root",
+    "is_remote_synced": false,
+    "can_write": true
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": 5,
+  "created_at": "2026-08-14T10:30:31.506194Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

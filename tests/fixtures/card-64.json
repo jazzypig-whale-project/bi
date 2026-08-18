@@ -1,0 +1,316 @@
+{
+  "cache_invalidated_at": null,
+  "description": null,
+  "archived": false,
+  "view_count": 96,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 16,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "int8",
+      "semantic_type": null,
+      "table_id": 16,
+      "lib/deduplicated-name": "amount",
+      "lib/original-name": "amount",
+      "lib/breakout?": true,
+      "name": "amount",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "amount",
+      "lib/original-display-name": "Amount",
+      "source": "breakout",
+      "field_ref": [
+        "field",
+        215,
+        null
+      ],
+      "effective_type": "type/BigInteger",
+      "active": true,
+      "id": 215,
+      "lib/desired-column-alias": "amount",
+      "position": 1,
+      "visibility_type": "normal",
+      "display_name": "Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 17,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 1000.0,
+            "q1": 1000.0,
+            "q3": 1196.0742656645589,
+            "max": 9000.0,
+            "sd": 1039.7946220398478,
+            "avg": 1219.6274298056155
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    },
+    {
+      "database_type": "int8",
+      "semantic_type": "type/Quantity",
+      "lib/deduplicated-name": "count",
+      "lib/original-name": "count",
+      "name": "count",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "count",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/BigInteger",
+      "lib/desired-column-alias": "count",
+      "display_name": "Count",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 0,
+          "nil%": null
+        },
+        "type": {
+          "type/Number": {
+            "min": null,
+            "q1": null,
+            "q3": null,
+            "max": null,
+            "sd": null,
+            "avg": null
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": null,
+  "query_type": "query",
+  "name": "Очередь генерации сертификатов",
+  "last_query_start": "2026-08-18T11:54:40.641606Z",
+  "is_remote_synced": false,
+  "dashboard_count": 1,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:54:40.712597Z",
+  "dashboard": {
+    "name": "Pear Cider by Erjan.Solutions ",
+    "id": 5,
+    "moderation_status": null
+  },
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 117.0833333333333333,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-08-14T09:29:08.987937Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "filters": [
+          [
+            "=",
+            {
+              "lib/uuid": "29f796b1-2a59-448d-892c-5ae31770a46c"
+            },
+            [
+              "field",
+              {
+                "lib/uuid": "6d8eabcc-cdc6-46d5-abec-1999202dd55d",
+                "effective-type": "type/Text",
+                "base-type": "type/Text"
+              },
+              216
+            ],
+            "PENDING"
+          ]
+        ],
+        "aggregation": [
+          [
+            "count",
+            {
+              "lib/uuid": "9b3f1371-5b46-4446-9183-b3925c4d3691"
+            }
+          ]
+        ],
+        "source-table": 16,
+        "lib/type": "mbql.stage/mbql",
+        "breakout": [
+          [
+            "field",
+            {
+              "lib/uuid": "6ffcc684-890c-45ad-ac5f-fd2fc5ae6676",
+              "effective-type": "type/BigInteger",
+              "base-type": "type/BigInteger"
+            },
+            215
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 64,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "pie",
+  "archived_directly": false,
+  "entity_id": "hd13cgXnsH_NZDbyuex1-",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-08-14T09:29:09.075455Z"
+  },
+  "visualization_settings": {
+    "pie.slice_threshold": 0.1,
+    "pie.sort_rows": false,
+    "pie.rows": [
+      {
+        "key": "1000",
+        "name": "1,000",
+        "originalName": "1,000",
+        "color": "#509EE3",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "1500",
+        "name": "1,500",
+        "originalName": "1,500",
+        "color": "#A989C5",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "2000",
+        "name": "2,000",
+        "originalName": "2,000",
+        "color": "#227FD2",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "2500",
+        "name": "2,500",
+        "originalName": "2,500",
+        "color": "#E75454",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "3000",
+        "name": "3,000",
+        "originalName": "3,000",
+        "color": "#689636",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "3500",
+        "name": "3,500",
+        "originalName": "3,500",
+        "color": "#EF8C8C",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "4000",
+        "name": "4,000",
+        "originalName": "4,000",
+        "color": "#8A5EB0",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "5000",
+        "name": "5,000",
+        "originalName": "5,000",
+        "color": "#88BF4D",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "6000",
+        "name": "6,000",
+        "originalName": "6,000",
+        "color": "#F7C41F",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "9000",
+        "name": "9,000",
+        "originalName": "9,000",
+        "color": "#F9D45C",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      }
+    ]
+  },
+  "collection": {
+    "metabase.collections.models.collection.root/is-root?": true,
+    "authority_level": null,
+    "name": "Our analytics",
+    "is_personal": false,
+    "id": "root",
+    "is_remote_synced": false,
+    "can_write": true
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": 5,
+  "created_at": "2026-08-14T09:29:08.987937Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

@@ -1,0 +1,248 @@
+{
+  "cache_invalidated_at": "2026-07-28T10:02:35.246004Z",
+  "description": null,
+  "archived": false,
+  "view_count": 850,
+  "collection_position": 2,
+  "source_card_id": null,
+  "table_id": 23,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "timestamp",
+      "semantic_type": null,
+      "table_id": 23,
+      "lib/temporal-unit": "day",
+      "lib/deduplicated-name": "sent_at",
+      "lib/original-name": "sent_at",
+      "lib/breakout?": true,
+      "unit": "day",
+      "name": "sent_at",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "sent_at",
+      "lib/original-display-name": "Sent At",
+      "source": "breakout",
+      "field_ref": [
+        "field",
+        111,
+        {
+          "temporal-unit": "day"
+        }
+      ],
+      "effective_type": "type/DateTime",
+      "active": true,
+      "id": 111,
+      "lib/desired-column-alias": "sent_at",
+      "position": 8,
+      "visibility_type": "normal",
+      "inherited_temporal_unit": "day",
+      "display_name": "Sent At: Day",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 215,
+          "nil%": 0.838301043219076
+        },
+        "type": {
+          "type/DateTime": {
+            "earliest": "2026-07-16T11:11:18.480147Z",
+            "latest": "2026-07-27T17:22:49.128917Z"
+          }
+        }
+      },
+      "base_type": "type/DateTime"
+    },
+    {
+      "database_type": "int8",
+      "semantic_type": "type/Quantity",
+      "lib/deduplicated-name": "count",
+      "lib/original-name": "count",
+      "name": "count",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "count",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/BigInteger",
+      "lib/desired-column-alias": "count",
+      "display_name": "Count",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 8,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 607.0,
+            "q1": 695.5,
+            "q3": 1195.0,
+            "max": 1367.0,
+            "sd": 289.8622517679734,
+            "avg": 923.125
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": 9,
+  "query_type": "query",
+  "name": "Количество отправленных сертификатов",
+  "last_query_start": "2026-08-18T11:54:40.635077Z",
+  "is_remote_synced": false,
+  "dashboard_count": 1,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:54:40.712597Z",
+  "dashboard": null,
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 97.6988235294117647,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-07-28T10:02:37.143878Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "source-table": 23,
+        "lib/type": "mbql.stage/mbql",
+        "filters": [
+          [
+            "=",
+            {
+              "lib/uuid": "58f831ad-d0bd-4935-8bec-475011526f37"
+            },
+            [
+              "field",
+              {
+                "effective-type": "type/Text",
+                "lib/uuid": "d37f3852-8443-47aa-8d36-aad16d175758",
+                "base-type": "type/Text"
+              },
+              106
+            ],
+            "SENT"
+          ],
+          [
+            "time-interval",
+            {
+              "include-current": true,
+              "lib/uuid": "c6296f8b-47fa-459b-870f-1048c48e9027",
+              "effective-type": "type/Boolean"
+            },
+            [
+              "field",
+              {
+                "lib/uuid": "b74419e9-bcc4-4f39-b5ce-c9a0eecf709c",
+                "effective-type": "type/DateTime",
+                "base-type": "type/DateTime"
+              },
+              111
+            ],
+            -7,
+            "day"
+          ]
+        ],
+        "aggregation": [
+          [
+            "count",
+            {
+              "lib/uuid": "ce76bdde-078c-4659-8cd1-473a054fc334"
+            }
+          ]
+        ],
+        "breakout": [
+          [
+            "field",
+            {
+              "base-type": "type/DateTime",
+              "lib/uuid": "1b1f091c-d914-48a8-9e8d-5ef3a47d9647",
+              "effective-type": "type/DateTime",
+              "temporal-unit": "day"
+            },
+            111
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 41,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "bar",
+  "archived_directly": false,
+  "entity_id": "txkWk-t3QBh_zdQSw79md",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-07-28T10:00:34.95075Z"
+  },
+  "visualization_settings": {
+    "graph.show_values": true,
+    "graph.x_axis.scale": "timeseries",
+    "graph.dimensions": [
+      "sent_at"
+    ],
+    "graph.metrics": [
+      "count"
+    ]
+  },
+  "collection": {
+    "authority_level": null,
+    "description": null,
+    "archived": false,
+    "workspace_id": null,
+    "slug": "certs_business_analytics",
+    "archive_operation_id": null,
+    "name": "Certs business analytics",
+    "is_remote_synced": false,
+    "personal_owner_id": null,
+    "type": null,
+    "is_sample": false,
+    "id": 9,
+    "archived_directly": null,
+    "entity_id": "hWJsZESC1merO1nxg65H-",
+    "location": "/",
+    "namespace": null,
+    "is_personal": false,
+    "created_at": "2026-07-28T09:53:06.234818Z"
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": null,
+  "created_at": "2026-07-28T10:00:34.918145Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

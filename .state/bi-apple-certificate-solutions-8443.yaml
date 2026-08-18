@@ -1,0 +1,86 @@
+version: 1
+instance: https://bi.apple-certificate.solutions:8443
+metabase_version: v0.60.7
+collections:
+  certs-business-analytics:
+    id: 9
+    entity_id: hWJsZESC1merO1nxg65H-
+  examples:
+    id: 2
+    entity_id: HyB3nRtqb7pBPhFG26evI
+cards:
+  certificates-in-pool:
+    id: 60
+    entity_id: lVy7wprTr4UTiTIKMAn5Q
+  vse-sertifikaty:
+    id: 43
+    entity_id: Qg8Pi8_mFMkHiL5HX_UYN
+  kolichestvo-otpravlennykh-sertifikatov:
+    id: 41
+    entity_id: txkWk-t3QBh_zdQSw79md
+  kolichestvo-prodannykh-sertifikatov-po-nominalam:
+    id: 51
+    entity_id: brOIkkfhM83MPEN2l3ceF
+  oborot-sertifikatov-po-nominalam:
+    id: 40
+    entity_id: FkbI5B3Obmfm45yry1DEH
+  sredniy-chek-po-dnyam:
+    id: 53
+    entity_id: Mvb0JA4CyNrI6wxulu2tz
+  summa-nominalov-sertifikatov-po-dnyam:
+    id: 42
+    entity_id: ru1uSxO1mlL3lEUk4G2ND
+  summa-pula-sertifikatov:
+    id: 62
+    entity_id: v_Vy3Lt3E7FMjPusy746G
+  dostupnye-sertifikaty-v-pule:
+    id: 63
+    entity_id: VKDmWKoAT9fIe7JijdWZD
+  ochered-generatsii-sertifikatov:
+    id: 64
+    entity_id: hd13cgXnsH_NZDbyuex1-
+  raspredelenie-prodazh-po-partneram:
+    id: 65
+    entity_id: 5pvrGOYfMkT0dKeE2vJcz
+dashboards:
+  pear-cider-by-erjan-solutions:
+    id: 5
+    entity_id: wgYJmTA1oNDc3yXMmPiPo
+    tabs: {}
+    dashcards:
+      summa-nominalov-sertifikatov-po-dnyam: 37
+      kolichestvo-otpravlennykh-sertifikatov: 38
+      oborot-sertifikatov-po-nominalam: 39
+      kolichestvo-prodannykh-sertifikatov-po-nominalam: 40
+      raspredelenie-prodazh-po-partneram: 45
+      sredniy-chek-po-dnyam: 41
+      dostupnye-sertifikaty-v-pule: 43
+      ochered-generatsii-sertifikatov: 44
+      summa-pula-sertifikatov: 42
+  sorted-by-status:
+    id: 3
+    entity_id: qMDylvtoQoE2n8l940hHF
+    tabs: {}
+    dashcards: {}
+  e-commerce-insights:
+    id: 1
+    entity_id: xBLdW9FsgRuB2HGhWiBa_
+    tabs:
+      overview: 1
+      portfolio-performance: 2
+      website-analysis: 3
+    dashcards:
+      heading-overall-business-health: 7
+      text-business-kpis-look-strong: 16
+      heading-deeper-dive: 11
+      text-widget-and-gizmo-are: 18
+      heading-top-performing-products: 14
+      text-find-below-a-breakdown: 17
+      heading-customer-satisfaction: 20
+      text-super-important-customer-ratings: 21
+      heading-website-analysis: 23
+      text-take-a-look-into: 24
+      link: 29
+      heading-appendix: 33
+      text-find-more-guides-and: 32
+      iframe: 31

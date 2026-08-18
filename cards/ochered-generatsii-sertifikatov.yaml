@@ -1,0 +1,116 @@
+kind: card
+key: ochered-generatsii-sertifikatov
+name: Очередь генерации сертификатов
+description: null
+collection: root
+type: question
+display: pie
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - filters:
+    - - '='
+      - {}
+      - - field
+        - effective-type: type/Text
+          base-type: type/Text
+        - 216
+      - PENDING
+    aggregation:
+    - - count
+      - {}
+    source-table: 16
+    lib/type: mbql.stage/mbql
+    breakout:
+    - - field
+      - effective-type: type/BigInteger
+        base-type: type/BigInteger
+      - 215
+visualization_settings:
+  pie.slice_threshold: 0.1
+  pie.sort_rows: false
+  pie.rows:
+  - key: '1000'
+    name: 1,000
+    originalName: 1,000
+    color: '#509EE3'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '1500'
+    name: 1,500
+    originalName: 1,500
+    color: '#A989C5'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '2000'
+    name: 2,000
+    originalName: 2,000
+    color: '#227FD2'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '2500'
+    name: 2,500
+    originalName: 2,500
+    color: '#E75454'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '3000'
+    name: 3,000
+    originalName: 3,000
+    color: '#689636'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '3500'
+    name: 3,500
+    originalName: 3,500
+    color: '#EF8C8C'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '4000'
+    name: 4,000
+    originalName: 4,000
+    color: '#8A5EB0'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '5000'
+    name: 5,000
+    originalName: 5,000
+    color: '#88BF4D'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '6000'
+    name: 6,000
+    originalName: 6,000
+    color: '#F7C41F'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '9000'
+    name: 9,000
+    originalName: 9,000
+    color: '#F9D45C'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+parameters: []

@@ -1,0 +1,2295 @@
+{
+  "description": null,
+  "archived": false,
+  "view_count": 372,
+  "collection_position": null,
+  "dashcards": [
+    {
+      "size_x": 24,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": null,
+        "description": null,
+        "archived": false,
+        "view_count": 376,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "timestamp",
+            "semantic_type": null,
+            "table_id": 23,
+            "lib/temporal-unit": "day",
+            "lib/deduplicated-name": "sent_at",
+            "lib/original-name": "sent_at",
+            "lib/breakout?": true,
+            "unit": "day",
+            "name": "sent_at",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "sent_at",
+            "lib/original-display-name": "Sent At",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              111,
+              {
+                "temporal-unit": "day"
+              }
+            ],
+            "effective_type": "type/DateTime",
+            "active": true,
+            "id": 111,
+            "lib/desired-column-alias": "sent_at",
+            "position": 8,
+            "visibility_type": "normal",
+            "inherited_temporal_unit": "day",
+            "display_name": "Sent At: Day",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 215,
+                "nil%": 0.838301043219076
+              },
+              "type": {
+                "type/DateTime": {
+                  "earliest": "2026-07-16T11:11:18.480147Z",
+                  "latest": "2026-07-27T17:22:49.128917Z"
+                }
+              }
+            },
+            "base_type": "type/DateTime"
+          },
+          {
+            "database_type": "numeric",
+            "semantic_type": null,
+            "lib/deduplicated-name": "avg",
+            "lib/original-name": "avg",
+            "name": "avg",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "avg",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/Decimal",
+            "lib/desired-column-alias": "avg",
+            "display_name": "Average of Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 24,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 1000.0,
+                  "q1": 1509.3778238159257,
+                  "q3": 1716.23778084382,
+                  "max": 1986.9186046511627,
+                  "sd": 213.47551921808542,
+                  "avg": 1572.833495222266
+                }
+              }
+            },
+            "base_type": "type/Decimal"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": 9,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Средний чек по дням",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 41,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-07-30T11:55:51.123669Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "lib/type": "mbql.stage/mbql",
+              "aggregation": [
+                [
+                  "avg",
+                  {
+                    "lib/uuid": "0d6f169e-1cad-44b0-9311-7778c5967c94"
+                  },
+                  [
+                    "field",
+                    {
+                      "effective-type": "type/BigInteger",
+                      "lib/uuid": "9236363a-409a-4fe3-a04e-38cb528ba3f3",
+                      "base-type": "type/BigInteger"
+                    },
+                    105
+                  ]
+                ]
+              ],
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "2f30c861-de01-4688-b7d5-5b20a31ef151"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "db881265-f8b6-4e29-9d63-e8bb9a52c773",
+                      "effective-type": "type/Text",
+                      "base-type": "type/Text"
+                    },
+                    106
+                  ],
+                  "SENT"
+                ]
+              ],
+              "source-table": 23,
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "effective-type": "type/DateTime",
+                    "base-type": "type/DateTime",
+                    "lib/uuid": "76f40174-bab9-4433-a2a0-024070662487",
+                    "temporal-unit": "day"
+                  },
+                  111
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 53,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "bar",
+        "archived_directly": false,
+        "entity_id": "Mvb0JA4CyNrI6wxulu2tz",
+        "collection_preview": true,
+        "visualization_settings": {
+          "graph.show_values": true,
+          "graph.x_axis.scale": "timeseries",
+          "graph.dimensions": [
+            "sent_at"
+          ],
+          "graph.metrics": [
+            "avg"
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": null,
+        "created_at": "2026-07-30T11:55:51.123669Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-08-14T10:30:53.036426Z",
+      "col": 0,
+      "id": 41,
+      "parameter_mappings": [],
+      "card_id": 53,
+      "entity_id": "xTUypQ5zhxUwtdNGnGum-",
+      "visualization_settings": {},
+      "size_y": 9,
+      "dashboard_id": 5,
+      "created_at": "2026-07-30T11:59:45.656221Z",
+      "row": 36
+    },
+    {
+      "size_x": 24,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": "2026-07-28T10:02:35.246004Z",
+        "description": null,
+        "archived": false,
+        "view_count": 850,
+        "collection_position": 2,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "timestamp",
+            "semantic_type": null,
+            "table_id": 23,
+            "lib/temporal-unit": "day",
+            "lib/deduplicated-name": "sent_at",
+            "lib/original-name": "sent_at",
+            "lib/breakout?": true,
+            "unit": "day",
+            "name": "sent_at",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "sent_at",
+            "lib/original-display-name": "Sent At",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              111,
+              {
+                "temporal-unit": "day"
+              }
+            ],
+            "effective_type": "type/DateTime",
+            "active": true,
+            "id": 111,
+            "lib/desired-column-alias": "sent_at",
+            "position": 8,
+            "visibility_type": "normal",
+            "inherited_temporal_unit": "day",
+            "display_name": "Sent At: Day",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 215,
+                "nil%": 0.838301043219076
+              },
+              "type": {
+                "type/DateTime": {
+                  "earliest": "2026-07-16T11:11:18.480147Z",
+                  "latest": "2026-07-27T17:22:49.128917Z"
+                }
+              }
+            },
+            "base_type": "type/DateTime"
+          },
+          {
+            "database_type": "int8",
+            "semantic_type": "type/Quantity",
+            "lib/deduplicated-name": "count",
+            "lib/original-name": "count",
+            "name": "count",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "count",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/BigInteger",
+            "lib/desired-column-alias": "count",
+            "display_name": "Count",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 8,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 607.0,
+                  "q1": 695.5,
+                  "q3": 1195.0,
+                  "max": 1367.0,
+                  "sd": 289.8622517679734,
+                  "avg": 923.125
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": 9,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Количество отправленных сертификатов",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 42,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-07-28T10:02:37.143878Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "source-table": 23,
+              "lib/type": "mbql.stage/mbql",
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "58f831ad-d0bd-4935-8bec-475011526f37"
+                  },
+                  [
+                    "field",
+                    {
+                      "effective-type": "type/Text",
+                      "lib/uuid": "d37f3852-8443-47aa-8d36-aad16d175758",
+                      "base-type": "type/Text"
+                    },
+                    106
+                  ],
+                  "SENT"
+                ],
+                [
+                  "time-interval",
+                  {
+                    "include-current": true,
+                    "lib/uuid": "c6296f8b-47fa-459b-870f-1048c48e9027",
+                    "effective-type": "type/Boolean"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "b74419e9-bcc4-4f39-b5ce-c9a0eecf709c",
+                      "effective-type": "type/DateTime",
+                      "base-type": "type/DateTime"
+                    },
+                    111
+                  ],
+                  -7,
+                  "day"
+                ]
+              ],
+              "aggregation": [
+                [
+                  "count",
+                  {
+                    "lib/uuid": "ce76bdde-078c-4659-8cd1-473a054fc334"
+                  }
+                ]
+              ],
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "base-type": "type/DateTime",
+                    "lib/uuid": "1b1f091c-d914-48a8-9e8d-5ef3a47d9647",
+                    "effective-type": "type/DateTime",
+                    "temporal-unit": "day"
+                  },
+                  111
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 41,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "bar",
+        "archived_directly": false,
+        "entity_id": "txkWk-t3QBh_zdQSw79md",
+        "collection_preview": true,
+        "visualization_settings": {
+          "graph.show_values": true,
+          "graph.x_axis.scale": "timeseries",
+          "graph.dimensions": [
+            "sent_at"
+          ],
+          "graph.metrics": [
+            "count"
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": null,
+        "created_at": "2026-07-28T10:00:34.918145Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-07-30T11:59:45.656221Z",
+      "col": 0,
+      "id": 38,
+      "parameter_mappings": [],
+      "card_id": 41,
+      "entity_id": "oQ2qvk1-09iLhH0sVkk__",
+      "visualization_settings": {},
+      "size_y": 9,
+      "dashboard_id": 5,
+      "created_at": "2026-07-30T11:59:45.656221Z",
+      "row": 9
+    },
+    {
+      "size_x": 12,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": "2026-08-03T05:28:42.21644Z",
+        "description": null,
+        "archived": false,
+        "view_count": 804,
+        "collection_position": 1,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "int8",
+            "semantic_type": null,
+            "table_id": 23,
+            "lib/deduplicated-name": "amount",
+            "lib/original-name": "amount",
+            "lib/breakout?": true,
+            "name": "amount",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "amount",
+            "lib/original-display-name": "Amount",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              105,
+              null
+            ],
+            "effective_type": "type/BigInteger",
+            "active": true,
+            "id": 105,
+            "lib/desired-column-alias": "amount",
+            "position": 2,
+            "visibility_type": "normal",
+            "display_name": "Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 18,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 500.0,
+                  "q1": 889.794824780626,
+                  "q3": 1297.3860714285124,
+                  "max": 9000.0,
+                  "sd": 1261.265363024908,
+                  "avg": 1409.4634873323398
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          },
+          {
+            "database_type": "numeric",
+            "semantic_type": null,
+            "lib/deduplicated-name": "sum",
+            "lib/original-name": "sum",
+            "name": "sum",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "sum",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/Decimal",
+            "lib/desired-column-alias": "sum",
+            "display_name": "Sum of Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 17,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 25500.0,
+                  "q1": 72500.0,
+                  "q3": 1736500.0,
+                  "max": 8237000.0,
+                  "sd": 2006265.7640941967,
+                  "avg": 1169264.705882353
+                }
+              }
+            },
+            "base_type": "type/Decimal"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": 9,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Оборот сертификатов по номиналам",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 35,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-08-03T05:28:42.213306Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "source-table": 23,
+              "aggregation": [
+                [
+                  "sum",
+                  {
+                    "lib/uuid": "245d3f2d-aae8-440d-9dcc-4628bb010b98"
+                  },
+                  [
+                    "field",
+                    {
+                      "base-type": "type/BigInteger",
+                      "effective-type": "type/BigInteger",
+                      "lib/uuid": "dd7c7822-b732-49a8-8cf8-3190223c54bb"
+                    },
+                    105
+                  ]
+                ]
+              ],
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "effective-type": "type/BigInteger",
+                    "lib/uuid": "ae346ce6-cf8b-4f8f-bc49-d3a75e3dcf32",
+                    "base-type": "type/BigInteger"
+                  },
+                  105
+                ]
+              ],
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "6e12af8f-b7e0-4787-8c8c-2f679cb9038d"
+                  },
+                  [
+                    "field",
+                    {
+                      "base-type": "type/Text",
+                      "effective-type": "type/Text",
+                      "lib/uuid": "804983d3-b6ed-4a70-9a0f-5863251284f8"
+                    },
+                    106
+                  ],
+                  "SENT"
+                ],
+                [
+                  "time-interval",
+                  {
+                    "lib/uuid": "a08bf4a2-85fc-4c1e-9c1c-12f6121697b9",
+                    "effective-type": "type/Boolean"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "20112c33-e048-4974-8d8f-f6e17e42e52a",
+                      "effective-type": "type/DateTime",
+                      "base-type": "type/DateTime"
+                    },
+                    111
+                  ],
+                  0,
+                  "year"
+                ]
+              ],
+              "lib/type": "mbql.stage/mbql",
+              "order-by": [
+                [
+                  "asc",
+                  {
+                    "lib/uuid": "1dfb9540-7ff0-4229-b5da-a6797a1b001d"
+                  },
+                  [
+                    "field",
+                    {
+                      "effective-type": "type/BigInteger",
+                      "lib/uuid": "1b4268aa-496d-44d6-859c-087a70b44379",
+                      "base-type": "type/BigInteger"
+                    },
+                    105
+                  ]
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 40,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "pie",
+        "archived_directly": false,
+        "entity_id": "FkbI5B3Obmfm45yry1DEH",
+        "collection_preview": true,
+        "visualization_settings": {
+          "graph.show_values": true,
+          "stackable.stack_type": "stacked",
+          "pie.slice_threshold": 0.5,
+          "pie.sort_rows": false,
+          "pie.rows": [
+            {
+              "key": "1000",
+              "name": "1,000",
+              "originalName": "1,000",
+              "color": "#509EE3",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "1500",
+              "name": "1,500",
+              "originalName": "1,500",
+              "color": "#A989C5",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "2000",
+              "name": "2,000",
+              "originalName": "2,000",
+              "color": "#88BF4D",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "2500",
+              "name": "2,500",
+              "originalName": "2,500",
+              "color": "#EF8C8C",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "3000",
+              "name": "3,000",
+              "originalName": "3,000",
+              "color": "#689636",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "3500",
+              "name": "3,500",
+              "originalName": "3,500",
+              "color": "#F9D45C",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "4000",
+              "name": "4,000",
+              "originalName": "4,000",
+              "color": "#E75454",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "4500",
+              "name": "4,500",
+              "originalName": "4,500",
+              "color": "#F7C41F",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "5000",
+              "name": "5,000",
+              "originalName": "5,000",
+              "color": "#8A5EB0",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "6500",
+              "name": "6,500",
+              "originalName": "6,500",
+              "color": "#F2A86F",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "8000",
+              "name": "8,000",
+              "originalName": "8,000",
+              "color": "#ED8535",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "9000",
+              "name": "9,000",
+              "originalName": "9,000",
+              "color": "#227FD2",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "7000",
+              "name": "7,000",
+              "originalName": "7,000",
+              "color": "#98D9D9",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": true
+            },
+            {
+              "key": "6000",
+              "name": "6,000",
+              "originalName": "6,000",
+              "color": "#69C8C8",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": true
+            },
+            {
+              "key": "5500",
+              "name": "5,500",
+              "originalName": "5,500",
+              "color": "#7172AD",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": true
+            }
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": null,
+        "created_at": "2026-07-28T09:53:13.448657Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-07-30T11:59:45.656221Z",
+      "col": 0,
+      "id": 39,
+      "parameter_mappings": [],
+      "card_id": 40,
+      "entity_id": "zwutp3CLzyPAZsFMbyxW-",
+      "visualization_settings": {},
+      "size_y": 8,
+      "dashboard_id": 5,
+      "created_at": "2026-07-30T11:59:45.656221Z",
+      "row": 18
+    },
+    {
+      "size_x": 12,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": null,
+        "description": null,
+        "archived": false,
+        "view_count": 384,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "int8",
+            "semantic_type": null,
+            "table_id": 23,
+            "lib/deduplicated-name": "amount",
+            "lib/original-name": "amount",
+            "lib/breakout?": true,
+            "name": "amount",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "amount",
+            "lib/original-display-name": "Amount",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              105,
+              null
+            ],
+            "effective_type": "type/BigInteger",
+            "active": true,
+            "id": 105,
+            "lib/desired-column-alias": "amount",
+            "position": 2,
+            "visibility_type": "normal",
+            "display_name": "Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 18,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 500.0,
+                  "q1": 889.794824780626,
+                  "q3": 1297.3860714285124,
+                  "max": 9000.0,
+                  "sd": 1261.265363024908,
+                  "avg": 1409.4634873323398
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          },
+          {
+            "database_type": "int8",
+            "semantic_type": "type/Quantity",
+            "lib/deduplicated-name": "count",
+            "lib/original-name": "count",
+            "name": "count",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "count",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/BigInteger",
+            "lib/desired-column-alias": "count",
+            "display_name": "Count",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 16,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 3.0,
+                  "q1": 11.5,
+                  "q3": 496.75,
+                  "max": 8237.0,
+                  "sd": 1968.0993836245996,
+                  "avg": 707.0588235294117
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": 9,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Количество проданных сертификатов по номиналам",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 36,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-07-30T11:49:13.138782Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "40dee0ee-46fb-4341-a90d-45c1d7a0c39f"
+                  },
+                  [
+                    "field",
+                    {
+                      "effective-type": "type/Text",
+                      "lib/uuid": "32cb5cc3-4d8a-448b-9688-dfb51662a156",
+                      "base-type": "type/Text"
+                    },
+                    106
+                  ],
+                  "SENT"
+                ]
+              ],
+              "aggregation": [
+                [
+                  "count",
+                  {
+                    "lib/uuid": "0801dd37-184b-4e00-9754-e979357af449"
+                  }
+                ]
+              ],
+              "source-table": 23,
+              "lib/type": "mbql.stage/mbql",
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "lib/uuid": "c0161e97-4995-4c17-8b44-09e1c1d48570",
+                    "effective-type": "type/BigInteger",
+                    "base-type": "type/BigInteger"
+                  },
+                  105
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 51,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "pie",
+        "archived_directly": false,
+        "entity_id": "brOIkkfhM83MPEN2l3ceF",
+        "collection_preview": true,
+        "visualization_settings": {
+          "pie.slice_threshold": 0.1,
+          "pie.sort_rows": false,
+          "pie.rows": [
+            {
+              "key": "1000",
+              "name": "1,000",
+              "originalName": "1,000",
+              "color": "#509EE3",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "1500",
+              "name": "1,500",
+              "originalName": "1,500",
+              "color": "#227FD2",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "2000",
+              "name": "2,000",
+              "originalName": "2,000",
+              "color": "#88BF4D",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "2500",
+              "name": "2,500",
+              "originalName": "2,500",
+              "color": "#8A5EB0",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "3000",
+              "name": "3,000",
+              "originalName": "3,000",
+              "color": "#689636",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "3500",
+              "name": "3,500",
+              "originalName": "3,500",
+              "color": "#F9D45C",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "4000",
+              "name": "4,000",
+              "originalName": "4,000",
+              "color": "#E75454",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "4500",
+              "name": "4,500",
+              "originalName": "4,500",
+              "color": "#F7C41F",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "5000",
+              "name": "5,000",
+              "originalName": "5,000",
+              "color": "#A989C5",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "6000",
+              "name": "6,000",
+              "originalName": "6,000",
+              "color": "#F2A86F",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "6500",
+              "name": "6,500",
+              "originalName": "6,500",
+              "color": "#ED8535",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "9000",
+              "name": "9,000",
+              "originalName": "9,000",
+              "color": "#EF8C8C",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "5500",
+              "name": "5,500",
+              "originalName": "5,500",
+              "color": "#98D9D9",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": true
+            },
+            {
+              "key": "7000",
+              "name": "7,000",
+              "originalName": "7,000",
+              "color": "#69C8C8",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": true
+            },
+            {
+              "key": "8000",
+              "name": "8,000",
+              "originalName": "8,000",
+              "color": "#7172AD",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": true
+            }
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": null,
+        "created_at": "2026-07-30T11:49:13.138782Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-07-30T11:59:45.656221Z",
+      "col": 12,
+      "id": 40,
+      "parameter_mappings": [],
+      "card_id": 51,
+      "entity_id": "1hXCJTIgklLzPSs3ZPkWE",
+      "visualization_settings": {},
+      "size_y": 8,
+      "dashboard_id": 5,
+      "created_at": "2026-07-30T11:59:45.656221Z",
+      "row": 18
+    },
+    {
+      "size_x": 24,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": "2026-07-31T11:14:08.817636Z",
+        "description": null,
+        "archived": false,
+        "view_count": 585,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "timestamp",
+            "semantic_type": null,
+            "table_id": 23,
+            "lib/temporal-unit": "day",
+            "lib/deduplicated-name": "sent_at",
+            "lib/original-name": "sent_at",
+            "lib/breakout?": true,
+            "unit": "day",
+            "name": "sent_at",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "sent_at",
+            "lib/original-display-name": "Sent At",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              111,
+              {
+                "temporal-unit": "day"
+              }
+            ],
+            "effective_type": "type/DateTime",
+            "active": true,
+            "id": 111,
+            "lib/desired-column-alias": "sent_at",
+            "position": 8,
+            "visibility_type": "normal",
+            "inherited_temporal_unit": "day",
+            "display_name": "Sent At: Day",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 215,
+                "nil%": 0.838301043219076
+              },
+              "type": {
+                "type/DateTime": {
+                  "earliest": "2026-07-16T11:11:18.480147Z",
+                  "latest": "2026-07-27T17:22:49.128917Z"
+                }
+              }
+            },
+            "base_type": "type/DateTime"
+          },
+          {
+            "database_type": "numeric",
+            "semantic_type": null,
+            "lib/deduplicated-name": "sum",
+            "lib/original-name": "sum",
+            "name": "sum",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "sum",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/Decimal",
+            "lib/desired-column-alias": "sum",
+            "display_name": "Sum of Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 26,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 1000.0,
+                  "q1": 455500.0,
+                  "q3": 1236000.0,
+                  "max": 9749500.0,
+                  "sd": 1859166.8402808823,
+                  "avg": 1139500.0
+                }
+              }
+            },
+            "base_type": "type/Decimal"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": 9,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Сумма номиналов сертификатов по дням",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 39,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-07-31T11:14:08.814285Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "source-table": 23,
+              "lib/type": "mbql.stage/mbql",
+              "aggregation": [
+                [
+                  "sum",
+                  {
+                    "lib/uuid": "3a2581b2-1c79-4b8b-a864-03eb97c74a75"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "c7609b69-4369-448a-8707-349c2474ac5f",
+                      "effective-type": "type/BigInteger",
+                      "base-type": "type/BigInteger"
+                    },
+                    105
+                  ]
+                ]
+              ],
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "base-type": "type/DateTime",
+                    "lib/uuid": "dfa90031-751f-48f3-9240-3c83e532740b",
+                    "effective-type": "type/DateTime",
+                    "temporal-unit": "day"
+                  },
+                  111
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 42,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "bar",
+        "archived_directly": false,
+        "entity_id": "ru1uSxO1mlL3lEUk4G2ND",
+        "collection_preview": true,
+        "visualization_settings": {
+          "graph.show_values": true,
+          "graph.x_axis.scale": "timeseries",
+          "graph.dimensions": [
+            "sent_at"
+          ],
+          "graph.show_trendline": true,
+          "graph.metrics": [
+            "sum"
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": null,
+        "created_at": "2026-07-28T10:03:01.034461Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-07-30T11:59:45.656221Z",
+      "col": 0,
+      "id": 37,
+      "parameter_mappings": [],
+      "card_id": 42,
+      "entity_id": "HJsS_bdX76LbFrf1WXmCr",
+      "visualization_settings": {},
+      "size_y": 9,
+      "dashboard_id": 5,
+      "created_at": "2026-07-30T11:59:45.656221Z",
+      "row": 0
+    },
+    {
+      "size_x": 15,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": null,
+        "description": null,
+        "archived": false,
+        "view_count": 155,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "numeric",
+            "semantic_type": null,
+            "lib/deduplicated-name": "sum",
+            "lib/original-name": "sum",
+            "name": "sum",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "sum",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/Decimal",
+            "lib/desired-column-alias": "sum",
+            "display_name": "Sum of Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 1,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 9749500.0,
+                  "q1": 9749500.0,
+                  "q3": 9749500.0,
+                  "max": 9749500.0,
+                  "sd": null,
+                  "avg": 9749500.0
+                }
+              }
+            },
+            "base_type": "type/Decimal"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": 9,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Сумма пула сертификатов",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 44,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-08-12T08:31:27.118998Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "lib/type": "mbql.stage/mbql",
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "5acb263c-582a-4e0a-a21e-db2de917af03"
+                  },
+                  [
+                    "field",
+                    {
+                      "effective-type": "type/Text",
+                      "lib/uuid": "ac0701f3-a5aa-4067-b503-3f5a6d60d82c",
+                      "base-type": "type/Text"
+                    },
+                    106
+                  ],
+                  "FREE"
+                ]
+              ],
+              "source-table": 23,
+              "aggregation": [
+                [
+                  "sum",
+                  {
+                    "lib/uuid": "9003a7bb-e49d-44c3-91ca-13a48611e556"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "8e86ee71-962c-4ff6-aaad-27675cff5d63",
+                      "effective-type": "type/BigInteger",
+                      "base-type": "type/BigInteger"
+                    },
+                    105
+                  ]
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 62,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "scalar",
+        "archived_directly": false,
+        "entity_id": "v_Vy3Lt3E7FMjPusy746G",
+        "collection_preview": true,
+        "visualization_settings": {
+          "scalar.segments": []
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": null,
+        "created_at": "2026-08-12T08:31:27.118998Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-08-14T10:30:53.036426Z",
+      "col": 9,
+      "id": 42,
+      "parameter_mappings": [],
+      "card_id": 62,
+      "entity_id": "o8iZD_zJMKmBpQiKW7i8E",
+      "visualization_settings": {},
+      "size_y": 6,
+      "dashboard_id": 5,
+      "created_at": "2026-08-12T08:31:49.281506Z",
+      "row": 56
+    },
+    {
+      "size_x": 9,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": null,
+        "description": null,
+        "archived": false,
+        "view_count": 150,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 23,
+        "result_metadata": [
+          {
+            "database_type": "int8",
+            "semantic_type": null,
+            "table_id": 23,
+            "lib/deduplicated-name": "amount",
+            "lib/original-name": "amount",
+            "lib/breakout?": true,
+            "name": "amount",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "amount",
+            "lib/original-display-name": "Amount",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              105,
+              null
+            ],
+            "effective_type": "type/BigInteger",
+            "active": true,
+            "id": 105,
+            "lib/desired-column-alias": "amount",
+            "position": 2,
+            "visibility_type": "normal",
+            "display_name": "Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 18,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 500.0,
+                  "q1": 889.794824780626,
+                  "q3": 1297.3860714285124,
+                  "max": 9000.0,
+                  "sd": 1261.265363024908,
+                  "avg": 1409.4634873323398
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          },
+          {
+            "database_type": "int8",
+            "semantic_type": "type/Quantity",
+            "lib/deduplicated-name": "count",
+            "lib/original-name": "count",
+            "name": "count",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "count",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/BigInteger",
+            "lib/desired-column-alias": "count",
+            "display_name": "Count",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 13,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 3.0,
+                  "q1": 3.566969722017664,
+                  "q3": 233.0,
+                  "max": 4215.0,
+                  "sd": 981.655684215673,
+                  "avg": 339.3333333333333
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": null,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Доступные сертификаты в пуле",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 31,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-08-12T08:33:48.747938Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "lib/type": "mbql.stage/mbql",
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "90b83668-ff17-4da6-80ed-c387b635f042"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "d29edba9-68a7-4914-ba8a-8dedbb5a837a",
+                      "effective-type": "type/Text",
+                      "base-type": "type/Text"
+                    },
+                    106
+                  ],
+                  "FREE"
+                ]
+              ],
+              "aggregation": [
+                [
+                  "count",
+                  {
+                    "lib/uuid": "66cd7afa-8ee5-4b34-9e5a-2e721d3be96f"
+                  }
+                ]
+              ],
+              "source-table": 23,
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "lib/uuid": "33834528-3dac-4638-b41d-2334929e9385",
+                    "effective-type": "type/BigInteger",
+                    "base-type": "type/BigInteger"
+                  },
+                  105
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 63,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "table",
+        "archived_directly": false,
+        "entity_id": "VKDmWKoAT9fIe7JijdWZD",
+        "collection_preview": true,
+        "visualization_settings": {
+          "table.row_index": true,
+          "table.pivot_column": "amount",
+          "table.cell_column": "count"
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": 5,
+        "created_at": "2026-08-12T08:33:48.747938Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-08-14T10:30:53.036426Z",
+      "col": 0,
+      "id": 43,
+      "parameter_mappings": [],
+      "card_id": 63,
+      "entity_id": "GLK2VIKeX_OQcyT5Rh1uj",
+      "visualization_settings": {},
+      "size_y": 17,
+      "dashboard_id": 5,
+      "created_at": "2026-08-12T08:33:48.796536Z",
+      "row": 45
+    },
+    {
+      "size_x": 15,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": null,
+        "description": null,
+        "archived": false,
+        "view_count": 96,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 16,
+        "result_metadata": [
+          {
+            "database_type": "int8",
+            "semantic_type": null,
+            "table_id": 16,
+            "lib/deduplicated-name": "amount",
+            "lib/original-name": "amount",
+            "lib/breakout?": true,
+            "name": "amount",
+            "lib/source": "source/table-defaults",
+            "lib/source-column-alias": "amount",
+            "lib/original-display-name": "Amount",
+            "source": "breakout",
+            "field_ref": [
+              "field",
+              215,
+              null
+            ],
+            "effective_type": "type/BigInteger",
+            "active": true,
+            "id": 215,
+            "lib/desired-column-alias": "amount",
+            "position": 1,
+            "visibility_type": "normal",
+            "display_name": "Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 17,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 1000.0,
+                  "q1": 1000.0,
+                  "q3": 1196.0742656645589,
+                  "max": 9000.0,
+                  "sd": 1039.7946220398478,
+                  "avg": 1219.6274298056155
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          },
+          {
+            "database_type": "int8",
+            "semantic_type": "type/Quantity",
+            "lib/deduplicated-name": "count",
+            "lib/original-name": "count",
+            "name": "count",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "count",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/BigInteger",
+            "lib/desired-column-alias": "count",
+            "display_name": "Count",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 0,
+                "nil%": null
+              },
+              "type": {
+                "type/Number": {
+                  "min": null,
+                  "q1": null,
+                  "q3": null,
+                  "max": null,
+                  "sd": null,
+                  "avg": null
+                }
+              }
+            },
+            "base_type": "type/BigInteger"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": null,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Очередь генерации сертификатов",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 41,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-08-14T09:29:08.987937Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "filters": [
+                [
+                  "=",
+                  {
+                    "lib/uuid": "29f796b1-2a59-448d-892c-5ae31770a46c"
+                  },
+                  [
+                    "field",
+                    {
+                      "lib/uuid": "6d8eabcc-cdc6-46d5-abec-1999202dd55d",
+                      "effective-type": "type/Text",
+                      "base-type": "type/Text"
+                    },
+                    216
+                  ],
+                  "PENDING"
+                ]
+              ],
+              "aggregation": [
+                [
+                  "count",
+                  {
+                    "lib/uuid": "9b3f1371-5b46-4446-9183-b3925c4d3691"
+                  }
+                ]
+              ],
+              "source-table": 16,
+              "lib/type": "mbql.stage/mbql",
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "lib/uuid": "6ffcc684-890c-45ad-ac5f-fd2fc5ae6676",
+                    "effective-type": "type/BigInteger",
+                    "base-type": "type/BigInteger"
+                  },
+                  215
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 64,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "pie",
+        "archived_directly": false,
+        "entity_id": "hd13cgXnsH_NZDbyuex1-",
+        "collection_preview": true,
+        "visualization_settings": {
+          "pie.slice_threshold": 0.1,
+          "pie.sort_rows": false,
+          "pie.rows": [
+            {
+              "key": "1000",
+              "name": "1,000",
+              "originalName": "1,000",
+              "color": "#509EE3",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "1500",
+              "name": "1,500",
+              "originalName": "1,500",
+              "color": "#A989C5",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "2000",
+              "name": "2,000",
+              "originalName": "2,000",
+              "color": "#227FD2",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "2500",
+              "name": "2,500",
+              "originalName": "2,500",
+              "color": "#E75454",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "3000",
+              "name": "3,000",
+              "originalName": "3,000",
+              "color": "#689636",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "3500",
+              "name": "3,500",
+              "originalName": "3,500",
+              "color": "#EF8C8C",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "4000",
+              "name": "4,000",
+              "originalName": "4,000",
+              "color": "#8A5EB0",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "5000",
+              "name": "5,000",
+              "originalName": "5,000",
+              "color": "#88BF4D",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "6000",
+              "name": "6,000",
+              "originalName": "6,000",
+              "color": "#F7C41F",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            },
+            {
+              "key": "9000",
+              "name": "9,000",
+              "originalName": "9,000",
+              "color": "#F9D45C",
+              "defaultColor": true,
+              "enabled": true,
+              "hidden": false,
+              "isOther": false
+            }
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": 5,
+        "created_at": "2026-08-14T09:29:08.987937Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-08-14T10:30:53.036426Z",
+      "col": 9,
+      "id": 44,
+      "parameter_mappings": [],
+      "card_id": 64,
+      "entity_id": "EEp5LnhMfnGtue-8pef39",
+      "visualization_settings": {},
+      "size_y": 11,
+      "dashboard_id": 5,
+      "created_at": "2026-08-14T09:29:09.031523Z",
+      "row": 45
+    },
+    {
+      "size_x": 24,
+      "dashboard_tab_id": null,
+      "series": [],
+      "inline_parameters": [],
+      "action_id": null,
+      "collection_authority_level": null,
+      "card": {
+        "cache_invalidated_at": null,
+        "description": null,
+        "archived": false,
+        "view_count": 95,
+        "collection_position": null,
+        "source_card_id": null,
+        "table_id": 27,
+        "result_metadata": [
+          {
+            "database_type": "text",
+            "semantic_type": "type/Name",
+            "table_id": 24,
+            "qp/implicit-field?": true,
+            "lib/deduplicated-name": "name",
+            "lib/original-name": "name",
+            "lib/breakout?": true,
+            "name": "name",
+            "lib/source": "source/joins",
+            "lib/source-column-alias": "name",
+            "lib/original-display-name": "Name",
+            "source": "breakout",
+            "lib/original-join-alias": "Api Client - Client",
+            "field_ref": [
+              "field",
+              100,
+              {
+                "join-alias": "Api Client - Client"
+              }
+            ],
+            "effective_type": "type/Text",
+            "active": true,
+            "id": 100,
+            "lib/join-alias": "Api Client - Client",
+            "lib/desired-column-alias": "Api Client - Client__name",
+            "position": 2,
+            "visibility_type": "normal",
+            "display_name": "Api Client - Client → Name",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 2,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Text": {
+                  "percent-json": 0.0,
+                  "percent-url": 0.0,
+                  "percent-email": 0.0,
+                  "percent-state": 0.0,
+                  "average-length": 10.0
+                }
+              }
+            },
+            "base_type": "type/Text"
+          },
+          {
+            "database_type": "numeric",
+            "semantic_type": null,
+            "lib/deduplicated-name": "sum",
+            "lib/original-name": "sum",
+            "name": "sum",
+            "lib/source": "source/aggregations",
+            "lib/source-column-alias": "sum",
+            "source": "aggregation",
+            "field_ref": [
+              "aggregation",
+              0
+            ],
+            "effective_type": "type/Decimal",
+            "lib/desired-column-alias": "sum",
+            "display_name": "Sum of Amount",
+            "fingerprint": {
+              "global": {
+                "distinct-count": 3,
+                "nil%": 0.0
+              },
+              "type": {
+                "type/Number": {
+                  "min": 1000.0,
+                  "q1": 17750.0,
+                  "q3": 14274125,
+                  "max": 1.90095E+7,
+                  "sd": 10955272.577622157,
+                  "avg": 6359500.0
+                }
+              }
+            },
+            "base_type": "type/Decimal"
+          }
+        ],
+        "embedding_type": null,
+        "initially_published_at": null,
+        "can_write": true,
+        "card_schema": 23,
+        "database_id": 2,
+        "enable_embedding": false,
+        "collection_id": null,
+        "query_type": "query",
+        "download_perms": "full",
+        "name": "Распределение продаж по партнерам",
+        "document_id": null,
+        "last_used_at": "2026-08-18T11:54:40.712597Z",
+        "type": "question",
+        "dimensions": null,
+        "query_average_duration": 175,
+        "creator_id": 5,
+        "moderation_reviews": [],
+        "updated_at": "2026-08-14T10:30:31.506194Z",
+        "made_public_by_id": null,
+        "embedding_params": null,
+        "cache_ttl": null,
+        "dataset_query": {
+          "lib/type": "mbql/query",
+          "database": 2,
+          "stages": [
+            {
+              "lib/type": "mbql.stage/mbql",
+              "breakout": [
+                [
+                  "field",
+                  {
+                    "base-type": "type/Text",
+                    "lib/uuid": "2b73c034-350c-4cad-8683-9ccfdaff647e",
+                    "effective-type": "type/Text",
+                    "join-alias": "Api Client - Client"
+                  },
+                  100
+                ]
+              ],
+              "source-table": 27,
+              "aggregation": [
+                [
+                  "sum",
+                  {
+                    "lib/uuid": "28d22107-cfad-4bdf-b3eb-1ba04f8d433b"
+                  },
+                  [
+                    "field",
+                    {
+                      "effective-type": "type/BigInteger",
+                      "lib/uuid": "4079304a-07c7-4233-89c7-99949c6605a3",
+                      "base-type": "type/BigInteger"
+                    },
+                    164
+                  ]
+                ]
+              ],
+              "joins": [
+                {
+                  "lib/type": "mbql/join",
+                  "fields": "all",
+                  "conditions": [
+                    [
+                      "=",
+                      {
+                        "lib/uuid": "38015215-9e1c-4919-86e9-82d5743ba6e4"
+                      },
+                      [
+                        "field",
+                        {
+                          "lib/uuid": "f6a4686e-51de-4d63-971a-b6d3d08611b8",
+                          "effective-type": "type/UUID",
+                          "base-type": "type/UUID"
+                        },
+                        175
+                      ],
+                      [
+                        "field",
+                        {
+                          "effective-type": "type/UUID",
+                          "base-type": "type/UUID",
+                          "lib/uuid": "07ebc97a-277b-408f-9468-0104bfcb52c5",
+                          "join-alias": "Api Client - Client"
+                        },
+                        99
+                      ]
+                    ]
+                  ],
+                  "strategy": "left-join",
+                  "stages": [
+                    {
+                      "lib/type": "mbql.stage/mbql",
+                      "lib/options": {
+                        "lib/uuid": "7b8fa242-959c-45db-9a16-5377900a4b00"
+                      },
+                      "source-table": 24
+                    }
+                  ],
+                  "lib/options": {
+                    "lib/uuid": "bbb9a0db-aa6b-4ea7-b56a-ec1bcd76f769"
+                  },
+                  "alias": "Api Client - Client"
+                }
+              ],
+              "order-by": [
+                [
+                  "desc",
+                  {
+                    "lib/uuid": "3636a9da-4e09-4bb8-9294-fd99d152f361"
+                  },
+                  [
+                    "aggregation",
+                    {
+                      "base-type": "type/Decimal",
+                      "effective-type": "type/Decimal",
+                      "lib/uuid": "0bc678de-63ad-4539-8429-a9a2816a39b2",
+                      "lib/source-name": "sum"
+                    },
+                    "28d22107-cfad-4bdf-b3eb-1ba04f8d433b"
+                  ]
+                ]
+              ]
+            }
+          ]
+        },
+        "dimension_mappings": null,
+        "id": 65,
+        "legacy_query": null,
+        "parameter_mappings": [],
+        "display": "bar",
+        "archived_directly": false,
+        "entity_id": "5pvrGOYfMkT0dKeE2vJcz",
+        "collection_preview": true,
+        "visualization_settings": {
+          "graph.show_values": true,
+          "graph.x_axis.scale": "ordinal",
+          "graph.dimensions": [
+            "name"
+          ],
+          "graph.metrics": [
+            "sum"
+          ]
+        },
+        "metabase_version": "v0.60.7 (6a29414)",
+        "parameters": [],
+        "dashboard_id": 5,
+        "created_at": "2026-08-14T10:30:31.506194Z",
+        "public_uuid": null
+      },
+      "updated_at": "2026-08-14T10:30:53.036426Z",
+      "col": 0,
+      "id": 45,
+      "parameter_mappings": [],
+      "card_id": 65,
+      "entity_id": "pZGhZVXWPTkEJPNLngu_3",
+      "visualization_settings": {},
+      "size_y": 10,
+      "dashboard_id": 5,
+      "created_at": "2026-08-14T10:30:31.561018Z",
+      "row": 26
+    }
+  ],
+  "embedding_type": null,
+  "initially_published_at": null,
+  "can_write": true,
+  "can_set_cache_policy": true,
+  "tabs": [],
+  "enable_embedding": false,
+  "collection_id": null,
+  "show_in_getting_started": false,
+  "name": "Pear Cider by Erjan.Solutions ",
+  "is_remote_synced": false,
+  "width": "fixed",
+  "caveats": null,
+  "collection_authority_level": null,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-07-30T11:57:59.609066Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "last_used_param_values": {},
+  "id": 5,
+  "last_viewed_at": "2026-08-18T11:54:40.495653Z",
+  "position": null,
+  "archived_directly": false,
+  "entity_id": "wgYJmTA1oNDc3yXMmPiPo",
+  "param_fields": {},
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-08-14T10:30:53.210254Z"
+  },
+  "collection": {
+    "metabase.collections.models.collection.root/is-root?": true,
+    "authority_level": null,
+    "name": "Our analytics",
+    "is_personal": false,
+    "id": "root",
+    "is_remote_synced": false,
+    "can_write": true
+  },
+  "parameters": [],
+  "auto_apply_filters": true,
+  "created_at": "2026-07-30T11:57:59.609066Z",
+  "public_uuid": null,
+  "points_of_interest": null,
+  "can_delete": false
+}

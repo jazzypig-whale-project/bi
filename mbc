@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PYTHON="$HERE/.venv/bin/python"
+# use the venv only if it actually has the deps; otherwise fall back to system python
+[ -x "$PYTHON" ] && "$PYTHON" -c 'import yaml' >/dev/null 2>&1 || PYTHON="python3"
+export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
+exec "$PYTHON" -m mbcode.cli --dir "$HERE" "$@"

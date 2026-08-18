@@ -1,0 +1,44 @@
+kind: card
+key: sredniy-chek-po-dnyam
+name: Средний чек по дням
+description: null
+collection: certs-business-analytics
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/mbql
+    aggregation:
+    - - avg
+      - {}
+      - - field
+        - effective-type: type/BigInteger
+          base-type: type/BigInteger
+        - 105
+    filters:
+    - - '='
+      - {}
+      - - field
+        - effective-type: type/Text
+          base-type: type/Text
+        - 106
+      - SENT
+    source-table: 23
+    breakout:
+    - - field
+      - effective-type: type/DateTime
+        base-type: type/DateTime
+        temporal-unit: day
+      - 111
+visualization_settings:
+  graph.show_values: true
+  graph.x_axis.scale: timeseries
+  graph.dimensions:
+  - sent_at
+  graph.metrics:
+  - avg
+parameters: []

@@ -1,0 +1,37 @@
+kind: card
+key: summa-nominalov-sertifikatov-po-dnyam
+name: Сумма номиналов сертификатов по дням
+description: null
+collection: certs-business-analytics
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - source-table: 23
+    lib/type: mbql.stage/mbql
+    aggregation:
+    - - sum
+      - {}
+      - - field
+        - effective-type: type/BigInteger
+          base-type: type/BigInteger
+        - 105
+    breakout:
+    - - field
+      - base-type: type/DateTime
+        effective-type: type/DateTime
+        temporal-unit: day
+      - 111
+visualization_settings:
+  graph.show_values: true
+  graph.x_axis.scale: timeseries
+  graph.dimensions:
+  - sent_at
+  graph.show_trendline: true
+  graph.metrics:
+  - sum
+parameters: []
