@@ -8,6 +8,9 @@ collections:
   examples:
     id: 2
     entity_id: HyB3nRtqb7pBPhFG26evI
+  pear-cider-automated:
+    id: 16
+    entity_id: EXu5vKR4rGrJJj9DtpQDq
 cards:
   certificates-in-pool:
     id: 60
@@ -42,6 +45,9 @@ cards:
   raspredelenie-prodazh-po-partneram:
     id: 65
     entity_id: 5pvrGOYfMkT0dKeE2vJcz
+  pca-certificate-face-value-by-day:
+    id: 69
+    entity_id: wxRwMtMsjYI_je9wMBSAU
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -84,3 +90,13 @@ dashboards:
       heading-appendix: 33
       text-find-more-guides-and: 32
       iframe: 31
+  pear-cider-by-erjan-solutions-automated:
+    tabs:
+      overview: 6
+      orders: 7
+      production: 8
+      topups: 9
+    dashcards:
+      dc-certificate-face-value-by-day: 54
+    id: 8
+    entity_id: tjgmZlVsggY9hQWW3CDUZ

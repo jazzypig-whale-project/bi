@@ -1,0 +1,39 @@
+kind: card
+key: pca-certificate-face-value-by-day
+name: Certificate face value by day
+description: Sum of SENT certificate face values per day, over the last {{days}} days.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
+      SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+             sum(c.amount)::bigint                                                          AS face_value
+      FROM certificate c
+      WHERE c.status = 'SENT'
+        AND c.sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+      GROUP BY 1
+      ORDER BY 1
+    template-tags:
+      days:
+        id: 8f323b82-b255-4847-829a-3cbe13a6e4e9
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - day
+  graph.metrics:
+  - face_value
+  graph.x_axis.scale: timeseries
+  graph.show_values: true
+  graph.show_trendline: true
+parameters: []

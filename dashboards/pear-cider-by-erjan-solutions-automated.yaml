@@ -1,0 +1,44 @@
+kind: dashboard
+key: pear-cider-by-erjan-solutions-automated
+name: Pear Cider by Erjan.Solutions (automated)
+description: English rebuild of the Pear Cider dashboard plus operational metrics. The Days filter drives every time-windowed card.
+collection: pear-cider-automated
+width: fixed
+auto_apply_filters: true
+cache_ttl: null
+archived: false
+parameters:
+- id: 821ec3b1
+  name: Days
+  slug: days
+  sectionId: number
+  type: number/=
+  default:
+  - 7
+tabs:
+- key: overview
+  name: Overview
+- key: orders
+  name: Orders
+- key: production
+  name: Production & Capacity
+- key: topups
+  name: Top-ups
+dashcards:
+- key: dc-certificate-face-value-by-day
+  card: pca-certificate-face-value-by-day
+  tab: overview
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    card_id: 69
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
