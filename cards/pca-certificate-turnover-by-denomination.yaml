@@ -17,8 +17,7 @@ dataset_query:
              sum(amount)::bigint AS turnover
       FROM certificate
       WHERE status = 'SENT'
-        AND (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')
-            >= date_trunc('year', (now() AT TIME ZONE 'Europe/Moscow'))
+        AND sent_at >= (date_trunc('year', now() AT TIME ZONE 'Europe/Moscow') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
       GROUP BY 1
       ORDER BY 1
 visualization_settings:
