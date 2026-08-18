@@ -161,3 +161,46 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-orders-by-hour-sber
+  card: pca-orders-by-hour-sber
+  tab: orders
+  row: 0
+  col: 0
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-orders-by-hour-other
+  card: pca-orders-by-hour-other
+  tab: orders
+  row: 0
+  col: 12
+  size_x: 12
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-orders-in-progress-by-status-partner
+  card: pca-orders-in-progress-by-status-partner
+  tab: orders
+  row: 7
+  col: 0
+  size_x: 12
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []

@@ -78,6 +78,15 @@ cards:
   pca-time-since-last-order-by-partner:
     id: 79
     entity_id: k3UwF_75vnhK0WiZH_ZTe
+  pca-orders-by-hour-other:
+    id: 80
+    entity_id: hIlssSZ83FfzwO5-CqjlR
+  pca-orders-by-hour-sber:
+    id: 81
+    entity_id: mrI0be0e-kh-_e2rl4tz5
+  pca-orders-in-progress-by-status-partner:
+    id: 82
+    entity_id: fnwC450N5QObJFsMCjZGG
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -138,5 +147,8 @@ dashboards:
       dc-capacity-now-quota-balance: 62
       dc-time-since-last-order-by-partner: 63
       dc-flow-by-hour: 64
+      dc-orders-by-hour-sber: 65
+      dc-orders-by-hour-other: 66
+      dc-orders-in-progress-by-status-partner: 67
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
