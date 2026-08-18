@@ -126,6 +126,15 @@ cards:
   pca-capacity-by-hour:
     id: 95
     entity_id: gl21MZhg-4JgawkCFX01o
+  pca-topups-aging:
+    id: 96
+    entity_id: OC7YaeRzoMOtMS-XGOpJs
+  pca-topups-by-status:
+    id: 97
+    entity_id: dKj8s2luCas6Rb2tngCOj
+  pca-topups-created-by-hour:
+    id: 98
+    entity_id: -Uv0XiNqatxPIaOwzkvHy
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -202,5 +211,8 @@ dashboards:
       dc-production-queue-by-denomination: 78
       dc-pool-total-value: 79
       dc-capacity-by-hour: 80
+      dc-topups-created-by-hour: 81
+      dc-topups-aging: 82
+      dc-topups-by-status: 83
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

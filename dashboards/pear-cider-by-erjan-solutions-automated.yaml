@@ -382,3 +382,46 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-topups-created-by-hour
+  card: pca-topups-created-by-hour
+  tab: topups
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-topups-aging
+  card: pca-topups-aging
+  tab: topups
+  row: 7
+  col: 0
+  size_x: 16
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-topups-by-status
+  card: pca-topups-by-status
+  tab: topups
+  row: 7
+  col: 16
+  size_x: 8
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
