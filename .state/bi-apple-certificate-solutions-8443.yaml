@@ -66,6 +66,12 @@ cards:
   pca-topups-in-progress-rub:
     id: 75
     entity_id: t3SZnYs-bMfgntMNwvlz5
+  pca-capacity-now-quota-balance:
+    id: 76
+    entity_id: ZJrRUsXBq9Ho2A34_dTcn
+  pca-capacity-now-quota:
+    id: 77
+    entity_id: YzVBCewnbHVl7Rvf9LhQZ
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -122,5 +128,7 @@ dashboards:
       dc-orders-in-progress: 58
       dc-topups-in-progress-count: 59
       dc-topups-in-progress-rub: 60
+      dc-capacity-now-quota: 61
+      dc-capacity-now-quota-balance: 62
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

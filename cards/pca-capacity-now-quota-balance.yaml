@@ -1,0 +1,96 @@
+kind: card
+key: pca-capacity-now-quota-balance
+name: Capacity now — quota + cooldown + balance
+description: The same admission rule as the quota card, additionally capped by each number's available balance (balance minus open NUMBER reservations).
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Gates mirror PlacementRepository.findPlaceableCapacity; the fit rule mirrors
+      -- PlacementCapacity.fits at amount = app.quota.minCertificateAmount.
+      -- available_balance is QuotaLedgerRepository.SQL_OPEN_NUMBER_RESERVATIONS subtracted
+      -- from number.balance, the same expression placement itself uses.
+      WITH limits AS (
+        -- orchestrator/src/main/resources/application.yml, app.quota (lines 159-167).
+        SELECT 6::bigint      AS max_tasks_per_account,   -- maxTasksPerAccount
+               35000::bigint  AS day_limit_account,       -- dayLimitAccount
+               500000::bigint AS day_limit_number,        -- dayLimitNumber
+               600000::bigint AS month_limit_number,      -- monthLimitNumber
+               1000::bigint   AS min_certificate_amount   -- minCertificateAmount
+      ),
+      placeable AS (
+        SELECT DISTINCT d.active_account_id AS account_id,
+               acc.current_number_id        AS number_id,
+               n.balance - COALESCE((SELECT sum(l.amount) FROM quota_ledger l
+                                     WHERE l.subject_type = 'NUMBER'
+                                       AND l.subject_id = n.number_id
+                                       AND l.status = 'RESERVED'), 0) AS available_balance
+        FROM device d
+        JOIN agent a     ON a.agent_id = d.agent_id
+        JOIN account acc ON acc.account_id = d.active_account_id
+        JOIN number n    ON n.number_id = acc.current_number_id
+        WHERE d.state = 'IDLE'
+          AND a.status = 'ONLINE' AND a.disabled_at IS NULL
+          AND d.validation_status = 'VALIDATED'
+          AND (d.busy_backoff_until IS NULL OR d.busy_backoff_until <= (now() AT TIME ZONE 'UTC'))
+          AND acc.validation_status = 'GOOD'
+          AND NOT EXISTS (SELECT 1 FROM account_cooldown c
+                          WHERE c.account_id = d.active_account_id
+                            AND c.cleared_at IS NULL
+                            AND (c.until IS NULL OR c.until > (now() AT TIME ZONE 'UTC')))
+          AND (a.max_concurrent_devices = 0
+               OR (SELECT count(*) FROM device b
+                   WHERE b.agent_id = a.agent_id
+                     AND b.state NOT IN ('IDLE', 'OFFLINE', 'DISABLED')) < a.max_concurrent_devices)
+          AND d.held_at IS NULL
+      ),
+      account_window AS (
+        SELECT subject_id, count(*) AS count24h, COALESCE(sum(amount), 0) AS money24h
+        FROM quota_ledger
+        WHERE subject_type = 'ACCOUNT' AND status IN ('RESERVED', 'COMMITTED')
+          AND ts > (now() AT TIME ZONE 'UTC') - INTERVAL '24 hours'
+        GROUP BY subject_id
+      ),
+      number_window AS (
+        SELECT subject_id,
+               COALESCE(sum(amount) FILTER (WHERE ts > (now() AT TIME ZONE 'UTC') - INTERVAL '24 hours'), 0) AS money24h,
+               COALESCE(sum(amount), 0) AS money30d
+        FROM quota_ledger
+        WHERE subject_type = 'NUMBER' AND status IN ('RESERVED', 'COMMITTED')
+          AND ts > (now() AT TIME ZONE 'UTC') - INTERVAL '30 days'
+        GROUP BY subject_id
+      ),
+      account_headroom AS (
+        SELECT p.number_id, p.available_balance,
+               greatest(0, least(lim.max_tasks_per_account - COALESCE(aw.count24h, 0),
+                                 floor((lim.day_limit_account - COALESCE(aw.money24h, 0))
+                                       / lim.min_certificate_amount))) AS tasks_possible
+        FROM placeable p
+        CROSS JOIN limits lim
+        LEFT JOIN account_window aw ON aw.subject_id = p.account_id
+      ),
+      number_headroom AS (
+        SELECT ah.number_id,
+               sum(ah.tasks_possible)    AS tasks_from_accounts,
+               max(ah.available_balance) AS available_balance
+        FROM account_headroom ah
+        GROUP BY ah.number_id
+      )
+      SELECT COALESCE(sum(greatest(0, least(
+               nh.tasks_from_accounts,
+               floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
+               floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount),
+               floor(nh.available_balance / lim.min_certificate_amount)))), 0)::bigint
+             AS capacity_now_with_balance
+      FROM number_headroom nh
+      CROSS JOIN limits lim
+      LEFT JOIN number_window nw ON nw.subject_id = nh.number_id
+visualization_settings: {}
+parameters: []

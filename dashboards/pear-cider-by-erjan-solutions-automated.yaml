@@ -112,3 +112,25 @@ dashcards:
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-capacity-now-quota
+  card: pca-capacity-now-quota
+  tab: overview
+  row: 11
+  col: 12
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-capacity-now-quota-balance
+  card: pca-capacity-now-quota-balance
+  tab: overview
+  row: 11
+  col: 18
+  size_x: 6
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
