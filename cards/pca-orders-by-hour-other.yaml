@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-by-hour-other
 name: Orders by hour — Other partners
-description: Non-Sber orders bucketed by the hour they were created, segmented by where they ended up.
+description: Non-Sber orders bucketed by the hour they were created, segmented by where they ended up. Hour buckets are Europe/Moscow. Volumes are much lower than Sber's; the Y-axis is scaled to this chart's own data.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -51,5 +51,13 @@ visualization_settings:
   graph.metrics:
   - orders
   graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Orders
   stackable.stack_type: stacked
+  series_settings:
+    Completed:
+      color: '#88BF4D'
+    Failed:
+      color: '#E75454'
+    In progress:
+      color: '#949AAB'
 parameters: []

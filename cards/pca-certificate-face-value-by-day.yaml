@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day
-name: Certificate face value by day
-description: Sum of SENT certificate face values per day, over the Days window.
+name: Certificate face value by day, ₽
+description: Sum of SENT certificate face values per complete Europe/Moscow day. The window is half-open and ends at today's Moscow midnight, so neither the partial first day nor the still-running current day is drawn and every bar covers a full day. The dashed line is Metabase's linear trend fitted over exactly those complete days.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -14,11 +14,15 @@ dataset_query:
   - lib/type: mbql.stage/native
     native: |
       -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
+      -- The window is half-open on Moscow midnights and covers only complete days: a
+      -- rolling now() window clipped both the first day and today into short bars that
+      -- the trend line then read as real movement.
       SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
              sum(c.amount)::bigint                                                          AS face_value
       FROM certificate c
       WHERE c.status = 'SENT'
-        AND c.sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        AND c.sent_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+        AND c.sent_at <  (date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
       GROUP BY 1
       ORDER BY 1
     template-tags:
@@ -36,4 +40,12 @@ visualization_settings:
   graph.x_axis.scale: timeseries
   graph.show_values: true
   graph.show_trendline: true
+  graph.y_axis.title_text: Certificate face value, ₽
+  column_settings:
+    '["name","face_value"]':
+      suffix: ' ₽'
+      decimals: 0
+  series_settings:
+    face_value:
+      color: '#509EE3'
 parameters: []

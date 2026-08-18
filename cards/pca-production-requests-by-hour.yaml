@@ -1,7 +1,7 @@
 kind: card
 key: pca-production-requests-by-hour
 name: Production requests by hour, by outcome
-description: Requests bucketed by the hour they were created, segmented by their current status. production_request has no terminal timestamp, so this is a cohort view.
+description: Requests bucketed by the hour they were created, segmented by their current status. production_request has no terminal timestamp, so this is a cohort view. Failed requests are normally a sub-1% share, so the Failed series being invisible at this scale does not mean data is missing. Hour buckets are Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -49,5 +49,13 @@ visualization_settings:
   graph.metrics:
   - requests
   graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Requests
   stackable.stack_type: stacked
+  series_settings:
+    Closed:
+      color: '#88BF4D'
+    Failed:
+      color: '#E75454'
+    In progress:
+      color: '#949AAB'
 parameters: []

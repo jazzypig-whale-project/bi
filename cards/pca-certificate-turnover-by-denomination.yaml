@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-turnover-by-denomination
-name: Certificate turnover by denomination (this year)
-description: Money sold per face value, current calendar year (Europe/Moscow).
+name: Certificate face value sent by denomination (this year), ₽
+description: Sum of certificate.amount per face value over certificates already SENT, current calendar year (Europe/Moscow). It measures delivered certificates, including those issued for bulk orders that have no order_ row, so it is not a subset of Order value by partner and the two totals must not be compared or reconciled.
 collection: pear-cider-automated
 type: question
 display: pie
@@ -13,16 +13,32 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      SELECT amount              AS denomination,
-             sum(amount)::bigint AS turnover
-      FROM certificate
-      WHERE status = 'SENT'
-        AND sent_at >= (date_trunc('year', now() AT TIME ZONE 'Europe/Moscow') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+      -- Top 8 denominations by turnover, individually; the rest are grouped as Other.
+      WITH by_denom AS (
+        SELECT amount, sum(amount)::bigint AS turnover
+        FROM certificate
+        WHERE status = 'SENT'
+          AND sent_at >= (date_trunc('year', now() AT TIME ZONE 'Europe/Moscow') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+        GROUP BY 1),
+      ranked AS (
+        SELECT amount, turnover,
+               row_number() OVER (ORDER BY turnover DESC, amount) AS rn
+        FROM by_denom),
+      bucketed AS (
+        SELECT CASE WHEN rn <= 8 THEN amount::text ELSE 'Other' END AS denomination,
+               turnover
+        FROM ranked)
+      SELECT denomination, sum(turnover)::bigint AS turnover
+      FROM bucketed
       GROUP BY 1
-      ORDER BY 1
+      ORDER BY (denomination = 'Other'), 2 DESC, 1
 visualization_settings:
   pie.dimension:
   - denomination
   pie.metric: turnover
   pie.slice_threshold: 0
+  column_settings:
+    '["name","turnover"]':
+      suffix: ' ₽'
+      decimals: 0
 parameters: []

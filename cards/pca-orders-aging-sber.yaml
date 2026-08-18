@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-aging-sber
 name: Orders aging — Sber
-description: How old the open Sber orders were at each hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp, so their interval cannot be closed.
+description: How old the open Sber orders were at each hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp, so their interval cannot be closed. Age buckets 01-10 run from freshest (<1m) to oldest (>3d); same ramp and order as the top-ups aging card. Hour buckets are Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -61,5 +61,69 @@ visualization_settings:
   graph.metrics:
   - n
   graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Orders
   stackable.stack_type: stacked
+  graph.series_order_dimension: age_bucket
+  graph.series_order:
+  - key: '01 <1m'
+    name: '01 <1m'
+    color: '#FFF5F5'
+    enabled: true
+  - key: '02 1-5m'
+    name: '02 1-5m'
+    color: '#FFE3E3'
+    enabled: true
+  - key: '03 5-15m'
+    name: '03 5-15m'
+    color: '#FFC9C9'
+    enabled: true
+  - key: '04 15-30m'
+    name: '04 15-30m'
+    color: '#FFA8A8'
+    enabled: true
+  - key: '05 30m-1h'
+    name: '05 30m-1h'
+    color: '#FF8787'
+    enabled: true
+  - key: '06 1-3h'
+    name: '06 1-3h'
+    color: '#FF6B6B'
+    enabled: true
+  - key: '07 3-6h'
+    name: '07 3-6h'
+    color: '#FA5252'
+    enabled: true
+  - key: '08 6h-1d'
+    name: '08 6h-1d'
+    color: '#F03E3E'
+    enabled: true
+  - key: '09 1-3d'
+    name: '09 1-3d'
+    color: '#E03131'
+    enabled: true
+  - key: '10 >3d'
+    name: '10 >3d'
+    color: '#C92A2A'
+    enabled: true
+  series_settings:
+    '01 <1m':
+      color: '#FFF5F5'
+    '02 1-5m':
+      color: '#FFE3E3'
+    '03 5-15m':
+      color: '#FFC9C9'
+    '04 15-30m':
+      color: '#FFA8A8'
+    '05 30m-1h':
+      color: '#FF8787'
+    '06 1-3h':
+      color: '#FF6B6B'
+    '07 3-6h':
+      color: '#FA5252'
+    '08 6h-1d':
+      color: '#F03E3E'
+    '09 1-3d':
+      color: '#E03131'
+    '10 >3d':
+      color: '#C92A2A'
 parameters: []

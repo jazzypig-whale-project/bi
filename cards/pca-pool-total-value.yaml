@@ -1,7 +1,7 @@
 kind: card
 key: pca-pool-total-value
-name: Pool total value
-description: Face value of every FREE certificate currently in the pool.
+name: Pool total value, ₽
+description: Sum of face values (₽) of every FREE certificate currently in the pool. Live value, no time window.
 collection: pear-cider-automated
 type: question
 display: scalar
@@ -16,5 +16,9 @@ dataset_query:
       SELECT COALESCE(sum(amount), 0)::bigint AS pool_value
       FROM certificate
       WHERE status = 'FREE'
-visualization_settings: {}
+visualization_settings:
+  column_settings:
+    '["name","pool_value"]':
+      suffix: ' ₽'
+      decimals: 0
 parameters: []

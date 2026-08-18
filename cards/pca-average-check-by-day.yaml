@@ -1,7 +1,7 @@
 kind: card
 key: pca-average-check-by-day
-name: Average check by day
-description: Mean face value of the certificates sent each day, over the Days window.
+name: Average check by day, ₽
+description: Mean face value (₽) of the certificates sent each day, over the Days window. Days are Europe/Moscow days.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -33,5 +33,13 @@ visualization_settings:
   graph.metrics:
   - average_check
   graph.x_axis.scale: timeseries
-  graph.show_values: true
+  graph.show_values: false
+  graph.y_axis.title_text: Average check, ₽
+  column_settings:
+    '["name","average_check"]':
+      suffix: ' ₽'
+      decimals: 0
+  series_settings:
+    average_check:
+      color: '#509EE3'
 parameters: []

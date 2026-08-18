@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-now-quota
-name: Capacity now — quota + cooldown
-description: Certificates the fleet could take right now under the placement gates and the quota windows, ignoring number balance.
+name: Capacity now — quota + cooldown (fleet-gated)
+description: Certificates the fleet could take right now under the live placement gates and the quota windows, ignoring number balance. Only devices passing every gate contribute (IDLE, agent ONLINE and enabled, device VALIDATED, account GOOD, no open cooldown, not held, busy backoff elapsed, agent under its concurrency cap), so this reads several times lower than the right-hand end of "Capacity by hour", which cannot apply those gates at all. The two are different measurements, not one metric at two resolutions.
 collection: pear-cider-automated
 type: question
 display: scalar

@@ -47,4 +47,10 @@ visualization_settings:
   - seconds
   graph.x_axis.scale: ordinal
   graph.y_axis.title_text: seconds
+  graph.y_axis.scale: log
+  series_settings:
+    Sber:
+      color: '#509EE3'
+    Other partners:
+      color: '#7172AD'
 parameters: []

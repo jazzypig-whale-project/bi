@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-in-pool-by-denomination
 name: Certificates in pool by denomination
-description: Free certificates available per face value. Merges the two original pool-by-denomination cards.
+description: Free certificates available per face value, sorted highest count first. The 8 largest denominations are shown individually; the rest are grouped as Other. Merges the two original pool-by-denomination cards.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,16 +13,32 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      SELECT amount AS denomination, count(*) AS certificates
-      FROM certificate
-      WHERE status = 'FREE'
+      -- Top 8 denominations by count, individually; the rest are grouped as Other.
+      WITH by_denom AS (
+        SELECT amount, count(*) AS certificates
+        FROM certificate
+        WHERE status = 'FREE'
+        GROUP BY 1),
+      ranked AS (
+        SELECT amount, certificates,
+               row_number() OVER (ORDER BY certificates DESC, amount) AS rn
+        FROM by_denom),
+      bucketed AS (
+        SELECT CASE WHEN rn <= 8 THEN amount::text ELSE 'Other' END AS denomination,
+               certificates
+        FROM ranked)
+      SELECT denomination, sum(certificates) AS certificates
+      FROM bucketed
       GROUP BY 1
-      ORDER BY 1
+      ORDER BY (denomination = 'Other'), 2 DESC, 1
 visualization_settings:
   graph.dimensions:
   - denomination
   graph.metrics:
   - certificates
   graph.x_axis.scale: ordinal
-  graph.show_values: true
+  graph.show_values: false
+  series_settings:
+    certificates:
+      color: '#509EE3'
 parameters: []

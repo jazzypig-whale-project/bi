@@ -1,7 +1,7 @@
 kind: card
 key: pca-topups-created-by-hour
 name: Top-ups created by hour
-description: Distinct messages created per hour, with the money they carry. Counting rows would triple-count a message that fell through three providers.
+description: Distinct messages created per hour, with the money they carry. Counting rows would triple-count a message that fell through three providers. Hour buckets are Europe/Moscow; money is Russian roubles (₽).
 collection: pear-cider-automated
 type: question
 display: combo
@@ -50,11 +50,21 @@ visualization_settings:
   - topups
   - total_rub
   graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Top-ups created
+  column_settings:
+    '["name","total_rub"]':
+      suffix: ' ₽'
+      decimals: 0
   series_settings:
     topups:
       display: bar
       axis: left
+      title: Top-ups created
+      color: '#949AAB'
     total_rub:
       display: line
       axis: right
+      title: Total value, ₽
+      color: '#509EE3'
+      line.size: L
 parameters: []

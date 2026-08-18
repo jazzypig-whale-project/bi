@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
 name: Capacity by hour (upper bound — fleet gates not historised)
-description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter.
+description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars are not the last point of this chart. They apply the live fleet gates (device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap) that no historical query can reconstruct, so they read several times lower. Series ordering matches the scalars in both places, because adding the balance cap can only lower a value.
 collection: pear-cider-automated
 type: question
 display: line
@@ -128,4 +128,12 @@ visualization_settings:
   graph.metrics:
   - capacity
   graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Capacity, certificates
+  series_settings:
+    Quota + cooldown (upper bound):
+      title: Quota + cooldown
+      color: '#509EE3'
+    Quota + cooldown + balance (upper bound):
+      title: Quota + cooldown + balance
+      color: '#7172AD'
 parameters: []

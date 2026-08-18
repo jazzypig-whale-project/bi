@@ -1,7 +1,7 @@
 kind: card
 key: pca-time-since-last-certificate
-name: Time since last certificate sent
-description: Whole minutes since the most recent SENT certificate.
+name: Last certificate sent
+description: Whole minutes since the most recent SENT certificate. Live value, no time window.
 collection: pear-cider-automated
 type: question
 display: scalar

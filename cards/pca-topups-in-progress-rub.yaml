@@ -1,7 +1,7 @@
 kind: card
 key: pca-topups-in-progress-rub
-name: Top-ups in progress (₽)
-description: Money in flight, mirroring TopUpInFlightService.inFlightAmount.
+name: Top-ups in progress, ₽
+description: Money in flight — sum of amount over payout rows whose current status is CREATE_RETRY or PENDING_POLL, mirroring TopUpPayoutRepository.sumNonFinalAmountByNumberId. The terminal statuses COMPLETED, REFUSED, EXHAUSTED, FAILED, PARKED, SPLIT and SUPERSEDED are excluded. The unsent TOPUP_REQUEST outbox rows that TopUpInFlightService.inFlightAmount adds on top are not counted here.
 collection: pear-cider-automated
 type: question
 display: scalar
@@ -16,5 +16,9 @@ dataset_query:
       SELECT COALESCE(sum(amount), 0)::bigint AS topups_in_progress_rub
       FROM topup_payout
       WHERE status IN ('CREATE_RETRY', 'PENDING_POLL')
-visualization_settings: {}
+visualization_settings:
+  column_settings:
+    '["name","topups_in_progress_rub"]':
+      suffix: ' ₽'
+      decimals: 0
 parameters: []

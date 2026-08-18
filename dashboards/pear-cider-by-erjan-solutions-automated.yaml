@@ -25,10 +25,21 @@ tabs:
 - key: topups
   name: Top-ups
 dashcards:
+- key: dc-heading-overview-volume
+  tab: overview
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Volume
+    dashcard.background: false
 - key: dc-certificate-face-value-by-day
   card: pca-certificate-face-value-by-day
   tab: overview
-  row: 0
+  row: 1
   col: 0
   size_x: 24
   size_y: 8
@@ -41,12 +52,23 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-overview-live-state
+  tab: overview
+  row: 9
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Live state
+    dashcard.background: false
 - key: dc-production-queue-depth
   card: pca-production-queue-depth
   tab: overview
-  row: 8
+  row: 10
   col: 0
-  size_x: 6
+  size_x: 12
   size_y: 3
   visualization_settings: {}
   parameter_mappings: []
@@ -55,9 +77,9 @@ dashcards:
 - key: dc-certificates-sent-window
   card: pca-certificates-sent-window
   tab: overview
-  row: 8
-  col: 6
-  size_x: 6
+  row: 10
+  col: 12
+  size_x: 12
   size_y: 3
   visualization_settings: {}
   parameter_mappings:
@@ -71,9 +93,9 @@ dashcards:
 - key: dc-time-since-last-certificate
   card: pca-time-since-last-certificate
   tab: overview
-  row: 8
-  col: 12
-  size_x: 6
+  row: 13
+  col: 0
+  size_x: 12
   size_y: 3
   visualization_settings: {}
   parameter_mappings: []
@@ -82,31 +104,9 @@ dashcards:
 - key: dc-orders-in-progress
   card: pca-orders-in-progress
   tab: overview
-  row: 8
-  col: 18
-  size_x: 6
-  size_y: 3
-  visualization_settings: {}
-  parameter_mappings: []
-  series: []
-  inline_parameters: []
-- key: dc-topups-in-progress-count
-  card: pca-topups-in-progress-count
-  tab: overview
-  row: 11
-  col: 0
-  size_x: 6
-  size_y: 3
-  visualization_settings: {}
-  parameter_mappings: []
-  series: []
-  inline_parameters: []
-- key: dc-topups-in-progress-rub
-  card: pca-topups-in-progress-rub
-  tab: overview
-  row: 11
-  col: 6
-  size_x: 6
+  row: 13
+  col: 12
+  size_x: 12
   size_y: 3
   visualization_settings: {}
   parameter_mappings: []
@@ -115,9 +115,9 @@ dashcards:
 - key: dc-capacity-now-quota
   card: pca-capacity-now-quota
   tab: overview
-  row: 11
-  col: 12
-  size_x: 6
+  row: 16
+  col: 0
+  size_x: 12
   size_y: 3
   visualization_settings: {}
   parameter_mappings: []
@@ -126,18 +126,29 @@ dashcards:
 - key: dc-capacity-now-quota-balance
   card: pca-capacity-now-quota-balance
   tab: overview
-  row: 11
-  col: 18
-  size_x: 6
+  row: 16
+  col: 12
+  size_x: 12
   size_y: 3
   visualization_settings: {}
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-heading-overview-partners
+  tab: overview
+  row: 19
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Partners
+    dashcard.background: false
 - key: dc-time-since-last-order-by-partner
   card: pca-time-since-last-order-by-partner
   tab: overview
-  row: 14
+  row: 20
   col: 0
   size_x: 24
   size_y: 5
@@ -145,10 +156,21 @@ dashcards:
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-heading-overview-pipeline
+  tab: overview
+  row: 25
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Pipeline
+    dashcard.background: false
 - key: dc-flow-by-hour
   card: pca-flow-by-hour
   tab: overview
-  row: 19
+  row: 26
   col: 0
   size_x: 24
   size_y: 7
@@ -161,10 +183,21 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-orders-volume
+  tab: orders
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Volume
+    dashcard.background: false
 - key: dc-orders-by-hour-sber
   card: pca-orders-by-hour-sber
   tab: orders
-  row: 0
+  row: 1
   col: 0
   size_x: 12
   size_y: 7
@@ -180,7 +213,7 @@ dashcards:
 - key: dc-orders-by-hour-other
   card: pca-orders-by-hour-other
   tab: orders
-  row: 0
+  row: 1
   col: 12
   size_x: 12
   size_y: 7
@@ -193,10 +226,21 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-orders-pipeline
+  tab: orders
+  row: 8
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Pipeline
+    dashcard.background: false
 - key: dc-orders-in-progress-by-status-partner
   card: pca-orders-in-progress-by-status-partner
   tab: orders
-  row: 7
+  row: 9
   col: 0
   size_x: 12
   size_y: 6
@@ -207,7 +251,7 @@ dashcards:
 - key: dc-completion-time-percentiles
   card: pca-completion-time-percentiles
   tab: orders
-  row: 7
+  row: 9
   col: 12
   size_x: 12
   size_y: 6
@@ -220,10 +264,21 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-orders-aging
+  tab: orders
+  row: 15
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Aging
+    dashcard.background: false
 - key: dc-orders-aging-sber
   card: pca-orders-aging-sber
   tab: orders
-  row: 13
+  row: 16
   col: 0
   size_x: 12
   size_y: 7
@@ -239,7 +294,7 @@ dashcards:
 - key: dc-orders-aging-other
   card: pca-orders-aging-other
   tab: orders
-  row: 13
+  row: 16
   col: 12
   size_x: 12
   size_y: 7
@@ -252,10 +307,21 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-orders-certificates
+  tab: orders
+  row: 23
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Certificates
+    dashcard.background: false
 - key: dc-certificates-sent-by-hour
   card: pca-certificates-sent-by-hour
   tab: orders
-  row: 20
+  row: 24
   col: 0
   size_x: 24
   size_y: 6
@@ -268,10 +334,21 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-orders-partners
+  tab: orders
+  row: 30
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Partners
+    dashcard.background: false
 - key: dc-sales-distribution-by-partner
   card: pca-sales-distribution-by-partner
   tab: orders
-  row: 26
+  row: 31
   col: 0
   size_x: 12
   size_y: 7
@@ -282,7 +359,7 @@ dashcards:
 - key: dc-average-check-by-day
   card: pca-average-check-by-day
   tab: orders
-  row: 26
+  row: 31
   col: 12
   size_x: 12
   size_y: 7
@@ -295,10 +372,21 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-orders-denominations
+  tab: orders
+  row: 38
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Denominations
+    dashcard.background: false
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
-  row: 33
+  row: 39
   col: 0
   size_x: 12
   size_y: 7
@@ -309,7 +397,7 @@ dashcards:
 - key: dc-certificate-turnover-by-denomination
   card: pca-certificate-turnover-by-denomination
   tab: orders
-  row: 33
+  row: 39
   col: 12
   size_x: 12
   size_y: 7
@@ -317,10 +405,21 @@ dashcards:
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-heading-production-requests
+  tab: production
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Requests
+    dashcard.background: false
 - key: dc-production-requests-by-hour
   card: pca-production-requests-by-hour
   tab: production
-  row: 0
+  row: 1
   col: 0
   size_x: 24
   size_y: 7
@@ -333,12 +432,23 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-production-pool
+  tab: production
+  row: 8
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Pool
+    dashcard.background: false
 - key: dc-certificates-in-pool-by-denomination
   card: pca-certificates-in-pool-by-denomination
   tab: production
-  row: 7
+  row: 9
   col: 0
-  size_x: 9
+  size_x: 8
   size_y: 7
   visualization_settings: {}
   parameter_mappings: []
@@ -347,9 +457,9 @@ dashcards:
 - key: dc-production-queue-by-denomination
   card: pca-production-queue-by-denomination
   tab: production
-  row: 7
-  col: 9
-  size_x: 9
+  row: 9
+  col: 8
+  size_x: 8
   size_y: 7
   visualization_settings: {}
   parameter_mappings: []
@@ -358,18 +468,29 @@ dashcards:
 - key: dc-pool-total-value
   card: pca-pool-total-value
   tab: production
-  row: 7
-  col: 18
-  size_x: 6
+  row: 9
+  col: 16
+  size_x: 8
   size_y: 7
   visualization_settings: {}
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-heading-production-capacity
+  tab: production
+  row: 16
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Capacity
+    dashcard.background: false
 - key: dc-capacity-by-hour
   card: pca-capacity-by-hour
   tab: production
-  row: 14
+  row: 17
   col: 0
   size_x: 24
   size_y: 7
@@ -382,12 +503,56 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-topups-created-by-hour
-  card: pca-topups-created-by-hour
+- key: dc-heading-topups-live-state
   tab: topups
   row: 0
   col: 0
   size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Live state
+    dashcard.background: false
+- key: dc-topups-in-progress-count
+  card: pca-topups-in-progress-count
+  tab: topups
+  row: 1
+  col: 0
+  size_x: 12
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-topups-in-progress-rub
+  card: pca-topups-in-progress-rub
+  tab: topups
+  row: 1
+  col: 12
+  size_x: 12
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-heading-topups-volume
+  tab: topups
+  row: 4
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Volume
+    dashcard.background: false
+- key: dc-topups-created-by-hour
+  card: pca-topups-created-by-hour
+  tab: topups
+  row: 5
+  col: 0
+  size_x: 24
   size_y: 7
   visualization_settings: {}
   parameter_mappings:
@@ -398,13 +563,24 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-heading-topups-status
+  tab: topups
+  row: 12
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Status
+    dashcard.background: false
 - key: dc-topups-aging
   card: pca-topups-aging
   tab: topups
-  row: 7
+  row: 13
   col: 0
-  size_x: 16
-  size_y: 7
+  size_x: 12
+  size_y: 9
   visualization_settings: {}
   parameter_mappings:
   - parameter_id: 821ec3b1
@@ -417,10 +593,10 @@ dashcards:
 - key: dc-topups-by-status
   card: pca-topups-by-status
   tab: topups
-  row: 7
-  col: 16
-  size_x: 8
-  size_y: 7
+  row: 13
+  col: 12
+  size_x: 12
+  size_y: 9
   visualization_settings: {}
   parameter_mappings: []
   series: []

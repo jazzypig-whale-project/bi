@@ -1,7 +1,7 @@
 kind: card
 key: pca-sales-distribution-by-partner
-name: Sales distribution by partner (all time)
-description: Order value per API client, all clients, all time. Translated from "Распределение продаж по партнерам".
+name: Order value by partner (all time), ₽
+description: Sum of order_.amount per API client, all clients, all time, every outcome included (COMPLETED, FAILED_MANUAL and still in flight alike). This measures customer orders, not certificates, so it is not comparable with the certificate face-value cards — certificates issued outside the order flow (bulk orders) never appear here, which is why certificate face value can exceed this total. Translated from "Распределение продаж по партнерам".
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,8 +13,8 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      SELECT COALESCE(c.name, 'unknown') AS partner,
-             sum(o.amount)::bigint       AS revenue
+      SELECT CASE WHEN c.name = 'sber' THEN 'Sber' ELSE COALESCE(initcap(c.name), 'Unknown') END AS partner,
+             sum(o.amount)::bigint                                                              AS revenue
       FROM order_ o
       LEFT JOIN api_client c ON c.client_id = o.client_id
       GROUP BY 1
@@ -25,5 +25,14 @@ visualization_settings:
   graph.metrics:
   - revenue
   graph.x_axis.scale: ordinal
+  graph.y_axis.scale: log
+  graph.y_axis.title_text: Order value, ₽
   graph.show_values: true
+  column_settings:
+    '["name","revenue"]':
+      suffix: ' ₽'
+      decimals: 0
+  series_settings:
+    revenue:
+      color: '#509EE3'
 parameters: []

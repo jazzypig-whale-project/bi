@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-sent-window
-name: Certificates sent (last N days)
-description: Certificates sent inside the Days window.
+name: Certificates sent
+description: Count of SENT certificates inside the dashboard's Days window (parameter days, default 7).
 collection: pear-cider-automated
 type: question
 display: scalar

@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-sent-by-hour
 name: Certificates sent by hour
-description: Certificates sent per hour over the Days window. Supersedes the by-day form of the original card.
+description: Certificates sent per hour over the Days window. Supersedes the by-day form of the original card. Hour buckets are Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -41,4 +41,8 @@ visualization_settings:
   graph.metrics:
   - certificates
   graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificates sent
+  series_settings:
+    certificates:
+      color: '#509EE3'
 parameters: []

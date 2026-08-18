@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-now-quota-balance
-name: Capacity now — quota + cooldown + balance
-description: The same admission rule as the quota card, additionally capped by each number's available balance (balance minus open NUMBER reservations).
+name: Capacity now — quota + cooldown + balance (fleet-gated)
+description: The same admission rule and the same live placement gates as the quota card, additionally capped by each number's available balance (balance minus open RESERVED NUMBER reservations). Because the gates apply, it reads several times lower than the right-hand end of "Capacity by hour", which cannot apply them. By construction this value is always less than or equal to Capacity now — quota + cooldown, since the balance cap can only lower it.
 collection: pear-cider-automated
 type: question
 display: scalar

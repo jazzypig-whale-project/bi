@@ -1,7 +1,7 @@
 kind: card
 key: pca-flow-by-hour
 name: Flow by hour — requested / produced / sent / ordered
-description: Four true event streams per hour. Idle hours render as zero, not as a gap.
+description: Four true event streams per hour. Idle hours render as zero, not as a gap. Log Y-axis, since Ordered/Sent volumes are dwarfed by Requested/Produced spikes. Hour buckets are Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: line
@@ -62,4 +62,15 @@ visualization_settings:
   graph.metrics:
   - n
   graph.x_axis.scale: timeseries
+  graph.y_axis.scale: log
+  graph.y_axis.title_text: Events per hour
+  series_settings:
+    Requested:
+      color: '#509EE3'
+    Produced:
+      color: '#88BF4D'
+    Sent:
+      color: '#F9D45C'
+    Ordered:
+      color: '#7172AD'
 parameters: []

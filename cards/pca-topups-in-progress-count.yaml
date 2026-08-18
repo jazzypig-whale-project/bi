@@ -1,7 +1,7 @@
 kind: card
 key: pca-topups-in-progress-count
 name: Top-ups in progress (count)
-description: Non-final payout rows, the same predicate TopUpInFlightService uses.
+description: Payout rows whose current status is CREATE_RETRY or PENDING_POLL — the in-flight allowlist of TopUpPayoutRepository.sumNonFinalAmountByNumberId. Every other status is terminal and excluded, PARKED included (parking is what releases the reservation), which is why the PARKED bar on Top-ups by current status is far larger than this number. Rows, not messages; only one row per message is non-final at a time. The unsent TOPUP_REQUEST outbox rows that TopUpInFlightService adds on top are not counted here.
 collection: pear-cider-automated
 type: question
 display: scalar
