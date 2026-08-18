@@ -123,6 +123,9 @@ cards:
   pca-production-requests-by-hour:
     id: 94
     entity_id: NimzWtkdLs5Ay3dILoqtO
+  pca-capacity-by-hour:
+    id: 95
+    entity_id: gl21MZhg-4JgawkCFX01o
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -198,5 +201,6 @@ dashboards:
       dc-certificates-in-pool-by-denomination: 77
       dc-production-queue-by-denomination: 78
       dc-pool-total-value: 79
+      dc-capacity-by-hour: 80
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
