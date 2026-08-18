@@ -1,0 +1,31 @@
+kind: card
+key: pca-topups-by-status
+name: Top-ups by status (now)
+description: Live payout rows per status, all nine TopUpPayoutStatus values, so PARKED rows awaiting manual triage stay visible.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH statuses AS (
+        SELECT unnest(ARRAY['CREATE_RETRY', 'PENDING_POLL', 'COMPLETED', 'REFUSED', 'EXHAUSTED',
+                            'FAILED', 'PARKED', 'SPLIT', 'SUPERSEDED']) AS status)
+      SELECT st.status, count(t.id) AS payout_rows
+      FROM statuses st
+      LEFT JOIN topup_payout t ON t.status = st.status
+      GROUP BY 1
+      ORDER BY 2 DESC, 1
+visualization_settings:
+  graph.dimensions:
+  - status
+  graph.metrics:
+  - payout_rows
+  graph.x_axis.scale: ordinal
+  graph.show_values: true
+parameters: []

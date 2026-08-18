@@ -1,0 +1,26 @@
+kind: card
+key: pca-certificates-sold-by-denomination
+name: Certificates sold by denomination (all time)
+description: How many certificates were sold at each face value, all time.
+collection: pear-cider-automated
+type: question
+display: pie
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT amount AS denomination, count(*) AS certificates
+      FROM certificate
+      WHERE status = 'SENT'
+      GROUP BY 1
+      ORDER BY 1
+visualization_settings:
+  pie.dimension:
+  - denomination
+  pie.metric: certificates
+  pie.slice_threshold: 0
+parameters: []

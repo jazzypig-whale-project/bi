@@ -1,0 +1,65 @@
+kind: card
+key: pca-orders-aging-sber
+name: Orders aging — Sber
+description: How old the open Sber orders were at each hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp, so their interval cannot be closed.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Open interval is [created_at, completed_at), left open while completed_at is null.
+      -- COMPLETED orders always carry completed_at and non-terminal ones are genuinely still
+      -- open, so within the remaining set the interval is exact.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      o AS (
+        SELECT (o.created_at   AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') AS created_at,
+               (o.completed_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') AS completed_at
+        FROM order_ o
+        LEFT JOIN api_client c ON c.client_id = o.client_id
+        WHERE o.status NOT IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL')
+          AND c.name = 'sber'
+          AND (o.completed_at IS NULL OR o.completed_at >= date_trunc('hour', (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day'))))
+      SELECT s.h AS hour,
+             CASE
+               WHEN s.h - o.created_at < INTERVAL '1 minute'   THEN '01 <1m'
+               WHEN s.h - o.created_at < INTERVAL '5 minutes'  THEN '02 1-5m'
+               WHEN s.h - o.created_at < INTERVAL '15 minutes' THEN '03 5-15m'
+               WHEN s.h - o.created_at < INTERVAL '30 minutes' THEN '04 15-30m'
+               WHEN s.h - o.created_at < INTERVAL '1 hour'     THEN '05 30m-1h'
+               WHEN s.h - o.created_at < INTERVAL '3 hours'    THEN '06 1-3h'
+               WHEN s.h - o.created_at < INTERVAL '6 hours'    THEN '07 3-6h'
+               WHEN s.h - o.created_at < INTERVAL '1 day'      THEN '08 6h-1d'
+               WHEN s.h - o.created_at < INTERVAL '3 days'     THEN '09 1-3d'
+               ELSE '10 >3d'
+             END AS age_bucket,
+             count(*) AS n
+      FROM spine s
+      JOIN o ON o.created_at <= s.h AND (o.completed_at IS NULL OR o.completed_at > s.h)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: a6cd1738-5504-4c4f-9ffa-659418e68fec
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - age_bucket
+  graph.metrics:
+  - n
+  graph.x_axis.scale: timeseries
+  stackable.stack_type: stacked
+parameters: []

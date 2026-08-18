@@ -1,0 +1,28 @@
+kind: card
+key: pca-certificate-turnover-by-denomination
+name: Certificate turnover by denomination (this year)
+description: Money sold per face value, current calendar year (Europe/Moscow).
+collection: pear-cider-automated
+type: question
+display: pie
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT amount              AS denomination,
+             sum(amount)::bigint AS turnover
+      FROM certificate
+      WHERE status = 'SENT'
+        AND sent_at >= (date_trunc('year', now() AT TIME ZONE 'Europe/Moscow') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+      GROUP BY 1
+      ORDER BY 1
+visualization_settings:
+  pie.dimension:
+  - denomination
+  pie.metric: turnover
+  pie.slice_threshold: 0
+parameters: []

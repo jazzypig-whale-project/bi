@@ -1,0 +1,28 @@
+kind: card
+key: pca-certificates-in-pool-by-denomination
+name: Certificates in pool by denomination
+description: Free certificates available per face value. Merges the two original pool-by-denomination cards.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT amount AS denomination, count(*) AS certificates
+      FROM certificate
+      WHERE status = 'FREE'
+      GROUP BY 1
+      ORDER BY 1
+visualization_settings:
+  graph.dimensions:
+  - denomination
+  graph.metrics:
+  - certificates
+  graph.x_axis.scale: ordinal
+  graph.show_values: true
+parameters: []

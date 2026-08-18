@@ -1,0 +1,20 @@
+kind: card
+key: pca-topups-in-progress-rub
+name: Top-ups in progress (₽)
+description: Money in flight, mirroring TopUpInFlightService.inFlightAmount.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT COALESCE(sum(amount), 0)::bigint AS topups_in_progress_rub
+      FROM topup_payout
+      WHERE status IN ('CREATE_RETRY', 'PENDING_POLL')
+visualization_settings: {}
+parameters: []

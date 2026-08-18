@@ -1,0 +1,55 @@
+kind: card
+key: pca-orders-by-hour-other
+name: Orders by hour — Other partners
+description: Non-Sber orders bucketed by the hour they were created, segmented by where they ended up.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- IS DISTINCT FROM, not <>: a NULL client name (missing api_client row) belongs here.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      o AS (
+        SELECT date_trunc('hour', (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h,
+               CASE
+                 WHEN o.status = 'COMPLETED' THEN 'Completed'
+                 WHEN o.status IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL') THEN 'Failed'
+                 ELSE 'In progress'
+               END AS outcome
+        FROM order_ o
+        LEFT JOIN api_client c ON c.client_id = o.client_id
+        WHERE o.created_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+          AND c.name IS DISTINCT FROM 'sber'),
+      outcomes AS (SELECT unnest(ARRAY['Completed', 'In progress', 'Failed']) AS outcome)
+      SELECT s.h AS hour, x.outcome, count(o.h) AS orders
+      FROM spine s
+      CROSS JOIN outcomes x
+      LEFT JOIN o ON o.h = s.h AND o.outcome = x.outcome
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 6a2a8221-e790-4eef-aa8d-2c70378caa72
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - outcome
+  graph.metrics:
+  - orders
+  graph.x_axis.scale: timeseries
+  stackable.stack_type: stacked
+parameters: []

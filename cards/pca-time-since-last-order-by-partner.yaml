@@ -1,0 +1,31 @@
+kind: card
+key: pca-time-since-last-order-by-partner
+name: Time since last order, by partner
+description: Most recent order per API client, Sber first, then oldest silence first.
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- order_.created_at is naive UTC: compare against naive-UTC now, display in Moscow.
+      SELECT partner, last_order_at, minutes_since
+      FROM (
+        SELECT CASE WHEN c.name = 'sber' THEN 'Sber' ELSE COALESCE(c.name, 'unknown') END AS partner,
+               max((o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'))        AS last_order_at,
+               floor(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'UTC') - max(o.created_at))) / 60)::bigint
+                 AS minutes_since
+        FROM order_ o
+        LEFT JOIN api_client c ON c.client_id = o.client_id
+        GROUP BY 1) t
+      ORDER BY (partner <> 'Sber'), minutes_since DESC
+visualization_settings:
+  column_settings:
+    '["name","minutes_since"]':
+      suffix: ' min'
+parameters: []

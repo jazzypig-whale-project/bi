@@ -1,0 +1,29 @@
+kind: card
+key: pca-sales-distribution-by-partner
+name: Sales distribution by partner (all time)
+description: Order value per API client, all clients, all time. Translated from "Распределение продаж по партнерам".
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT COALESCE(c.name, 'unknown') AS partner,
+             sum(o.amount)::bigint       AS revenue
+      FROM order_ o
+      LEFT JOIN api_client c ON c.client_id = o.client_id
+      GROUP BY 1
+      ORDER BY 2 DESC
+visualization_settings:
+  graph.dimensions:
+  - partner
+  graph.metrics:
+  - revenue
+  graph.x_axis.scale: ordinal
+  graph.show_values: true
+parameters: []

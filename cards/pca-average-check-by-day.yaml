@@ -1,0 +1,37 @@
+kind: card
+key: pca-average-check-by-day
+name: Average check by day
+description: Mean face value of the certificates sent each day, over the Days window.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT date_trunc('day', (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+             round(avg(amount), 0)::bigint                                                AS average_check
+      FROM certificate
+      WHERE status = 'SENT'
+        AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+      GROUP BY 1
+      ORDER BY 1
+    template-tags:
+      days:
+        id: 4b343176-a566-4071-80d2-21ceb298e6b5
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - day
+  graph.metrics:
+  - average_check
+  graph.x_axis.scale: timeseries
+  graph.show_values: true
+parameters: []

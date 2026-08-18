@@ -1,0 +1,131 @@
+kind: card
+key: pca-capacity-by-hour
+name: Capacity by hour (upper bound — fleet gates not historised)
+description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter.
+collection: pear-cider-automated
+type: question
+display: line
+cache_ttl: 300
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Upper bound: device state, agent availability, validation status, holds and
+      -- backoffs are current values only, so no historical query can apply them.
+      -- Quota windows use the enforcement predicate QuotaLedgerRepository.SQL_ENFORCED_STATUSES.
+      WITH limits AS (
+        -- orchestrator/src/main/resources/application.yml, app.quota (lines 159-167).
+        SELECT 6::bigint      AS max_tasks_per_account,   -- maxTasksPerAccount
+               35000::bigint  AS day_limit_account,       -- dayLimitAccount
+               500000::bigint AS day_limit_number,        -- dayLimitNumber
+               600000::bigint AS month_limit_number,      -- monthLimitNumber
+               1000::bigint   AS min_certificate_amount   -- minCertificateAmount
+      ),
+      spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - (least({{days}}, 14) * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      subject AS (
+        -- The accounts currently attached to a device, with a current number.
+        SELECT DISTINCT d.active_account_id AS account_id, acc.current_number_id AS number_id
+        FROM device d
+        JOIN account acc ON acc.account_id = d.active_account_id
+        WHERE acc.current_number_id IS NOT NULL),
+      ledger AS (
+        SELECT subject_type, subject_id, amount,
+               (ts AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') AS ts
+        FROM quota_ledger
+        WHERE status IN ('RESERVED', 'COMMITTED')
+          AND ts > (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day') - INTERVAL '31 days'),
+      account_window AS (
+        SELECT s.h, l.subject_id, count(*) AS count24h, sum(l.amount) AS money24h
+        FROM spine s
+        JOIN ledger l ON l.subject_type = 'ACCOUNT'
+                     AND l.ts > s.h - INTERVAL '24 hours' AND l.ts <= s.h
+        GROUP BY 1, 2),
+      number_window AS (
+        SELECT s.h, l.subject_id,
+               COALESCE(sum(l.amount) FILTER (WHERE l.ts > s.h - INTERVAL '24 hours'), 0) AS money24h,
+               sum(l.amount) AS money30d
+        FROM spine s
+        JOIN ledger l ON l.subject_type = 'NUMBER'
+                     AND l.ts > s.h - INTERVAL '30 days' AND l.ts <= s.h
+        GROUP BY 1, 2),
+      cooldown AS (
+        SELECT s.h, c.account_id
+        FROM spine s
+        JOIN account_cooldown c
+          ON c.applied_at <= (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+         AND (c.until      IS NULL OR c.until      > (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
+         AND (c.cleared_at IS NULL OR c.cleared_at > (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
+        GROUP BY 1, 2),
+      balance AS (
+        -- Last balance_after per number at or before the hour. balance_ledger.created_at is timestamptz.
+        SELECT s.h, sn.number_id, bal.balance_after
+        FROM spine s
+        CROSS JOIN (SELECT DISTINCT number_id FROM subject) sn
+        LEFT JOIN LATERAL (
+          SELECT bl.balance_after
+          FROM balance_ledger bl
+          WHERE bl.number_id = sn.number_id
+            AND bl.created_at <= (s.h AT TIME ZONE 'Europe/Moscow')
+          ORDER BY bl.created_at DESC
+          LIMIT 1) bal ON true),
+      account_headroom AS (
+        SELECT s.h, sub.number_id,
+               CASE WHEN cd.account_id IS NOT NULL THEN 0
+                    ELSE greatest(0, least(lim.max_tasks_per_account - COALESCE(aw.count24h, 0),
+                                           floor((lim.day_limit_account - COALESCE(aw.money24h, 0))
+                                                 / lim.min_certificate_amount)))
+               END AS tasks_possible
+        FROM spine s
+        CROSS JOIN limits lim
+        CROSS JOIN subject sub
+        LEFT JOIN account_window aw ON aw.h = s.h AND aw.subject_id = sub.account_id
+        LEFT JOIN cooldown cd       ON cd.h = s.h AND cd.account_id = sub.account_id),
+      per_number AS (
+        SELECT ah.h, ah.number_id,
+               sum(ah.tasks_possible)             AS tasks_from_accounts,
+               max(COALESCE(b.balance_after, 0))  AS balance
+        FROM account_headroom ah
+        LEFT JOIN balance b ON b.h = ah.h AND b.number_id = ah.number_id
+        GROUP BY 1, 2),
+      capped AS (
+        SELECT pn.h, pn.number_id,
+               greatest(0, least(pn.tasks_from_accounts,
+                                 floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
+                                 floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount)))
+                 AS quota_capacity,
+               greatest(0, floor(pn.balance / lim.min_certificate_amount)) AS balance_capacity
+        FROM per_number pn
+        CROSS JOIN limits lim
+        LEFT JOIN number_window nw ON nw.h = pn.h AND nw.subject_id = pn.number_id)
+      SELECT h AS hour, 'Quota + cooldown (upper bound)' AS series,
+             sum(quota_capacity)::bigint AS capacity
+      FROM capped
+      GROUP BY 1
+      UNION ALL
+      SELECT h, 'Quota + cooldown + balance (upper bound)',
+             sum(least(quota_capacity, balance_capacity))::bigint
+      FROM capped
+      GROUP BY 1
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: b7e3e38a-6980-41d1-867b-fdf430d0695e
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - series
+  graph.metrics:
+  - capacity
+  graph.x_axis.scale: timeseries
+parameters: []

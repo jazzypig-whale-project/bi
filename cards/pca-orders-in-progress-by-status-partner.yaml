@@ -1,0 +1,38 @@
+kind: card
+key: pca-orders-in-progress-by-status-partner
+name: Orders in progress now, by status and partner
+description: Live non-terminal orders. Each of the four statuses is always shown, even at zero.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH statuses AS (
+        SELECT unnest(ARRAY['AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING']) AS status),
+      partners AS (SELECT unnest(ARRAY['Sber', 'Other partners']) AS partner),
+      live AS (
+        SELECT o.status,
+               CASE WHEN c.name = 'sber' THEN 'Sber' ELSE 'Other partners' END AS partner
+        FROM order_ o
+        LEFT JOIN api_client c ON c.client_id = o.client_id
+        WHERE o.status IN ('AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING'))
+      SELECT st.status, p.partner, count(l.status) AS orders
+      FROM statuses st
+      CROSS JOIN partners p
+      LEFT JOIN live l ON l.status = st.status AND l.partner = p.partner
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+visualization_settings:
+  graph.dimensions:
+  - status
+  - partner
+  graph.metrics:
+  - orders
+  graph.x_axis.scale: ordinal
+parameters: []

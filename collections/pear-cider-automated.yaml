@@ -1,0 +1,6 @@
+kind: collection
+key: pear-cider-automated
+name: Pear Cider (automated)
+description: English card set behind the "Pear Cider by Erjan.Solutions (automated)" dashboard.
+parent: root
+archived: false

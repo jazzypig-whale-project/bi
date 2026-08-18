@@ -224,14 +224,15 @@ def _dashboard_put_body(doc, entry, lookup):
     dashcards, sent_dashcards = [], []
     for dc in doc.get("dashcards") or []:
         dc_id = entry.get("dashcards", {}).get(dc["key"]) or next(counter)
+        card_id = lookup.card_id(dc["card"]) if "card" in dc else None
         written = {
             "id": dc_id,
-            "card_id": lookup.card_id(dc["card"]) if "card" in dc else None,
+            "card_id": card_id,
             "dashboard_tab_id": tab_temp_ids.get(dc.get("tab")),
             "row": dc.get("row"), "col": dc.get("col"),
             "size_x": dc.get("size_x"), "size_y": dc.get("size_y"),
             "visualization_settings": dc.get("visualization_settings") or {},
-            "parameter_mappings": dc.get("parameter_mappings") or [],
+            "parameter_mappings": model.resolved_parameter_mappings(dc, card_id),
             "series": [{"id": lookup.card_id(k)} for k in dc.get("series") or []],
             "inline_parameters": dc.get("inline_parameters") or [],
         }

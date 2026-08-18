@@ -1,0 +1,22 @@
+kind: card
+key: pca-topups-in-progress-count
+name: Top-ups in progress (count)
+description: Non-final payout rows, the same predicate TopUpInFlightService uses.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Rows, not messages: TopUpPayoutRepository.sumNonFinalAmountByNumberId counts rows,
+      -- and only one row per message is non-final at a time.
+      SELECT count(*) AS topups_in_progress
+      FROM topup_payout
+      WHERE status IN ('CREATE_RETRY', 'PENDING_POLL')
+visualization_settings: {}
+parameters: []
