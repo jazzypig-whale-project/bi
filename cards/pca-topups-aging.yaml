@@ -1,0 +1,133 @@
+kind: card
+key: pca-topups-aging
+name: Top-ups in progress, aging
+description: How old the open payout rows were at each hour. updated_at is the last touch, which for a terminal row is the moment it became terminal. Age buckets 01-10 run from freshest (<1m) to oldest (>3d); same ramp and order as the orders aging — Sber card. Hour buckets are Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Interval is [created_at, updated_at) for rows that reached a terminal status and
+      -- [created_at, now()) for rows still in CREATE_RETRY / PENDING_POLL.
+      -- Both columns are timestamptz.
+      -- A row still open (CREATE_RETRY/PENDING_POLL) is kept no matter how old, since it may be
+      -- open at every spine hour. A closed row is kept only if it could still have been open at
+      -- the window's first spine hour, i.e. closed_at is at or after that hour's floor -- not the
+      -- unrounded {{days}}-ago instant, which is later than the floor and would drop rows that
+      -- closed in the gap between the floor and the unrounded instant.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      tp AS (
+        SELECT (created_at AT TIME ZONE 'Europe/Moscow') AS created_at,
+               CASE WHEN status IN ('CREATE_RETRY', 'PENDING_POLL') THEN NULL
+                    ELSE (updated_at AT TIME ZONE 'Europe/Moscow') END AS closed_at
+        FROM topup_payout
+        WHERE status IN ('CREATE_RETRY', 'PENDING_POLL')
+           OR updated_at >= (date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow'))
+      SELECT s.h AS hour,
+             CASE
+               WHEN s.h - tp.created_at < INTERVAL '1 minute'   THEN '01 <1m'
+               WHEN s.h - tp.created_at < INTERVAL '5 minutes'  THEN '02 1-5m'
+               WHEN s.h - tp.created_at < INTERVAL '15 minutes' THEN '03 5-15m'
+               WHEN s.h - tp.created_at < INTERVAL '30 minutes' THEN '04 15-30m'
+               WHEN s.h - tp.created_at < INTERVAL '1 hour'     THEN '05 30m-1h'
+               WHEN s.h - tp.created_at < INTERVAL '3 hours'    THEN '06 1-3h'
+               WHEN s.h - tp.created_at < INTERVAL '6 hours'    THEN '07 3-6h'
+               WHEN s.h - tp.created_at < INTERVAL '1 day'      THEN '08 6h-1d'
+               WHEN s.h - tp.created_at < INTERVAL '3 days'     THEN '09 1-3d'
+               ELSE '10 >3d'
+             END AS age_bucket,
+             count(*) AS n
+      FROM spine s
+      JOIN tp ON tp.created_at <= s.h AND (tp.closed_at IS NULL OR tp.closed_at > s.h)
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 4c3ded10-63bb-4af2-a75d-a5b849ef3ead
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - age_bucket
+  graph.metrics:
+  - n
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Top-ups
+  stackable.stack_type: stacked
+  graph.series_order_dimension: age_bucket
+  graph.series_order:
+  - key: '01 <1m'
+    name: '01 <1m'
+    color: '#FFF5F5'
+    enabled: true
+  - key: '02 1-5m'
+    name: '02 1-5m'
+    color: '#FFE3E3'
+    enabled: true
+  - key: '03 5-15m'
+    name: '03 5-15m'
+    color: '#FFC9C9'
+    enabled: true
+  - key: '04 15-30m'
+    name: '04 15-30m'
+    color: '#FFA8A8'
+    enabled: true
+  - key: '05 30m-1h'
+    name: '05 30m-1h'
+    color: '#FF8787'
+    enabled: true
+  - key: '06 1-3h'
+    name: '06 1-3h'
+    color: '#FF6B6B'
+    enabled: true
+  - key: '07 3-6h'
+    name: '07 3-6h'
+    color: '#FA5252'
+    enabled: true
+  - key: '08 6h-1d'
+    name: '08 6h-1d'
+    color: '#F03E3E'
+    enabled: true
+  - key: '09 1-3d'
+    name: '09 1-3d'
+    color: '#E03131'
+    enabled: true
+  - key: '10 >3d'
+    name: '10 >3d'
+    color: '#C92A2A'
+    enabled: true
+  series_settings:
+    '01 <1m':
+      color: '#FFF5F5'
+    '02 1-5m':
+      color: '#FFE3E3'
+    '03 5-15m':
+      color: '#FFC9C9'
+    '04 15-30m':
+      color: '#FFA8A8'
+    '05 30m-1h':
+      color: '#FF8787'
+    '06 1-3h':
+      color: '#FF6B6B'
+    '07 3-6h':
+      color: '#FA5252'
+    '08 6h-1d':
+      color: '#F03E3E'
+    '09 1-3d':
+      color: '#E03131'
+    '10 >3d':
+      color: '#C92A2A'
+parameters: []

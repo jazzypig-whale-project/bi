@@ -1,0 +1,56 @@
+kind: card
+key: pca-completion-time-percentiles
+name: Completion time percentiles — Sber vs Other partners
+description: paid_at to completed_at for COMPLETED orders, the same span DeliveryVerdictApplier measures. Seconds.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Both endpoints are naive UTC, so the difference needs no conversion; only the
+      -- window predicate is compared against a converted "now".
+      WITH spans AS (
+        SELECT CASE WHEN c.name = 'sber' THEN 'Sber' ELSE 'Other partners' END AS partner,
+               EXTRACT(EPOCH FROM (o.completed_at - o.paid_at))                AS seconds
+        FROM order_ o
+        LEFT JOIN api_client c ON c.client_id = o.client_id
+        WHERE o.status = 'COMPLETED'
+          AND o.paid_at IS NOT NULL
+          AND o.completed_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')),
+      pct AS (
+        SELECT partner,
+               percentile_cont(ARRAY[0.50, 0.75, 0.90, 0.95, 0.99])
+                 WITHIN GROUP (ORDER BY seconds) AS p
+        FROM spans
+        GROUP BY partner)
+      SELECT label AS percentile, partner, round(value::numeric, 1) AS seconds
+      FROM pct, LATERAL unnest(ARRAY['p50', 'p75', 'p90', 'p95', 'p99'], p) AS t(label, value)
+      ORDER BY percentile, partner
+    template-tags:
+      days:
+        id: cbca1acb-eb40-481a-9168-a8ffbb8856e5
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - percentile
+  - partner
+  graph.metrics:
+  - seconds
+  graph.x_axis.scale: ordinal
+  graph.y_axis.title_text: seconds
+  graph.y_axis.scale: log
+  series_settings:
+    Sber:
+      color: '#509EE3'
+    Other partners:
+      color: '#7172AD'
+parameters: []

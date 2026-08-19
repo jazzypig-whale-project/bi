@@ -1,0 +1,6 @@
+kind: collection
+key: examples
+name: Examples
+description: Some examples to get started with
+parent: null
+archived: true

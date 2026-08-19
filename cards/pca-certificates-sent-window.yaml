@@ -1,0 +1,28 @@
+kind: card
+key: pca-certificates-sent-window
+name: Certificates sent
+description: Count of SENT certificates inside the dashboard's Days window (parameter days, default 7).
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT count(*) AS certificates_sent
+      FROM certificate
+      WHERE status = 'SENT'
+        AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+    template-tags:
+      days:
+        id: fedaf608-cd94-4cbb-819a-7768d09c76c9
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings: {}
+parameters: []

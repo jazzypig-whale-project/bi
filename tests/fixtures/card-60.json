@@ -1,0 +1,227 @@
+{
+  "cache_invalidated_at": "2026-07-31T17:06:10.783705Z",
+  "description": "Number of free certificates in pool by amount",
+  "archived": false,
+  "view_count": 30,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 23,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "int8",
+      "semantic_type": null,
+      "table_id": 23,
+      "lib/deduplicated-name": "amount",
+      "lib/original-name": "amount",
+      "lib/breakout?": true,
+      "name": "amount",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "amount",
+      "lib/original-display-name": "Amount",
+      "source": "breakout",
+      "field_ref": [
+        "field",
+        105,
+        null
+      ],
+      "effective_type": "type/BigInteger",
+      "active": true,
+      "id": 105,
+      "lib/desired-column-alias": "amount",
+      "position": 2,
+      "visibility_type": "normal",
+      "display_name": "Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 18,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 500.0,
+            "q1": 889.794824780626,
+            "q3": 1297.3860714285124,
+            "max": 9000.0,
+            "sd": 1261.265363024908,
+            "avg": 1409.4634873323398
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    },
+    {
+      "database_type": "int8",
+      "semantic_type": "type/Quantity",
+      "lib/deduplicated-name": "count",
+      "lib/original-name": "count",
+      "name": "count",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "count",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/BigInteger",
+      "lib/desired-column-alias": "count",
+      "display_name": "Count",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 13,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 3.0,
+            "q1": 3.566969722017664,
+            "q3": 230.0,
+            "max": 4208.0,
+            "sd": 979.9380682711835,
+            "avg": 338.8333333333333
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sk@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-18T11:30:27.034905Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 4,
+    "last_name": "k",
+    "tenant_id": null,
+    "date_joined": "2026-07-27T18:12:18.440583Z",
+    "common_name": "s k"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": null,
+  "query_type": "query",
+  "name": "Certificates in pool",
+  "last_query_start": "2026-08-18T11:07:58.831508Z",
+  "is_remote_synced": false,
+  "dashboard_count": 0,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:07:58.854931Z",
+  "dashboard": null,
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 94.4333333333333333,
+  "creator_id": 4,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-07-31T17:06:10.777473Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "breakout": [
+          [
+            "field",
+            {
+              "lib/uuid": "bb45b2ab-b937-47e2-b0b9-e2f8a7f72b6d",
+              "effective-type": "type/BigInteger",
+              "base-type": "type/BigInteger"
+            },
+            105
+          ]
+        ],
+        "order-by": [
+          [
+            "desc",
+            {
+              "lib/uuid": "cc523289-b514-4356-8bf9-e80f4223dcc3"
+            },
+            [
+              "field",
+              {
+                "lib/uuid": "9d93139c-bc2b-4a96-aaae-cd8ae5e2b99b",
+                "effective-type": "type/BigInteger",
+                "base-type": "type/BigInteger"
+              },
+              105
+            ]
+          ]
+        ],
+        "source-table": 23,
+        "aggregation": [
+          [
+            "count",
+            {
+              "lib/uuid": "9f7db40d-da7a-4312-8315-f2e5857e3c1f"
+            }
+          ]
+        ],
+        "lib/type": "mbql.stage/mbql",
+        "filters": [
+          [
+            "=",
+            {
+              "lib/uuid": "5dc39912-4f88-4573-bc56-9558ba0c35b4"
+            },
+            [
+              "field",
+              {
+                "lib/uuid": "fd3a73de-d9b0-4123-9828-d98e2bfc21e9",
+                "effective-type": "type/Text",
+                "base-type": "type/Text"
+              },
+              106
+            ],
+            "FREE"
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 60,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "pie",
+  "archived_directly": false,
+  "entity_id": "lVy7wprTr4UTiTIKMAn5Q",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 4,
+    "email": "sk@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "k",
+    "timestamp": "2026-07-31T17:06:10.867289Z"
+  },
+  "visualization_settings": {
+    "table.cell_column": "count",
+    "pie.slice_threshold": 0
+  },
+  "collection": {
+    "metabase.collections.models.collection.root/is-root?": true,
+    "authority_level": null,
+    "name": "Our analytics",
+    "is_personal": false,
+    "id": "root",
+    "is_remote_synced": false,
+    "can_write": true
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": null,
+  "created_at": "2026-07-31T13:13:04.94594Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

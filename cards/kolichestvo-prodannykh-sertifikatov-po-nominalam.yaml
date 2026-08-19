@@ -1,0 +1,156 @@
+kind: card
+key: kolichestvo-prodannykh-sertifikatov-po-nominalam
+name: Количество проданных сертификатов по номиналам
+description: null
+collection: certs-business-analytics
+type: question
+display: pie
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - filters:
+    - - '='
+      - {}
+      - - field
+        - effective-type: type/Text
+          base-type: type/Text
+        - 106
+      - SENT
+    aggregation:
+    - - count
+      - {}
+    source-table: 23
+    lib/type: mbql.stage/mbql
+    breakout:
+    - - field
+      - effective-type: type/BigInteger
+        base-type: type/BigInteger
+      - 105
+visualization_settings:
+  pie.slice_threshold: 0.1
+  pie.sort_rows: false
+  pie.rows:
+  - key: '1000'
+    name: 1,000
+    originalName: 1,000
+    color: '#509EE3'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '1500'
+    name: 1,500
+    originalName: 1,500
+    color: '#227FD2'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '2000'
+    name: 2,000
+    originalName: 2,000
+    color: '#88BF4D'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '2500'
+    name: 2,500
+    originalName: 2,500
+    color: '#8A5EB0'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '3000'
+    name: 3,000
+    originalName: 3,000
+    color: '#689636'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '3500'
+    name: 3,500
+    originalName: 3,500
+    color: '#F9D45C'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '4000'
+    name: 4,000
+    originalName: 4,000
+    color: '#E75454'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '4500'
+    name: 4,500
+    originalName: 4,500
+    color: '#F7C41F'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '5000'
+    name: 5,000
+    originalName: 5,000
+    color: '#A989C5'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '6000'
+    name: 6,000
+    originalName: 6,000
+    color: '#F2A86F'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '6500'
+    name: 6,500
+    originalName: 6,500
+    color: '#ED8535'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '9000'
+    name: 9,000
+    originalName: 9,000
+    color: '#EF8C8C'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: false
+  - key: '5500'
+    name: 5,500
+    originalName: 5,500
+    color: '#98D9D9'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: true
+  - key: '7000'
+    name: 7,000
+    originalName: 7,000
+    color: '#69C8C8'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: true
+  - key: '8000'
+    name: 8,000
+    originalName: 8,000
+    color: '#7172AD'
+    defaultColor: true
+    enabled: true
+    hidden: false
+    isOther: true
+parameters: []

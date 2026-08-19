@@ -1,0 +1,70 @@
+kind: card
+key: pca-topups-created-by-hour
+name: Top-ups created by hour
+description: Distinct messages created per hour, with the money they carry. Counting rows would triple-count a message that fell through three providers. Hour buckets are Europe/Moscow; money is Russian roubles (₽).
+collection: pear-cider-automated
+type: question
+display: combo
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- topup_payout holds one row per (message_id, provider_code): the provider-chain cursor.
+      -- "Created" therefore counts DISTINCT message_id and sums one row per message.
+      -- created_at is timestamptz, so it converts straight to Moscow.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      msg AS (
+        SELECT DISTINCT ON (message_id)
+               message_id,
+               date_trunc('hour', (created_at AT TIME ZONE 'Europe/Moscow')) AS h,
+               amount
+        FROM topup_payout
+        WHERE created_at >= now() - ({{days}} * INTERVAL '1 day')
+        ORDER BY message_id, id)
+      SELECT s.h AS hour,
+             count(m.message_id)              AS topups,
+             COALESCE(sum(m.amount), 0)::bigint AS total_rub
+      FROM spine s
+      LEFT JOIN msg m ON m.h = s.h
+      GROUP BY 1
+      ORDER BY 1
+    template-tags:
+      days:
+        id: 17465025-1749-4282-83b0-d9fcb599bae9
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  graph.metrics:
+  - topups
+  - total_rub
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Top-ups created
+  column_settings:
+    '["name","total_rub"]':
+      suffix: ' ₽'
+      decimals: 0
+  series_settings:
+    topups:
+      display: bar
+      axis: left
+      title: Top-ups created
+      color: '#949AAB'
+    total_rub:
+      display: line
+      axis: right
+      title: Total value, ₽
+      color: '#509EE3'
+      line.size: L
+parameters: []

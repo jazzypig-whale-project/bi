@@ -34,6 +34,7 @@ Metabase + отдельный Postgres под его метаданные + (н�
 | `MB_DB_PASS` | всегда | Пароль метадата-БД (`bi-postgres`). Это НЕ пароль app-БД. |
 | `BI_BACKUP_ENCRYPT_PASSWORD` | для `backup`/`restore` | Ключ шифрования дампа метадаты (AES-256). |
 | `SPACESHIP_API_KEY` / `SPACESHIP_API_SECRET` | для `ENV=prod` | Ключи Spaceship API — выпуск серта по DNS-01. |
+| `METABASE_BASE_URL` / `METABASE_BASIC_USERNAME` / `METABASE_BASIC_PASSWORD` / `METABASE_API_KEY` | для `./mbc` | Данные подключения `mbc` к живому инстансу — см. [Metabase as code](#metabase-as-code) ниже. |
 
 ### Конфиг (дефолты в compose)
 
@@ -111,3 +112,21 @@ make restore FILE=metabase_db_<ts>.dump.enc    # ⚠ РАЗРУШАЮЩЕЕ: з�
 
 `.env`, `nginx/creds.htpasswd`, `nginx/spaceship.ini`, `backups/`, `pgdata/` — в `.gitignore`,
 в git не коммитятся.
+
+
+## Metabase as code
+
+Дашборды и вопросы на инстансе управляются как код: YAML под `collections/`, `cards/` и
+`dashboards/` — источник истины, инструмент `./mbc` синхронизирует их с живым Metabase (v0.60.7 OSS)
+через HTTP API напрямую (Basic auth + API key, за nginx).
+
+```bash
+./mbc validate   # офлайн-проверка YAML, exit 0/1
+./mbc diff       # сравнение с живым инстансом, exit 0=нет изменений / 2=дрейф / 1=ошибка
+./mbc apply --yes   # применить файлы к инстансу
+```
+
+Или через Makefile: `make mbc-validate`, `make mbc-diff`, `make mbc-test`.
+
+Подробности — команды, гарантии безопасности, переименование логических ключей, известные
+ограничения — в [`docs/metabase-as-code.md`](docs/metabase-as-code.md).

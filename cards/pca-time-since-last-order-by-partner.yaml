@@ -1,0 +1,36 @@
+kind: card
+key: pca-time-since-last-order-by-partner
+name: Time since last order, by partner
+description: Most recent order per partner, stalest partner first. Last order time is Europe/Moscow; hours since is measured from UTC now().
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- order_.created_at is naive UTC: compare against naive-UTC now, display in Moscow.
+      SELECT partner, last_order_at, hours_since
+      FROM (
+        SELECT CASE WHEN c.name = 'sber' THEN 'Sber' ELSE COALESCE(initcap(c.name), 'Unknown') END AS partner,
+               max((o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'))        AS last_order_at,
+               round(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'UTC') - max(o.created_at))) / 3600.0, 1)
+                 AS hours_since
+        FROM order_ o
+        LEFT JOIN api_client c ON c.client_id = o.client_id
+        GROUP BY 1) t
+      ORDER BY hours_since DESC
+visualization_settings:
+  column_settings:
+    '["name","partner"]':
+      column_title: Partner
+    '["name","last_order_at"]':
+      column_title: Last order at
+    '["name","hours_since"]':
+      column_title: Hours since last order
+      suffix: ' h'
+parameters: []

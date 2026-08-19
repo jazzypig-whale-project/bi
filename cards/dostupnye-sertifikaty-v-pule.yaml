@@ -1,0 +1,36 @@
+kind: card
+key: dostupnye-sertifikaty-v-pule
+name: Доступные сертификаты в пуле
+description: null
+collection: root
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/mbql
+    filters:
+    - - '='
+      - {}
+      - - field
+        - effective-type: type/Text
+          base-type: type/Text
+        - 106
+      - FREE
+    aggregation:
+    - - count
+      - {}
+    source-table: 23
+    breakout:
+    - - field
+      - effective-type: type/BigInteger
+        base-type: type/BigInteger
+      - 105
+visualization_settings:
+  table.row_index: true
+  table.pivot_column: amount
+  table.cell_column: count
+parameters: []

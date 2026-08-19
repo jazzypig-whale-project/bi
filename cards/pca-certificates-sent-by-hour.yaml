@@ -1,0 +1,48 @@
+kind: card
+key: pca-certificates-sent-by-hour
+name: Certificates sent by hour
+description: Certificates sent per hour over the Days window. Supersedes the by-day form of the original card. Hour buckets are Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      sent AS (
+        SELECT date_trunc('hour', (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h
+        FROM certificate
+        WHERE status = 'SENT'
+          AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day'))
+      SELECT s.h AS hour, count(x.h) AS certificates
+      FROM spine s
+      LEFT JOIN sent x ON x.h = s.h
+      GROUP BY 1
+      ORDER BY 1
+    template-tags:
+      days:
+        id: dbdb0727-f4bb-4aa6-9909-efd9a5d8ed5f
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  graph.metrics:
+  - certificates
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificates sent
+  series_settings:
+    certificates:
+      color: '#509EE3'
+parameters: []

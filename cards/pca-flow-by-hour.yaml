@@ -1,0 +1,76 @@
+kind: card
+key: pca-flow-by-hour
+name: Flow by hour — requested / produced / sent / ordered
+description: Four true event streams per hour. Idle hours render as zero, not as a gap. Log Y-axis, since Ordered/Sent volumes are dwarfed by Requested/Produced spikes. Hour buckets are Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: line
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Every series uses a real event timestamp; none of the four needs a proxy.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      events AS (
+        SELECT 'Requested' AS series,
+               date_trunc('hour', (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h
+        FROM production_request
+        WHERE created_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        UNION ALL
+        SELECT 'Produced',
+               date_trunc('hour', (succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'))
+        FROM task
+        WHERE purpose = 'PRODUCTION' AND status = 'SUCCESS'
+          AND succeeded_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        UNION ALL
+        SELECT 'Sent',
+               date_trunc('hour', (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'))
+        FROM certificate
+        WHERE status = 'SENT'
+          AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        UNION ALL
+        SELECT 'Ordered',
+               date_trunc('hour', (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'))
+        FROM order_
+        WHERE created_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')),
+      series AS (SELECT unnest(ARRAY['Requested', 'Produced', 'Sent', 'Ordered']) AS series)
+      SELECT s.h AS hour, sr.series, count(e.series) AS n
+      FROM spine s
+      CROSS JOIN series sr
+      LEFT JOIN events e ON e.h = s.h AND e.series = sr.series
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 075963f3-60d4-4b8d-b8da-22a8ab74e6ac
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - series
+  graph.metrics:
+  - n
+  graph.x_axis.scale: timeseries
+  graph.y_axis.scale: log
+  graph.y_axis.title_text: Events per hour
+  series_settings:
+    Requested:
+      color: '#509EE3'
+    Produced:
+      color: '#88BF4D'
+    Sent:
+      color: '#F9D45C'
+    Ordered:
+      color: '#7172AD'
+parameters: []

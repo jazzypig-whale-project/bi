@@ -1,0 +1,311 @@
+kind: dashboard
+key: e-commerce-insights
+name: E-commerce Insights
+description: Overview of sample data and hypothetical sales
+collection: examples
+width: fixed
+auto_apply_filters: true
+cache_ttl: null
+archived: true
+parameters:
+- id: 81cd957
+  name: Date Range
+  required: false
+  sectionId: date
+  slug: date_range
+  type: date/all-options
+- id: efd919c7
+  name: Date Grouping
+  sectionId: temporal-unit
+  slug: date_grouping
+  type: temporal-unit
+- default:
+  - Doohickey
+  - Gizmo
+  - Gadget
+  - Widget
+  id: 9d9cddd4
+  name: Product Category
+  required: true
+  sectionId: string
+  slug: product_category
+  type: string/=
+- id: 1ebab259
+  isMultiSelect: false
+  name: Vendor
+  sectionId: string
+  slug: vendor
+  type: string/=
+tabs:
+- key: overview
+  name: Overview
+- key: portfolio-performance
+  name: Portfolio Performance
+- key: website-analysis
+  name: Website Analysis
+dashcards:
+- key: heading-overall-business-health
+  tab: overview
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Overall Business Health
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: heading
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: text-business-kpis-look-strong
+  tab: overview
+  row: 1
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Business KPIs _look strong_ based on the consistent MoM revenue growth following the growth in the number of orders
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: text
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: heading-deeper-dive
+  tab: overview
+  row: 14
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Deeper Dive
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: heading
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: text-widget-and-gizmo-are
+  tab: overview
+  row: 15
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Widget and Gizmo are our leading products, generating the most revenue and orders
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: text
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: heading-top-performing-products
+  tab: portfolio-performance
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Top Performing Products
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: heading
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: text-find-below-a-breakdown
+  tab: portfolio-performance
+  row: 1
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Find below a breakdown of products and their performance, filtered now for {{product_category}}
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: text
+      name: null
+      visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 9d9cddd4
+    target:
+    - text-tag
+    - product_category
+  series: []
+  inline_parameters: []
+- key: heading-customer-satisfaction
+  tab: portfolio-performance
+  row: 32
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Customer Satisfaction
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: heading
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: text-super-important-customer-ratings
+  tab: portfolio-performance
+  row: 33
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Super important customer ratings for our products
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: text
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: heading-website-analysis
+  tab: website-analysis
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Website Analysis
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: heading
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: text-take-a-look-into
+  tab: website-analysis
+  row: 1
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Take a look into our customer funnel and website performance
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: text
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: link
+  tab: website-analysis
+  row: 22
+  col: 14
+  size_x: 10
+  size_y: 1
+  visualization_settings:
+    link:
+      entity:
+        model: card
+        id: 25
+        name: All subscriptions in table view
+        description: More complete look at all recent subscriptions
+        collection_id: 2
+        display: table
+        db_id: null
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: link
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: heading-appendix
+  tab: website-analysis
+  row: 23
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: Appendix
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: heading
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: text-find-more-guides-and
+  tab: website-analysis
+  row: 24
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    dashcard.background: false
+    text: 'Find more guides and tutorials on Metabase, analytics, data modeling, and more at [Metabase Learn](https://www.metabase.com/learn/)
+
+
+      '
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: text
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: iframe
+  tab: website-analysis
+  row: 25
+  col: 0
+  size_x: 24
+  size_y: 10
+  visualization_settings:
+    iframe: https://www.youtube.com/watch?v=dnT2Xj52mnk
+    virtual_card:
+      archived: false
+      dataset_query: {}
+      display: iframe
+      name: null
+      visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []

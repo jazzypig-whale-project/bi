@@ -1,0 +1,49 @@
+kind: card
+key: kolichestvo-otpravlennykh-sertifikatov
+name: Количество отправленных сертификатов
+description: null
+collection: certs-business-analytics
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - source-table: 23
+    lib/type: mbql.stage/mbql
+    filters:
+    - - '='
+      - {}
+      - - field
+        - effective-type: type/Text
+          base-type: type/Text
+        - 106
+      - SENT
+    - - time-interval
+      - include-current: true
+        effective-type: type/Boolean
+      - - field
+        - effective-type: type/DateTime
+          base-type: type/DateTime
+        - 111
+      - -7
+      - day
+    aggregation:
+    - - count
+      - {}
+    breakout:
+    - - field
+      - base-type: type/DateTime
+        effective-type: type/DateTime
+        temporal-unit: day
+      - 111
+visualization_settings:
+  graph.show_values: true
+  graph.x_axis.scale: timeseries
+  graph.dimensions:
+  - sent_at
+  graph.metrics:
+  - count
+parameters: []

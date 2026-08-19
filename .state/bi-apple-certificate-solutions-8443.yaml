@@ -1,0 +1,234 @@
+version: 1
+instance: https://bi.apple-certificate.solutions:8443
+metabase_version: v0.60.7
+collections:
+  certs-business-analytics:
+    id: 9
+    entity_id: hWJsZESC1merO1nxg65H-
+  examples:
+    id: 2
+    entity_id: HyB3nRtqb7pBPhFG26evI
+  pear-cider-automated:
+    id: 16
+    entity_id: EXu5vKR4rGrJJj9DtpQDq
+cards:
+  certificates-in-pool:
+    id: 60
+    entity_id: lVy7wprTr4UTiTIKMAn5Q
+  vse-sertifikaty:
+    id: 43
+    entity_id: Qg8Pi8_mFMkHiL5HX_UYN
+  kolichestvo-otpravlennykh-sertifikatov:
+    id: 41
+    entity_id: txkWk-t3QBh_zdQSw79md
+  kolichestvo-prodannykh-sertifikatov-po-nominalam:
+    id: 51
+    entity_id: brOIkkfhM83MPEN2l3ceF
+  oborot-sertifikatov-po-nominalam:
+    id: 40
+    entity_id: FkbI5B3Obmfm45yry1DEH
+  sredniy-chek-po-dnyam:
+    id: 53
+    entity_id: Mvb0JA4CyNrI6wxulu2tz
+  summa-nominalov-sertifikatov-po-dnyam:
+    id: 42
+    entity_id: ru1uSxO1mlL3lEUk4G2ND
+  summa-pula-sertifikatov:
+    id: 62
+    entity_id: v_Vy3Lt3E7FMjPusy746G
+  dostupnye-sertifikaty-v-pule:
+    id: 63
+    entity_id: VKDmWKoAT9fIe7JijdWZD
+  ochered-generatsii-sertifikatov:
+    id: 64
+    entity_id: hd13cgXnsH_NZDbyuex1-
+  raspredelenie-prodazh-po-partneram:
+    id: 65
+    entity_id: 5pvrGOYfMkT0dKeE2vJcz
+  pca-certificate-face-value-by-day:
+    id: 69
+    entity_id: wxRwMtMsjYI_je9wMBSAU
+  pca-certificates-sent-window:
+    id: 70
+    entity_id: 26Ug3kduLS_Y9CZFSbha-
+  pca-orders-in-progress:
+    id: 71
+    entity_id: VwyYgEfkaSBM0ecicLyAQ
+  pca-production-queue-depth:
+    id: 72
+    entity_id: v_h6XLVa_yHaoT-ByyuY6
+  pca-time-since-last-certificate:
+    id: 73
+    entity_id: XqiuHTogyFwcQYl3dVvk2
+  pca-topups-in-progress-count:
+    id: 74
+    entity_id: g9ZOGVLwFAX55MLKTeORR
+  pca-topups-in-progress-rub:
+    id: 75
+    entity_id: t3SZnYs-bMfgntMNwvlz5
+  pca-capacity-now-quota-balance:
+    id: 76
+    entity_id: ZJrRUsXBq9Ho2A34_dTcn
+  pca-capacity-now-quota:
+    id: 77
+    entity_id: YzVBCewnbHVl7Rvf9LhQZ
+  pca-flow-by-hour:
+    id: 78
+    entity_id: jiM4gR4TMHV-9UPdP2M1y
+  pca-time-since-last-order-by-partner:
+    id: 79
+    entity_id: k3UwF_75vnhK0WiZH_ZTe
+  pca-orders-by-hour-other:
+    id: 80
+    entity_id: hIlssSZ83FfzwO5-CqjlR
+  pca-orders-by-hour-sber:
+    id: 81
+    entity_id: mrI0be0e-kh-_e2rl4tz5
+  pca-orders-in-progress-by-status-partner:
+    id: 82
+    entity_id: fnwC450N5QObJFsMCjZGG
+  pca-completion-time-percentiles:
+    id: 83
+    entity_id: uPgIXYhS7pJxQjycG8YFI
+  pca-orders-aging-other:
+    id: 84
+    entity_id: lalfOLUOqi0oEUWD1mqO8
+  pca-orders-aging-sber:
+    id: 85
+    entity_id: tlhsJgSvM4sgfSVK89eFh
+  pca-average-check-by-day:
+    id: 86
+    entity_id: dNHrCtsFEdzQRW0GdP1ov
+  pca-certificate-turnover-by-denomination:
+    id: 87
+    entity_id: zzSNfhUMyXbeqEzRIIxxq
+  pca-certificates-sent-by-hour:
+    id: 88
+    entity_id: TP1s2jADr5lQJPgc9rU9o
+  pca-certificates-sold-by-denomination:
+    id: 89
+    entity_id: X3h3bWC4Dycu-bXIWWNBS
+  pca-sales-distribution-by-partner:
+    id: 90
+    entity_id: XvFWm2OmgphFx0Tr2WQXf
+  pca-certificates-in-pool-by-denomination:
+    id: 91
+    entity_id: fppSmpJ3RLZ2UAM_QyTEJ
+  pca-pool-total-value:
+    id: 92
+    entity_id: 9JqEcyK8jU21VJBX2gEwp
+  pca-production-queue-by-denomination:
+    id: 93
+    entity_id: 9esrdt1Jpa16sjeoviPlb
+  pca-production-requests-by-hour:
+    id: 94
+    entity_id: NimzWtkdLs5Ay3dILoqtO
+  pca-capacity-by-hour:
+    id: 95
+    entity_id: gl21MZhg-4JgawkCFX01o
+  pca-topups-aging:
+    id: 96
+    entity_id: OC7YaeRzoMOtMS-XGOpJs
+  pca-topups-by-status:
+    id: 97
+    entity_id: dKj8s2luCas6Rb2tngCOj
+  pca-topups-created-by-hour:
+    id: 98
+    entity_id: -Uv0XiNqatxPIaOwzkvHy
+dashboards:
+  pear-cider-by-erjan-solutions:
+    id: 5
+    entity_id: wgYJmTA1oNDc3yXMmPiPo
+    tabs: {}
+    dashcards:
+      summa-nominalov-sertifikatov-po-dnyam: 37
+      kolichestvo-otpravlennykh-sertifikatov: 38
+      oborot-sertifikatov-po-nominalam: 39
+      kolichestvo-prodannykh-sertifikatov-po-nominalam: 40
+      raspredelenie-prodazh-po-partneram: 45
+      sredniy-chek-po-dnyam: 41
+      dostupnye-sertifikaty-v-pule: 43
+      ochered-generatsii-sertifikatov: 44
+      summa-pula-sertifikatov: 42
+  sorted-by-status:
+    id: 3
+    entity_id: qMDylvtoQoE2n8l940hHF
+    tabs: {}
+    dashcards: {}
+  e-commerce-insights:
+    id: 1
+    entity_id: xBLdW9FsgRuB2HGhWiBa_
+    tabs:
+      overview: 1
+      portfolio-performance: 2
+      website-analysis: 3
+    dashcards:
+      heading-overall-business-health: 7
+      text-business-kpis-look-strong: 16
+      heading-deeper-dive: 11
+      text-widget-and-gizmo-are: 18
+      heading-top-performing-products: 14
+      text-find-below-a-breakdown: 17
+      heading-customer-satisfaction: 20
+      text-super-important-customer-ratings: 21
+      heading-website-analysis: 23
+      text-take-a-look-into: 24
+      link: 29
+      heading-appendix: 33
+      text-find-more-guides-and: 32
+      iframe: 31
+  pear-cider-by-erjan-solutions-automated:
+    tabs:
+      overview: 6
+      orders: 7
+      production: 8
+      topups: 9
+    dashcards:
+      dc-certificate-face-value-by-day: 54
+      dc-production-queue-depth: 55
+      dc-certificates-sent-window: 56
+      dc-time-since-last-certificate: 57
+      dc-orders-in-progress: 58
+      dc-capacity-now-quota: 61
+      dc-capacity-now-quota-balance: 62
+      dc-time-since-last-order-by-partner: 63
+      dc-flow-by-hour: 64
+      dc-orders-by-hour-sber: 65
+      dc-orders-by-hour-other: 66
+      dc-orders-in-progress-by-status-partner: 67
+      dc-completion-time-percentiles: 68
+      dc-orders-aging-sber: 69
+      dc-orders-aging-other: 70
+      dc-certificates-sent-by-hour: 71
+      dc-sales-distribution-by-partner: 72
+      dc-average-check-by-day: 73
+      dc-certificates-sold-by-denomination: 74
+      dc-certificate-turnover-by-denomination: 75
+      dc-production-requests-by-hour: 76
+      dc-certificates-in-pool-by-denomination: 77
+      dc-production-queue-by-denomination: 78
+      dc-pool-total-value: 79
+      dc-capacity-by-hour: 80
+      dc-topups-in-progress-count: 59
+      dc-topups-in-progress-rub: 60
+      dc-topups-created-by-hour: 81
+      dc-topups-aging: 82
+      dc-topups-by-status: 83
+      dc-heading-overview-live-state: 85
+      dc-heading-overview-partners: 86
+      dc-heading-overview-pipeline: 87
+      dc-heading-orders-aging: 90
+      dc-heading-orders-certificates: 91
+      dc-heading-orders-partners: 92
+      dc-heading-orders-denominations: 93
+      dc-heading-production-capacity: 96
+      dc-heading-topups-volume: 98
+      dc-heading-topups-status: 99
+      dc-heading-overview-volume: 84
+      dc-heading-orders-volume: 88
+      dc-heading-orders-pipeline: 89
+      dc-heading-production-requests: 94
+      dc-heading-production-pool: 95
+      dc-heading-topups-live-state: 97
+    id: 8
+    entity_id: tjgmZlVsggY9hQWW3CDUZ

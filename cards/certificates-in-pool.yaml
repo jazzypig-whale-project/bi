@@ -1,0 +1,42 @@
+kind: card
+key: certificates-in-pool
+name: Certificates in pool
+description: Number of free certificates in pool by amount
+collection: root
+type: question
+display: pie
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - breakout:
+    - - field
+      - effective-type: type/BigInteger
+        base-type: type/BigInteger
+      - 105
+    order-by:
+    - - desc
+      - {}
+      - - field
+        - effective-type: type/BigInteger
+          base-type: type/BigInteger
+        - 105
+    source-table: 23
+    aggregation:
+    - - count
+      - {}
+    lib/type: mbql.stage/mbql
+    filters:
+    - - '='
+      - {}
+      - - field
+        - effective-type: type/Text
+          base-type: type/Text
+        - 106
+      - FREE
+visualization_settings:
+  table.cell_column: count
+  pie.slice_threshold: 0
+parameters: []

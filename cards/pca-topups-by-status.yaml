@@ -1,0 +1,47 @@
+kind: card
+key: pca-topups-by-status
+name: Top-ups by current status (all payout rows)
+description: Every topup_payout row by the status it holds right now, with no time window. Terminal statuses accumulate for the lifetime of the table, so COMPLETED and REFUSED are running totals since the first payout, while CREATE_RETRY, PENDING_POLL and PARKED are genuinely live work. Statuses with no rows are left out instead of drawn as zero bars, and PARKED stays visible whenever it is non-zero, since those rows await manual triage.
+collection: pear-cider-automated
+type: question
+display: row
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Current status of every row, so terminal statuses are lifetime totals, not a
+      -- snapshot of live work. Statuses absent from the table produce no row at all:
+      -- a status spine would draw five empty bars across half the plot.
+      -- Labels follow the TopUpPayoutStatus javadoc.
+      SELECT CASE t.status
+               WHEN 'CREATE_RETRY' THEN 'Creating (retrying)'
+               WHEN 'PENDING_POLL' THEN 'Awaiting provider result'
+               WHEN 'COMPLETED'    THEN 'Completed'
+               WHEN 'REFUSED'      THEN 'Refused by provider'
+               WHEN 'EXHAUSTED'    THEN 'Create attempts exhausted'
+               WHEN 'FAILED'       THEN 'Failed at provider'
+               WHEN 'PARKED'       THEN 'Parked for manual triage'
+               WHEN 'SPLIT'        THEN 'Split into parts'
+               WHEN 'SUPERSEDED'   THEN 'Superseded by another provider'
+               ELSE t.status
+             END              AS status,
+             count(*)::bigint AS payout_rows
+      FROM topup_payout t
+      GROUP BY 1
+      ORDER BY 2 DESC, 1
+visualization_settings:
+  graph.dimensions:
+  - status
+  graph.metrics:
+  - payout_rows
+  graph.x_axis.scale: ordinal
+  graph.y_axis.title_text: Payout rows
+  graph.show_values: true
+  series_settings:
+    payout_rows:
+      color: '#509EE3'
+parameters: []

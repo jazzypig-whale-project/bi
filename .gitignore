@@ -23,3 +23,14 @@ data/
 # Мусор
 *.log
 .DS_Store
+
+# Metabase-as-code (mbc/mbcode) — Python tooling, не переносимо между путями
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# .state/ is intentionally NOT ignored. It maps logical keys (collection,
+# card, dashboard, tab, dashcard) to server-assigned ids and entity_ids.
+# If this file is lost, the next apply cannot recognize existing entities
+# and will recreate everything as duplicates. Commit it.

@@ -1,0 +1,31 @@
+kind: card
+key: pca-production-queue-by-denomination
+name: Production queue by denomination
+description: Production requests waiting to be placed (status PENDING) per face value, the same definition as the Production queue depth scalar. PENDING is the placement backlog only — requests already moved on to PLACING, PRODUCING or AWAITING_INTAKE are not counted. The backlog drains within seconds in normal operation, so an empty chart is the expected steady state and means the queue is zero, not that the query failed.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT amount AS denomination, count(*) AS requests
+      FROM production_request
+      WHERE status = 'PENDING'
+      GROUP BY 1
+      ORDER BY 1
+visualization_settings:
+  graph.dimensions:
+  - denomination
+  graph.metrics:
+  - requests
+  graph.x_axis.scale: ordinal
+  graph.show_values: false
+  series_settings:
+    requests:
+      color: '#509EE3'
+parameters: []

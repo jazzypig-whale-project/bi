@@ -1,0 +1,577 @@
+{
+  "cache_invalidated_at": null,
+  "description": null,
+  "archived": false,
+  "view_count": 23,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 23,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "uuid",
+      "semantic_type": null,
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "certificate_id",
+      "lib/original-name": "certificate_id",
+      "name": "certificate_id",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "certificate_id",
+      "lib/original-display-name": "Certificate ID",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        104,
+        null
+      ],
+      "effective_type": "type/UUID",
+      "active": true,
+      "id": 104,
+      "lib/desired-column-alias": "certificate_id",
+      "position": 0,
+      "visibility_type": "normal",
+      "display_name": "Certificate ID",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 1342,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Text": {
+            "percent-json": 0.0,
+            "percent-url": 0.0,
+            "percent-email": 0.0,
+            "percent-state": 0.0,
+            "average-length": 36.0
+          }
+        }
+      },
+      "base_type": "type/UUID"
+    },
+    {
+      "database_type": "int8",
+      "semantic_type": null,
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "amount",
+      "lib/original-name": "amount",
+      "name": "amount",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "amount",
+      "lib/original-display-name": "Amount",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        105,
+        null
+      ],
+      "effective_type": "type/BigInteger",
+      "active": true,
+      "id": 105,
+      "lib/desired-column-alias": "amount",
+      "position": 2,
+      "visibility_type": "normal",
+      "display_name": "Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 18,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 500.0,
+            "q1": 889.794824780626,
+            "q3": 1297.3860714285124,
+            "max": 9000.0,
+            "sd": 1261.265363024908,
+            "avg": 1409.4634873323398
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    },
+    {
+      "database_type": "varchar",
+      "semantic_type": "type/Category",
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "status",
+      "lib/original-name": "status",
+      "name": "status",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "status",
+      "lib/original-display-name": "Status",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        106,
+        null
+      ],
+      "effective_type": "type/Text",
+      "active": true,
+      "id": 106,
+      "lib/desired-column-alias": "status",
+      "position": 3,
+      "visibility_type": "normal",
+      "display_name": "Status",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 2,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Text": {
+            "percent-json": 0.0,
+            "percent-url": 0.0,
+            "percent-email": 0.0,
+            "percent-state": 0.0,
+            "average-length": 4.0
+          }
+        }
+      },
+      "base_type": "type/Text"
+    },
+    {
+      "database_type": "varchar",
+      "semantic_type": "type/Source",
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "source",
+      "lib/original-name": "source",
+      "name": "source",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "source",
+      "lib/original-display-name": "Source",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        107,
+        null
+      ],
+      "effective_type": "type/Text",
+      "active": true,
+      "id": 107,
+      "lib/desired-column-alias": "source",
+      "position": 4,
+      "visibility_type": "normal",
+      "display_name": "Source",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 2,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Text": {
+            "percent-json": 0.0,
+            "percent-url": 0.0,
+            "percent-email": 0.0,
+            "percent-state": 0.0,
+            "average-length": 2.1385991058122205
+          }
+        }
+      },
+      "base_type": "type/Text"
+    },
+    {
+      "database_type": "uuid",
+      "semantic_type": "type/FK",
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "reserved_order_id",
+      "lib/original-name": "reserved_order_id",
+      "name": "reserved_order_id",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "reserved_order_id",
+      "lib/original-display-name": "Reserved Order ID",
+      "source": "fields",
+      "fk_target_field_id": 162,
+      "field_ref": [
+        "field",
+        108,
+        null
+      ],
+      "effective_type": "type/UUID",
+      "active": true,
+      "id": 108,
+      "lib/desired-column-alias": "reserved_order_id",
+      "position": 5,
+      "visibility_type": "normal",
+      "display_name": "Reserved Order ID",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 218,
+          "nil%": 0.838301043219076
+        }
+      },
+      "base_type": "type/UUID"
+    },
+    {
+      "database_type": "timestamp",
+      "semantic_type": "type/CreationTimestamp",
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "created_at",
+      "lib/original-name": "created_at",
+      "name": "created_at",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "created_at",
+      "lib/original-display-name": "Created At",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        109,
+        null
+      ],
+      "effective_type": "type/DateTime",
+      "active": true,
+      "id": 109,
+      "lib/desired-column-alias": "created_at",
+      "position": 6,
+      "visibility_type": "normal",
+      "display_name": "Created At",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 1157,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/DateTime": {
+            "earliest": "2026-07-16T10:12:12.418633Z",
+            "latest": "2026-07-27T16:40:45.582516Z"
+          }
+        }
+      },
+      "base_type": "type/DateTime"
+    },
+    {
+      "database_type": "timestamp",
+      "semantic_type": null,
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "reserved_at",
+      "lib/original-name": "reserved_at",
+      "name": "reserved_at",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "reserved_at",
+      "lib/original-display-name": "Reserved At",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        110,
+        null
+      ],
+      "effective_type": "type/DateTime",
+      "active": true,
+      "id": 110,
+      "lib/desired-column-alias": "reserved_at",
+      "position": 7,
+      "visibility_type": "normal",
+      "display_name": "Reserved At",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 218,
+          "nil%": 0.838301043219076
+        },
+        "type": {
+          "type/DateTime": {
+            "earliest": "2026-07-16T11:11:18.046999Z",
+            "latest": "2026-07-27T17:22:48.009904Z"
+          }
+        }
+      },
+      "base_type": "type/DateTime"
+    },
+    {
+      "database_type": "timestamp",
+      "semantic_type": null,
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "sent_at",
+      "lib/original-name": "sent_at",
+      "name": "sent_at",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "sent_at",
+      "lib/original-display-name": "Sent At",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        111,
+        null
+      ],
+      "effective_type": "type/DateTime",
+      "active": true,
+      "id": 111,
+      "lib/desired-column-alias": "sent_at",
+      "position": 8,
+      "visibility_type": "normal",
+      "display_name": "Sent At",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 215,
+          "nil%": 0.838301043219076
+        },
+        "type": {
+          "type/DateTime": {
+            "earliest": "2026-07-16T11:11:18.480147Z",
+            "latest": "2026-07-27T17:22:49.128917Z"
+          }
+        }
+      },
+      "base_type": "type/DateTime"
+    },
+    {
+      "database_type": "text",
+      "semantic_type": null,
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "certificate_number_enc",
+      "lib/original-name": "certificate_number_enc",
+      "name": "certificate_number_enc",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "certificate_number_enc",
+      "lib/original-display-name": "Certificate Number Enc",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        112,
+        null
+      ],
+      "effective_type": "type/Text",
+      "active": true,
+      "id": 112,
+      "lib/desired-column-alias": "certificate_number_enc",
+      "position": 9,
+      "visibility_type": "normal",
+      "display_name": "Certificate Number Enc",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 1342,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Text": {
+            "percent-json": 0.0,
+            "percent-url": 0.0,
+            "percent-email": 0.0,
+            "percent-state": 0.0,
+            "average-length": 60.0
+          }
+        }
+      },
+      "base_type": "type/Text"
+    },
+    {
+      "database_type": "text",
+      "semantic_type": null,
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "certificate_number_hash",
+      "lib/original-name": "certificate_number_hash",
+      "name": "certificate_number_hash",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "certificate_number_hash",
+      "lib/original-display-name": "Certificate Number Hash",
+      "source": "fields",
+      "field_ref": [
+        "field",
+        113,
+        null
+      ],
+      "effective_type": "type/Text",
+      "active": true,
+      "id": 113,
+      "lib/desired-column-alias": "certificate_number_hash",
+      "position": 10,
+      "visibility_type": "normal",
+      "display_name": "Certificate Number Hash",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 1342,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Text": {
+            "percent-json": 0.0,
+            "percent-url": 0.0,
+            "percent-email": 0.0,
+            "percent-state": 0.0,
+            "average-length": 44.0
+          }
+        }
+      },
+      "base_type": "type/Text"
+    },
+    {
+      "database_type": "uuid",
+      "semantic_type": "type/FK",
+      "table_id": 23,
+      "qp/implicit-field?": true,
+      "lib/deduplicated-name": "reserved_bulk_order_id",
+      "lib/original-name": "reserved_bulk_order_id",
+      "name": "reserved_bulk_order_id",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "reserved_bulk_order_id",
+      "lib/original-display-name": "Reserved Bulk Order ID",
+      "source": "fields",
+      "fk_target_field_id": 344,
+      "field_ref": [
+        "field",
+        362,
+        null
+      ],
+      "effective_type": "type/UUID",
+      "active": true,
+      "id": 362,
+      "lib/desired-column-alias": "reserved_bulk_order_id",
+      "position": 11,
+      "visibility_type": "normal",
+      "display_name": "Reserved Bulk Order ID",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 1,
+          "nil%": 1.0
+        }
+      },
+      "base_type": "type/UUID"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": 9,
+  "query_type": "query",
+  "name": "Все сертификаты",
+  "last_query_start": "2026-08-16T06:10:59.560997Z",
+  "is_remote_synced": false,
+  "dashboard_count": 0,
+  "document_id": null,
+  "last_used_at": "2026-08-16T06:10:59.598618Z",
+  "dashboard": null,
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 181.7826086956521739,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-07-28T11:15:45.280738Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "lib/type": "mbql.stage/mbql",
+        "source-table": 23
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 43,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "table",
+  "archived_directly": false,
+  "entity_id": "Qg8Pi8_mFMkHiL5HX_UYN",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-07-28T11:15:45.337706Z"
+  },
+  "visualization_settings": {
+    "table.columns": [
+      {
+        "name": "certificate_id",
+        "enabled": true
+      },
+      {
+        "name": "amount",
+        "enabled": true
+      },
+      {
+        "name": "status",
+        "enabled": true
+      },
+      {
+        "name": "source",
+        "enabled": false
+      },
+      {
+        "name": "reserved_order_id",
+        "enabled": false
+      },
+      {
+        "name": "created_at",
+        "enabled": true
+      },
+      {
+        "name": "reserved_at",
+        "enabled": true
+      },
+      {
+        "name": "sent_at",
+        "enabled": true
+      },
+      {
+        "name": "certificate_number_enc",
+        "enabled": false
+      },
+      {
+        "name": "certificate_number_hash",
+        "enabled": false
+      }
+    ],
+    "table.pivot_column": "status",
+    "table.cell_column": "amount"
+  },
+  "collection": {
+    "authority_level": null,
+    "description": null,
+    "archived": false,
+    "workspace_id": null,
+    "slug": "certs_business_analytics",
+    "archive_operation_id": null,
+    "name": "Certs business analytics",
+    "is_remote_synced": false,
+    "personal_owner_id": null,
+    "type": null,
+    "is_sample": false,
+    "id": 9,
+    "archived_directly": null,
+    "entity_id": "hWJsZESC1merO1nxg65H-",
+    "location": "/",
+    "namespace": null,
+    "is_personal": false,
+    "created_at": "2026-07-28T09:53:06.234818Z"
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": null,
+  "created_at": "2026-07-28T11:15:45.280738Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

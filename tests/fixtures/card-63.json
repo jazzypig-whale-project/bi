@@ -1,0 +1,215 @@
+{
+  "cache_invalidated_at": null,
+  "description": null,
+  "archived": false,
+  "view_count": 150,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 23,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "int8",
+      "semantic_type": null,
+      "table_id": 23,
+      "lib/deduplicated-name": "amount",
+      "lib/original-name": "amount",
+      "lib/breakout?": true,
+      "name": "amount",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "amount",
+      "lib/original-display-name": "Amount",
+      "source": "breakout",
+      "field_ref": [
+        "field",
+        105,
+        null
+      ],
+      "effective_type": "type/BigInteger",
+      "active": true,
+      "id": 105,
+      "lib/desired-column-alias": "amount",
+      "position": 2,
+      "visibility_type": "normal",
+      "display_name": "Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 18,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 500.0,
+            "q1": 889.794824780626,
+            "q3": 1297.3860714285124,
+            "max": 9000.0,
+            "sd": 1261.265363024908,
+            "avg": 1409.4634873323398
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    },
+    {
+      "database_type": "int8",
+      "semantic_type": "type/Quantity",
+      "lib/deduplicated-name": "count",
+      "lib/original-name": "count",
+      "name": "count",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "count",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/BigInteger",
+      "lib/desired-column-alias": "count",
+      "display_name": "Count",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 13,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 3.0,
+            "q1": 3.566969722017664,
+            "q3": 233.0,
+            "max": 4215.0,
+            "sd": 981.655684215673,
+            "avg": 339.3333333333333
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": null,
+  "query_type": "query",
+  "name": "Доступные сертификаты в пуле",
+  "last_query_start": "2026-08-18T11:54:40.595661Z",
+  "is_remote_synced": false,
+  "dashboard_count": 1,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:54:40.712597Z",
+  "dashboard": {
+    "name": "Pear Cider by Erjan.Solutions ",
+    "id": 5,
+    "moderation_status": null
+  },
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 118.9733333333333333,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-08-12T08:33:48.747938Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "lib/type": "mbql.stage/mbql",
+        "filters": [
+          [
+            "=",
+            {
+              "lib/uuid": "90b83668-ff17-4da6-80ed-c387b635f042"
+            },
+            [
+              "field",
+              {
+                "lib/uuid": "d29edba9-68a7-4914-ba8a-8dedbb5a837a",
+                "effective-type": "type/Text",
+                "base-type": "type/Text"
+              },
+              106
+            ],
+            "FREE"
+          ]
+        ],
+        "aggregation": [
+          [
+            "count",
+            {
+              "lib/uuid": "66cd7afa-8ee5-4b34-9e5a-2e721d3be96f"
+            }
+          ]
+        ],
+        "source-table": 23,
+        "breakout": [
+          [
+            "field",
+            {
+              "lib/uuid": "33834528-3dac-4638-b41d-2334929e9385",
+              "effective-type": "type/BigInteger",
+              "base-type": "type/BigInteger"
+            },
+            105
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 63,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "table",
+  "archived_directly": false,
+  "entity_id": "VKDmWKoAT9fIe7JijdWZD",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-08-12T08:33:48.829442Z"
+  },
+  "visualization_settings": {
+    "table.row_index": true,
+    "table.pivot_column": "amount",
+    "table.cell_column": "count"
+  },
+  "collection": {
+    "metabase.collections.models.collection.root/is-root?": true,
+    "authority_level": null,
+    "name": "Our analytics",
+    "is_personal": false,
+    "id": "root",
+    "is_remote_synced": false,
+    "can_write": true
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": 5,
+  "created_at": "2026-08-12T08:33:48.747938Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

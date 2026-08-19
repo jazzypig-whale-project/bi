@@ -1,0 +1,20 @@
+kind: card
+key: pca-production-queue-depth
+name: Production queue depth
+description: Production requests still waiting to be placed (status PENDING).
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT count(*) AS pending_requests
+      FROM production_request
+      WHERE status = 'PENDING'
+visualization_settings: {}
+parameters: []

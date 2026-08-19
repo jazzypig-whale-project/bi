@@ -1,0 +1,373 @@
+{
+  "cache_invalidated_at": null,
+  "description": null,
+  "archived": false,
+  "view_count": 384,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 23,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "int8",
+      "semantic_type": null,
+      "table_id": 23,
+      "lib/deduplicated-name": "amount",
+      "lib/original-name": "amount",
+      "lib/breakout?": true,
+      "name": "amount",
+      "lib/source": "source/table-defaults",
+      "lib/source-column-alias": "amount",
+      "lib/original-display-name": "Amount",
+      "source": "breakout",
+      "field_ref": [
+        "field",
+        105,
+        null
+      ],
+      "effective_type": "type/BigInteger",
+      "active": true,
+      "id": 105,
+      "lib/desired-column-alias": "amount",
+      "position": 2,
+      "visibility_type": "normal",
+      "display_name": "Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 18,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 500.0,
+            "q1": 889.794824780626,
+            "q3": 1297.3860714285124,
+            "max": 9000.0,
+            "sd": 1261.265363024908,
+            "avg": 1409.4634873323398
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    },
+    {
+      "database_type": "int8",
+      "semantic_type": "type/Quantity",
+      "lib/deduplicated-name": "count",
+      "lib/original-name": "count",
+      "name": "count",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "count",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/BigInteger",
+      "lib/desired-column-alias": "count",
+      "display_name": "Count",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 16,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 3.0,
+            "q1": 11.5,
+            "q3": 496.75,
+            "max": 8237.0,
+            "sd": 1968.0993836245996,
+            "avg": 707.0588235294117
+          }
+        }
+      },
+      "base_type": "type/BigInteger"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": 9,
+  "query_type": "query",
+  "name": "Количество проданных сертификатов по номиналам",
+  "last_query_start": "2026-08-18T11:54:40.591649Z",
+  "is_remote_synced": false,
+  "dashboard_count": 1,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:54:40.712597Z",
+  "dashboard": null,
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 107.9947916666666667,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-07-30T11:49:13.138782Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "filters": [
+          [
+            "=",
+            {
+              "lib/uuid": "40dee0ee-46fb-4341-a90d-45c1d7a0c39f"
+            },
+            [
+              "field",
+              {
+                "effective-type": "type/Text",
+                "lib/uuid": "32cb5cc3-4d8a-448b-9688-dfb51662a156",
+                "base-type": "type/Text"
+              },
+              106
+            ],
+            "SENT"
+          ]
+        ],
+        "aggregation": [
+          [
+            "count",
+            {
+              "lib/uuid": "0801dd37-184b-4e00-9754-e979357af449"
+            }
+          ]
+        ],
+        "source-table": 23,
+        "lib/type": "mbql.stage/mbql",
+        "breakout": [
+          [
+            "field",
+            {
+              "lib/uuid": "c0161e97-4995-4c17-8b44-09e1c1d48570",
+              "effective-type": "type/BigInteger",
+              "base-type": "type/BigInteger"
+            },
+            105
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 51,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "pie",
+  "archived_directly": false,
+  "entity_id": "brOIkkfhM83MPEN2l3ceF",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-07-30T11:49:13.172733Z"
+  },
+  "visualization_settings": {
+    "pie.slice_threshold": 0.1,
+    "pie.sort_rows": false,
+    "pie.rows": [
+      {
+        "key": "1000",
+        "name": "1,000",
+        "originalName": "1,000",
+        "color": "#509EE3",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "1500",
+        "name": "1,500",
+        "originalName": "1,500",
+        "color": "#227FD2",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "2000",
+        "name": "2,000",
+        "originalName": "2,000",
+        "color": "#88BF4D",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "2500",
+        "name": "2,500",
+        "originalName": "2,500",
+        "color": "#8A5EB0",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "3000",
+        "name": "3,000",
+        "originalName": "3,000",
+        "color": "#689636",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "3500",
+        "name": "3,500",
+        "originalName": "3,500",
+        "color": "#F9D45C",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "4000",
+        "name": "4,000",
+        "originalName": "4,000",
+        "color": "#E75454",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "4500",
+        "name": "4,500",
+        "originalName": "4,500",
+        "color": "#F7C41F",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "5000",
+        "name": "5,000",
+        "originalName": "5,000",
+        "color": "#A989C5",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "6000",
+        "name": "6,000",
+        "originalName": "6,000",
+        "color": "#F2A86F",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "6500",
+        "name": "6,500",
+        "originalName": "6,500",
+        "color": "#ED8535",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "9000",
+        "name": "9,000",
+        "originalName": "9,000",
+        "color": "#EF8C8C",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": false
+      },
+      {
+        "key": "5500",
+        "name": "5,500",
+        "originalName": "5,500",
+        "color": "#98D9D9",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": true
+      },
+      {
+        "key": "7000",
+        "name": "7,000",
+        "originalName": "7,000",
+        "color": "#69C8C8",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": true
+      },
+      {
+        "key": "8000",
+        "name": "8,000",
+        "originalName": "8,000",
+        "color": "#7172AD",
+        "defaultColor": true,
+        "enabled": true,
+        "hidden": false,
+        "isOther": true
+      }
+    ]
+  },
+  "collection": {
+    "authority_level": null,
+    "description": null,
+    "archived": false,
+    "workspace_id": null,
+    "slug": "certs_business_analytics",
+    "archive_operation_id": null,
+    "name": "Certs business analytics",
+    "is_remote_synced": false,
+    "personal_owner_id": null,
+    "type": null,
+    "is_sample": false,
+    "id": 9,
+    "archived_directly": null,
+    "entity_id": "hWJsZESC1merO1nxg65H-",
+    "location": "/",
+    "namespace": null,
+    "is_personal": false,
+    "created_at": "2026-07-28T09:53:06.234818Z"
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": null,
+  "created_at": "2026-07-30T11:49:13.138782Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}

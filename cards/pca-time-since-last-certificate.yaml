@@ -1,0 +1,24 @@
+kind: card
+key: pca-time-since-last-certificate
+name: Last certificate sent
+description: Whole minutes since the most recent SENT certificate. Live value, no time window.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- certificate.sent_at is naive UTC, so "now" must be naive UTC too.
+      SELECT floor(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'UTC') - max(sent_at))) / 60)::bigint AS minutes
+      FROM certificate
+      WHERE status = 'SENT'
+visualization_settings:
+  column_settings:
+    '["name","minutes"]':
+      suffix: ' min'
+parameters: []

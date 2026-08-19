@@ -1,0 +1,176 @@
+{
+  "cache_invalidated_at": null,
+  "description": null,
+  "archived": false,
+  "view_count": 155,
+  "collection_position": null,
+  "source_card_id": null,
+  "table_id": 23,
+  "can_run_adhoc_query": true,
+  "result_metadata": [
+    {
+      "database_type": "numeric",
+      "semantic_type": null,
+      "lib/deduplicated-name": "sum",
+      "lib/original-name": "sum",
+      "name": "sum",
+      "lib/source": "source/aggregations",
+      "lib/source-column-alias": "sum",
+      "source": "aggregation",
+      "field_ref": [
+        "aggregation",
+        0
+      ],
+      "effective_type": "type/Decimal",
+      "lib/desired-column-alias": "sum",
+      "display_name": "Sum of Amount",
+      "fingerprint": {
+        "global": {
+          "distinct-count": 1,
+          "nil%": 0.0
+        },
+        "type": {
+          "type/Number": {
+            "min": 9749500.0,
+            "q1": 9749500.0,
+            "q3": 9749500.0,
+            "max": 9749500.0,
+            "sd": null,
+            "avg": 9749500.0
+          }
+        }
+      },
+      "base_type": "type/Decimal"
+    }
+  ],
+  "embedding_type": null,
+  "creator": {
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "is_data_analyst": false,
+    "last_login": "2026-08-12T17:44:19.432302Z",
+    "is_qbnewb": false,
+    "is_superuser": true,
+    "id": 5,
+    "last_name": "r",
+    "tenant_id": null,
+    "date_joined": "2026-07-28T08:02:49.357931Z",
+    "common_name": "s r"
+  },
+  "initially_published_at": null,
+  "can_write": true,
+  "card_schema": 23,
+  "database_id": 2,
+  "enable_embedding": false,
+  "collection_id": 9,
+  "query_type": "query",
+  "name": "Сумма пула сертификатов",
+  "last_query_start": "2026-08-18T11:54:40.597751Z",
+  "is_remote_synced": false,
+  "dashboard_count": 1,
+  "document_id": null,
+  "last_used_at": "2026-08-18T11:54:40.712597Z",
+  "dashboard": null,
+  "type": "question",
+  "dimensions": null,
+  "average_query_time": 100.4580645161290323,
+  "creator_id": 5,
+  "can_restore": false,
+  "moderation_reviews": [],
+  "updated_at": "2026-08-12T08:31:27.118998Z",
+  "made_public_by_id": null,
+  "embedding_params": null,
+  "cache_ttl": null,
+  "dataset_query": {
+    "lib/type": "mbql/query",
+    "database": 2,
+    "stages": [
+      {
+        "lib/type": "mbql.stage/mbql",
+        "filters": [
+          [
+            "=",
+            {
+              "lib/uuid": "5acb263c-582a-4e0a-a21e-db2de917af03"
+            },
+            [
+              "field",
+              {
+                "effective-type": "type/Text",
+                "lib/uuid": "ac0701f3-a5aa-4067-b503-3f5a6d60d82c",
+                "base-type": "type/Text"
+              },
+              106
+            ],
+            "FREE"
+          ]
+        ],
+        "source-table": 23,
+        "aggregation": [
+          [
+            "sum",
+            {
+              "lib/uuid": "9003a7bb-e49d-44c3-91ca-13a48611e556"
+            },
+            [
+              "field",
+              {
+                "lib/uuid": "8e86ee71-962c-4ff6-aaad-27675cff5d63",
+                "effective-type": "type/BigInteger",
+                "base-type": "type/BigInteger"
+              },
+              105
+            ]
+          ]
+        ]
+      }
+    ]
+  },
+  "dimension_mappings": null,
+  "id": 62,
+  "legacy_query": null,
+  "parameter_mappings": [],
+  "can_manage_db": false,
+  "display": "scalar",
+  "archived_directly": false,
+  "entity_id": "v_Vy3Lt3E7FMjPusy746G",
+  "param_fields": {},
+  "collection_preview": true,
+  "last-edit-info": {
+    "id": 5,
+    "email": "sr@apple-certificate.solutions",
+    "first_name": "s",
+    "last_name": "r",
+    "timestamp": "2026-08-12T08:31:27.161453Z"
+  },
+  "visualization_settings": {
+    "scalar.segments": []
+  },
+  "collection": {
+    "authority_level": null,
+    "description": null,
+    "archived": false,
+    "workspace_id": null,
+    "slug": "certs_business_analytics",
+    "archive_operation_id": null,
+    "name": "Certs business analytics",
+    "is_remote_synced": false,
+    "personal_owner_id": null,
+    "type": null,
+    "is_sample": false,
+    "id": 9,
+    "archived_directly": null,
+    "entity_id": "hWJsZESC1merO1nxg65H-",
+    "location": "/",
+    "namespace": null,
+    "is_personal": false,
+    "created_at": "2026-07-28T09:53:06.234818Z"
+  },
+  "metabase_version": "v0.60.7 (6a29414)",
+  "parameters": [],
+  "dashboard_id": null,
+  "created_at": "2026-08-12T08:31:27.118998Z",
+  "parameter_usage_count": 0,
+  "public_uuid": null,
+  "can_delete": false
+}
