@@ -189,8 +189,6 @@ dashboards:
       dc-certificates-sent-window: 56
       dc-time-since-last-certificate: 57
       dc-orders-in-progress: 58
-      dc-topups-in-progress-count: 59
-      dc-topups-in-progress-rub: 60
       dc-capacity-now-quota: 61
       dc-capacity-now-quota-balance: 62
       dc-time-since-last-order-by-partner: 63
@@ -211,8 +209,20 @@ dashboards:
       dc-production-queue-by-denomination: 78
       dc-pool-total-value: 79
       dc-capacity-by-hour: 80
+      dc-topups-in-progress-count: 59
+      dc-topups-in-progress-rub: 60
       dc-topups-created-by-hour: 81
       dc-topups-aging: 82
       dc-topups-by-status: 83
+      dc-heading-overview-live-state: 85
+      dc-heading-overview-partners: 86
+      dc-heading-overview-pipeline: 87
+      dc-heading-orders-aging: 90
+      dc-heading-orders-certificates: 91
+      dc-heading-orders-partners: 92
+      dc-heading-orders-denominations: 93
+      dc-heading-production-capacity: 96
+      dc-heading-topups-volume: 98
+      dc-heading-topups-status: 99
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
