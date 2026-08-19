@@ -135,6 +135,9 @@ cards:
   pca-topups-created-by-hour:
     id: 98
     entity_id: -Uv0XiNqatxPIaOwzkvHy
+  pca-topup-completion-time-percentiles:
+    id: 99
+    entity_id: kb3zbq94R4GPYJxvJIYFH
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -184,51 +187,52 @@ dashboards:
       production: 8
       topups: 9
     dashcards:
+      dc-heading-overview-volume: 84
       dc-certificate-face-value-by-day: 54
+      dc-heading-overview-live-state: 85
       dc-production-queue-depth: 55
       dc-certificates-sent-window: 56
       dc-time-since-last-certificate: 57
       dc-orders-in-progress: 58
       dc-capacity-now-quota: 61
       dc-capacity-now-quota-balance: 62
+      dc-heading-overview-partners: 86
       dc-time-since-last-order-by-partner: 63
+      dc-heading-overview-pipeline: 87
       dc-flow-by-hour: 64
+      dc-heading-orders-volume: 88
       dc-orders-by-hour-sber: 65
       dc-orders-by-hour-other: 66
+      dc-heading-orders-pipeline: 89
       dc-orders-in-progress-by-status-partner: 67
       dc-completion-time-percentiles: 68
+      dc-heading-orders-aging: 90
       dc-orders-aging-sber: 69
       dc-orders-aging-other: 70
+      dc-heading-orders-certificates: 91
       dc-certificates-sent-by-hour: 71
+      dc-heading-orders-partners: 92
       dc-sales-distribution-by-partner: 72
       dc-average-check-by-day: 73
+      dc-heading-orders-denominations: 93
       dc-certificates-sold-by-denomination: 74
       dc-certificate-turnover-by-denomination: 75
+      dc-heading-production-requests: 94
       dc-production-requests-by-hour: 76
+      dc-heading-production-pool: 95
       dc-certificates-in-pool-by-denomination: 77
       dc-production-queue-by-denomination: 78
       dc-pool-total-value: 79
+      dc-heading-production-capacity: 96
       dc-capacity-by-hour: 80
+      dc-heading-topups-live-state: 97
       dc-topups-in-progress-count: 59
       dc-topups-in-progress-rub: 60
+      dc-heading-topups-volume: 98
       dc-topups-created-by-hour: 81
+      dc-heading-topups-status: 99
       dc-topups-aging: 82
       dc-topups-by-status: 83
-      dc-heading-overview-live-state: 85
-      dc-heading-overview-partners: 86
-      dc-heading-overview-pipeline: 87
-      dc-heading-orders-aging: 90
-      dc-heading-orders-certificates: 91
-      dc-heading-orders-partners: 92
-      dc-heading-orders-denominations: 93
-      dc-heading-production-capacity: 96
-      dc-heading-topups-volume: 98
-      dc-heading-topups-status: 99
-      dc-heading-overview-volume: 84
-      dc-heading-orders-volume: 88
-      dc-heading-orders-pipeline: 89
-      dc-heading-production-requests: 94
-      dc-heading-production-pool: 95
-      dc-heading-topups-live-state: 97
+      dc-topup-completion-time-percentiles: 100
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

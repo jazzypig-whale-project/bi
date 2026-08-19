@@ -1,0 +1,44 @@
+kind: card
+key: pca-topup-completion-time-percentiles
+name: Topup completion time percentiles
+description: created_at to updated_at for COMPLETED topups (updated_at is the last touch, which for a terminal row is the moment it became terminal). Shown as d/h/m/s.
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- updated_at is used as the completion proxy (no dedicated completed_at column exists
+      -- on topup_payout); both endpoints are naive UTC, so no timezone conversion needed.
+      WITH spans AS (
+        SELECT EXTRACT(EPOCH FROM (t.updated_at - t.created_at)) AS seconds
+        FROM topup_payout t
+        WHERE t.status = 'COMPLETED'
+          AND t.updated_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')),
+      pct AS (
+        SELECT percentile_cont(ARRAY[0.50, 0.75, 0.90, 0.95, 0.99])
+                 WITHIN GROUP (ORDER BY seconds) AS p
+        FROM spans)
+      SELECT label AS percentile,
+             CASE
+               WHEN value < 60 THEN round(value)::text || 's'
+               WHEN value < 3600 THEN floor(value / 60)::text || 'm ' || round(value - floor(value / 60) * 60)::text || 's'
+               WHEN value < 86400 THEN floor(value / 3600)::text || 'h ' || floor((value - floor(value / 3600) * 3600) / 60)::text || 'm'
+               ELSE floor(value / 86400)::text || 'd ' || floor((value - floor(value / 86400) * 86400) / 3600)::text || 'h'
+             END AS duration
+      FROM pct, LATERAL unnest(ARRAY['p50', 'p75', 'p90', 'p95', 'p99'], p) AS t(label, value)
+      ORDER BY percentile
+    template-tags:
+      days:
+        id: 487f8d04-0bb9-4176-96eb-724ba749d033
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings: {}
+parameters: []
