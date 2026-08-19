@@ -224,5 +224,11 @@ dashboards:
       dc-heading-production-capacity: 96
       dc-heading-topups-volume: 98
       dc-heading-topups-status: 99
+      dc-heading-overview-volume: 84
+      dc-heading-orders-volume: 88
+      dc-heading-orders-pipeline: 89
+      dc-heading-production-requests: 94
+      dc-heading-production-pool: 95
+      dc-heading-topups-live-state: 97
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

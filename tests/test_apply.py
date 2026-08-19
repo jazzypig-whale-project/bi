@@ -436,35 +436,86 @@ def test_a_partial_dashcards_response_records_only_what_came_back(tmp_path):
 # --- Fix 3: ambiguous matches record nothing instead of guessing ---------------
 
 def test_ambiguous_signatures_record_no_mapping_at_all(tmp_path):
-    # Same card at the same position on two different tabs: the signature cannot
-    # tell the two response rows apart, and a guess would cross-wire key -> id.
+    # Same card at the same position on the same tab: the signature cannot tell the
+    # two response rows apart, and a guess would cross-wire key -> id.
     tree = _dash_tree(
         [{"key": "a", "card": "daily-revenue", "tab": "t1",
           "row": 0, "col": 0, "size_x": 12, "size_y": 6},
-         {"key": "b", "card": "daily-revenue", "tab": "t2",
+         {"key": "b", "card": "daily-revenue", "tab": "t1",
           "row": 0, "col": 0, "size_x": 12, "size_y": 6}],
-        tabs=[{"key": "t1", "name": "Tab 1"}, {"key": "t2", "name": "Tab 2"}])
+        tabs=[{"key": "t1", "name": "Tab 1"}])
     state = _dash_state(tmp_path)
     captured = {}
-    ids = {"tabs": iter([500, 501]), "dashcards": iter([901, 902])}
+    ids = {"tabs": iter([500]), "dashcards": iter([901, 902])}
     client = FakeClient(puts={"/api/dashboard/100": _echo_put(captured, ids)})
 
     apply_mod._update_dashboard(tree, state, client, "overview")
 
     assert _recorded(state)["dashcards"] == {}
+    assert _recorded(state)["tabs"] == {"t1": 500}
+
+
+def test_headings_sharing_a_position_across_tabs_are_told_apart_by_their_tab(tmp_path):
+    # Virtual cards carry no card_id, so every "row 0, col 0, 24x1" heading has the
+    # same card_id/row/col/size signature; only the tab separates them.
+    heading = {"row": 0, "col": 0, "size_x": 24, "size_y": 1,
+               "visualization_settings": {"virtual_card": {"display": "heading"}}}
+    tree = _dash_tree(
+        [{"key": "h1", "tab": "t1", **heading}, {"key": "h2", "tab": "t2", **heading}],
+        tabs=[{"key": "t1", "name": "Tab 1"}, {"key": "t2", "name": "Tab 2"}])
+    state = _dash_state(tmp_path, tabs={"t1": 6, "t2": 7})
+    captured = {}
+    ids = {"tabs": iter([6, 7]), "dashcards": iter([901, 902])}
+    client = FakeClient(gets={"/api/dashboard/100": {"tabs": [{"id": 6}, {"id": 7}],
+                                                    "dashcards": []}},
+                        puts={"/api/dashboard/100": _echo_put(captured, ids)})
+
+    apply_mod._update_dashboard(tree, state, client, "overview")
+
+    assert _recorded(state)["dashcards"] == {"h1": 901, "h2": 902}
+
+
+def test_new_tabs_temp_ids_do_not_block_matching_their_dashcards(tmp_path):
+    # The tabs are created by this same PUT: the request carries negative temp tab ids
+    # and the response the real ones, so the signature must compare them as the same tab.
+    heading = {"row": 0, "col": 0, "size_x": 24, "size_y": 1,
+               "visualization_settings": {"virtual_card": {"display": "heading"}}}
+    tree = _dash_tree(
+        [{"key": "h1", "tab": "t1", **heading}, {"key": "h2", "tab": "t2", **heading}],
+        tabs=[{"key": "t1", "name": "Tab 1"}, {"key": "t2", "name": "Tab 2"}])
+    state = _dash_state(tmp_path)
+    captured = {}
+
+    def put_dashboard(body):
+        captured["body"] = body
+        real = {tab["id"]: 500 + i for i, tab in enumerate(body["tabs"])}
+        return {
+            "tabs": [{**tab, "id": real[tab["id"]], "position": i}
+                     for i, tab in enumerate(body["tabs"])],
+            "dashcards": [{**dc, "id": 901 + i,
+                           "dashboard_tab_id": real[dc["dashboard_tab_id"]]}
+                          for i, dc in enumerate(body["dashcards"])],
+        }
+
+    client = FakeClient(puts={"/api/dashboard/100": put_dashboard})
+
+    apply_mod._update_dashboard(tree, state, client, "overview")
+
+    assert captured["body"]["tabs"][0]["id"] < 0
     assert _recorded(state)["tabs"] == {"t1": 500, "t2": 501}
+    assert _recorded(state)["dashcards"] == {"h1": 901, "h2": 902}
 
 
 def test_match_dashcard_returns_none_when_two_rows_share_a_signature():
     written = {"card_id": 7, "row": 0, "col": 0, "size_x": 12, "size_y": 6}
     pool = [{**written, "id": 901}, {**written, "id": 902}]
-    assert apply_mod._match_dashcard(pool, written) is None
+    assert apply_mod._match_dashcard(pool, written, {}) is None
 
 
 def test_match_dashcard_returns_none_when_nothing_matches():
     written = {"card_id": 7, "row": 0, "col": 0, "size_x": 12, "size_y": 6}
-    assert apply_mod._match_dashcard([{"id": 901, "card_id": 9, "row": 4}], written) is None
-    assert apply_mod._match_dashcard([], written) is None
+    assert apply_mod._match_dashcard([{"id": 901, "card_id": 9, "row": 4}], written, {}) is None
+    assert apply_mod._match_dashcard([], written, {}) is None
 
 
 def test_a_single_leftover_row_is_paired_by_elimination_not_by_guessing(tmp_path):

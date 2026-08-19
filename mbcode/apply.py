@@ -262,7 +262,7 @@ def _put_dashboard(state, client, key, doc, lookup):
     body, sent_tabs, sent_dashcards = _dashboard_put_body(doc, entry, lookup)
     resp = client.put(f"/api/dashboard/{dashboard_id}", body)
     _record_tabs(entry, sent_tabs, resp)
-    _record_dashcards(entry, sent_dashcards, resp)
+    _record_dashcards(entry, sent_dashcards, resp, _tab_aliases(sent_tabs, entry["tabs"]))
     state.save()
 
 
@@ -295,7 +295,24 @@ def _record_tabs(entry, sent_tabs, resp):
     entry["tabs"] = new_map
 
 
-def _record_dashcards(entry, sent_dashcards, resp):
+def _tab_aliases(sent_tabs, recorded_tabs) -> dict:
+    """Every id a tab was seen under (the temp id sent, the real id recorded) -> its real id.
+
+    A tab created by this same PUT is sent as a negative temp id and comes back as a real
+    one, so a dashcard's `dashboard_tab_id` is not comparable between request and response
+    until both sides are mapped through this.
+    """
+    aliases = {}
+    for tab_key, sent_id in sent_tabs:
+        real_id = recorded_tabs.get(tab_key)
+        if real_id is None:
+            continue
+        aliases[sent_id] = real_id
+        aliases[real_id] = real_id
+    return aliases
+
+
+def _record_dashcards(entry, sent_dashcards, resp, tab_aliases):
     """Record only ids the PUT response actually returned; re-match the rest by signature.
 
     Keeping a sent id the response omits is what made stale ids immortal: the server
@@ -309,7 +326,7 @@ def _record_dashcards(entry, sent_dashcards, resp):
     pending = [(key, w) for key, w in sent_dashcards if key not in new_map]
     leftover = []
     for dc_key, written in pending:
-        match = _match_dashcard(pool, written)
+        match = _match_dashcard(pool, written, tab_aliases)
         if match is None:
             leftover.append(dc_key)
             continue
@@ -321,15 +338,19 @@ def _record_dashcards(entry, sent_dashcards, resp):
     entry["dashcards"] = new_map
 
 
-def _dashcard_signature(dc):
-    return tuple(dc.get(f) for f in ("card_id", "row", "col", "size_x", "size_y"))
+def _dashcard_signature(dc, tab_aliases):
+    """The tab belongs in the signature: headings carry no card_id, so a row/col-only
+    signature makes the same heading position on every tab look like one ambiguous row."""
+    tab_id = dc.get("dashboard_tab_id")
+    return (tab_aliases.get(tab_id, tab_id),
+            *(dc.get(f) for f in ("card_id", "row", "col", "size_x", "size_y")))
 
 
-def _match_dashcard(pool, written):
+def _match_dashcard(pool, written, tab_aliases):
     """Exactly one signature match, or nothing: guessing cross-wires key -> id, and
     every later apply would then rewrite the wrong dashcard."""
-    signature = _dashcard_signature(written)
-    matches = [dc for dc in pool if _dashcard_signature(dc) == signature]
+    signature = _dashcard_signature(written, tab_aliases)
+    matches = [dc for dc in pool if _dashcard_signature(dc, tab_aliases) == signature]
     return matches[0] if len(matches) == 1 else None
 
 
