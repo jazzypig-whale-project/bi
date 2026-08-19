@@ -70,6 +70,17 @@ backup: ## Encrypted dump of metadata DB → backups/ (needs BI_BACKUP_ENCRYPT_P
 restore: ## ⚠ DESTRUCTIVE: restore metadata from backups/FILE (FILE=metabase_db_...enc)
 	@scripts/db-restore.sh "$(FILE)"
 
+# --- Metabase as code (./mbc — дашборды/вопросы как файлы, см. docs/metabase-as-code.md) ---
+.PHONY: mbc-validate mbc-diff mbc-test
+mbc-validate: ## Offline validation of the Metabase YAML tree (cards/dashboards/collections)
+	@./mbc validate
+
+mbc-diff: ## Compare the YAML tree against the live instance (exit 2 = drift)
+	@./mbc diff
+
+mbc-test: ## Run the mbcode pytest suite
+	@.venv/bin/pytest
+
 # --- Останов (внизу: down редкий, destroy разрушающий) ---
 .PHONY: down destroy
 down: ## Stop and remove containers of both modes (metadata volume kept)
