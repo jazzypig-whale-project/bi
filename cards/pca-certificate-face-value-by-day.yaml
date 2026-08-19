@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day
 name: Certificate face value by day, ₽
-description: Sum of SENT certificate face values per complete Europe/Moscow day. The window is half-open and ends at today's Moscow midnight, so neither the partial first day nor the still-running current day is drawn and every bar covers a full day. The dashed line is Metabase's linear trend fitted over exactly those complete days.
+description: Sum of SENT certificate face values per Europe/Moscow day. Complete days are drawn in the default color; the still-running current day is a separate series in a different color, since it never covers a full day. The dashed line is Metabase's linear trend fitted over the complete days only.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -14,17 +14,26 @@ dataset_query:
   - lib/type: mbql.stage/native
     native: |
       -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
-      -- The window is half-open on Moscow midnights and covers only complete days: a
-      -- rolling now() window clipped both the first day and today into short bars that
-      -- the trend line then read as real movement.
-      SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
-             sum(c.amount)::bigint                                                          AS face_value
-      FROM certificate c
-      WHERE c.status = 'SENT'
-        AND c.sent_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
-        AND c.sent_at <  (date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
-      GROUP BY 1
-      ORDER BY 1
+      -- Complete days go in face_value, the still-running current day goes in
+      -- face_value_today (separate column = separate, differently-colored series),
+      -- so the trend line (fit on face_value only) never reads a partial day as movement.
+      WITH today_msk AS (
+        SELECT date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) AS day
+      ),
+      daily AS (
+        SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+               sum(c.amount)::bigint                                                          AS face_value
+        FROM certificate c
+        WHERE c.status = 'SENT'
+          AND c.sent_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND c.sent_at <  (now() AT TIME ZONE 'UTC')
+        GROUP BY 1
+      )
+      SELECT d.day,
+             CASE WHEN d.day <  t.day THEN d.face_value END AS face_value,
+             CASE WHEN d.day =  t.day THEN d.face_value END AS face_value_today
+      FROM daily d, today_msk t
+      ORDER BY d.day
     template-tags:
       days:
         id: 8f323b82-b255-4847-829a-3cbe13a6e4e9
@@ -37,6 +46,7 @@ visualization_settings:
   - day
   graph.metrics:
   - face_value
+  - face_value_today
   graph.x_axis.scale: timeseries
   graph.show_values: true
   graph.show_trendline: true
@@ -45,7 +55,14 @@ visualization_settings:
     '["name","face_value"]':
       suffix: ' ₽'
       decimals: 1
+    '["name","face_value_today"]':
+      suffix: ' ₽'
+      decimals: 1
   series_settings:
     face_value:
+      title: Complete days
       color: '#509EE3'
+    face_value_today:
+      title: Today
+      color: '#84BB4C'
 parameters: []
