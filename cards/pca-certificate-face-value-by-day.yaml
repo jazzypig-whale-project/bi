@@ -44,7 +44,7 @@ visualization_settings:
   column_settings:
     '["name","face_value"]':
       suffix: ' ₽'
-      decimals: 0
+      decimals: 1
   series_settings:
     face_value:
       color: '#509EE3'
