@@ -141,6 +141,12 @@ cards:
   pca-emails-sent-by-hour-by-domain:
     id: 100
     entity_id: vpstCU2whD40BQBSXMUOp
+  pca-emails-failed-and-in-progress-by-hour:
+    id: 101
+    entity_id: v_tliox74zFjGPvPPjYeS
+  pca-emails-failed-top-domains:
+    id: 102
+    entity_id: _XqN_WUBxuC8s2TnuPzNG
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -189,6 +195,7 @@ dashboards:
       orders: 7
       production: 8
       topups: 9
+      emails: 10
     dashcards:
       dc-heading-overview-volume: 84
       dc-certificate-face-value-by-day: 54
@@ -220,6 +227,7 @@ dashboards:
       dc-heading-orders-denominations: 93
       dc-certificates-sold-by-denomination: 74
       dc-certificate-turnover-by-denomination: 75
+      dc-emails-sent-by-hour-by-domain: 101
       dc-heading-production-requests: 94
       dc-production-requests-by-hour: 76
       dc-heading-production-pool: 95
@@ -237,6 +245,8 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
-      dc-emails-sent-by-hour-by-domain: 101
+      dc-heading-emails-delivery: 102
+      dc-emails-failed-and-in-progress-by-hour: 103
+      dc-emails-failed-top-domains: 104
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

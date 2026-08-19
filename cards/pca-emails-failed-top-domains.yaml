@@ -1,0 +1,38 @@
+kind: card
+key: pca-emails-failed-top-domains
+name: Top 10 recipient domains by failed emails
+description: Recipient (buyer_email) domains with the most failed certificate emails over the Days window — FAILED_MANUAL orders with an email_* or delivery_forced_failed failure_reason. Anchored to sent_confirmed_at when known, else paid_at — FAILED_MANUAL carries no terminal timestamp.
+collection: pear-cider-automated
+type: question
+display: row
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT lower(split_part(buyer_email, '@', 2)) AS domain, count(*) AS failed
+      FROM order_
+      WHERE status = 'FAILED_MANUAL'
+        AND (failure_reason LIKE 'email\_%' OR failure_reason = 'delivery_forced_failed')
+        AND COALESCE(sent_confirmed_at, paid_at) >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        AND buyer_email IS NOT NULL
+      GROUP BY 1
+      ORDER BY failed DESC, domain
+      LIMIT 10
+    template-tags:
+      days:
+        id: 20d2f568-671c-447c-915e-71cd88a2b489
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - domain
+  graph.metrics:
+  - failed
+  graph.y_axis.title_text: Failed emails
+parameters: []

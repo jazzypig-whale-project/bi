@@ -1,0 +1,58 @@
+kind: card
+key: pca-emails-failed-and-in-progress-by-hour
+name: Emails failed and in progress by hour
+description: Orders per hour over the Days window whose certificate email failed (FAILED_MANUAL with an email_* or delivery_forced_failed failure_reason) or is still in flight (SENDING). Anchored to sent_confirmed_at when known, else paid_at — FAILED_MANUAL carries no terminal timestamp. Hour buckets are Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      states AS (SELECT * FROM (VALUES ('Failed'), ('In progress')) AS t(state)),
+      mail AS (
+        SELECT date_trunc('hour',
+                 (COALESCE(sent_confirmed_at, paid_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h,
+               CASE WHEN status = 'SENDING' THEN 'In progress' ELSE 'Failed' END AS state
+        FROM order_
+        WHERE COALESCE(sent_confirmed_at, paid_at) >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+          AND (status = 'SENDING'
+               OR (status = 'FAILED_MANUAL'
+                   AND (failure_reason LIKE 'email\_%' OR failure_reason = 'delivery_forced_failed'))))
+      SELECT s.h AS hour, st.state, count(m.state) AS emails
+      FROM spine s
+      CROSS JOIN states st
+      LEFT JOIN mail m ON m.h = s.h AND m.state = st.state
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: db88a41d-2a64-4674-af31-dab1fe62d9b3
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - state
+  graph.metrics:
+  - emails
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Emails
+  stackable.stack_type: stacked
+  series_settings:
+    Failed:
+      color: '#ED6E6E'
+    In progress:
+      color: '#F9D45C'
+parameters: []

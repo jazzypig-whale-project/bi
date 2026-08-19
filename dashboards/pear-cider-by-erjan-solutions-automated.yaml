@@ -20,6 +20,8 @@ tabs:
   name: Overview
 - key: orders
   name: Orders
+- key: emails
+  name: Emails
 - key: production
   name: Production & Capacity
 - key: topups
@@ -334,25 +336,9 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-emails-sent-by-hour-by-domain
-  card: pca-emails-sent-by-hour-by-domain
-  tab: orders
-  row: 30
-  col: 0
-  size_x: 24
-  size_y: 6
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  series: []
-  inline_parameters: []
 - key: dc-heading-orders-partners
   tab: orders
-  row: 36
+  row: 30
   col: 0
   size_x: 24
   size_y: 1
@@ -364,7 +350,7 @@ dashcards:
 - key: dc-sales-distribution-by-partner
   card: pca-sales-distribution-by-partner
   tab: orders
-  row: 37
+  row: 31
   col: 0
   size_x: 12
   size_y: 7
@@ -375,7 +361,7 @@ dashcards:
 - key: dc-average-check-by-day
   card: pca-average-check-by-day
   tab: orders
-  row: 37
+  row: 31
   col: 12
   size_x: 12
   size_y: 7
@@ -390,7 +376,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-denominations
   tab: orders
-  row: 44
+  row: 38
   col: 0
   size_x: 24
   size_y: 1
@@ -402,7 +388,7 @@ dashcards:
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
-  row: 45
+  row: 39
   col: 0
   size_x: 12
   size_y: 7
@@ -413,12 +399,71 @@ dashcards:
 - key: dc-certificate-turnover-by-denomination
   card: pca-certificate-turnover-by-denomination
   tab: orders
-  row: 45
+  row: 39
   col: 12
   size_x: 12
   size_y: 7
   visualization_settings: {}
   parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-heading-emails-delivery
+  tab: emails
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Email delivery
+    dashcard.background: false
+- key: dc-emails-sent-by-hour-by-domain
+  card: pca-emails-sent-by-hour-by-domain
+  tab: emails
+  row: 1
+  col: 0
+  size_x: 24
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-emails-failed-and-in-progress-by-hour
+  card: pca-emails-failed-and-in-progress-by-hour
+  tab: emails
+  row: 7
+  col: 0
+  size_x: 24
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-emails-failed-top-domains
+  card: pca-emails-failed-top-domains
+  tab: emails
+  row: 13
+  col: 0
+  size_x: 24
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
   series: []
   inline_parameters: []
 - key: dc-heading-production-requests
