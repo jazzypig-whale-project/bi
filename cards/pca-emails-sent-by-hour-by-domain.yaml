@@ -1,0 +1,55 @@
+kind: card
+key: pca-emails-sent-by-hour-by-domain
+name: Emails sent by hour by sender domain
+description: Emails sent per hour over the Days window, split by the domain of the From address. Domains come from the data, so new sender domains appear automatically. Hour buckets are Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      mail AS (
+        SELECT date_trunc('hour', (sent_confirmed_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h,
+               lower(split_part(sent_from_address, '@', 2)) AS domain
+        FROM order_
+        WHERE sent_confirmed_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+          AND sent_from_address IS NOT NULL),
+      domains AS (SELECT DISTINCT domain FROM mail)
+      SELECT s.h AS hour, d.domain, count(m.domain) AS emails
+      FROM spine s
+      CROSS JOIN domains d
+      LEFT JOIN mail m ON m.h = s.h AND m.domain = d.domain
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 32dcf0b2-1462-4ecb-a417-a09f4e15b103
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - domain
+  graph.metrics:
+  - emails
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Emails sent
+  stackable.stack_type: stacked
+  series_settings:
+    apple-gift.org:
+      color: '#509EE3'
+    engine.smartfruit.org:
+      color: '#88BF4D'
+parameters: []

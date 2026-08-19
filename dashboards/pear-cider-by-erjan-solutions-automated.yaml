@@ -334,9 +334,25 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-heading-orders-partners
+- key: dc-emails-sent-by-hour-by-domain
+  card: pca-emails-sent-by-hour-by-domain
   tab: orders
   row: 30
+  col: 0
+  size_x: 24
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-heading-orders-partners
+  tab: orders
+  row: 36
   col: 0
   size_x: 24
   size_y: 1
@@ -348,7 +364,7 @@ dashcards:
 - key: dc-sales-distribution-by-partner
   card: pca-sales-distribution-by-partner
   tab: orders
-  row: 31
+  row: 37
   col: 0
   size_x: 12
   size_y: 7
@@ -359,7 +375,7 @@ dashcards:
 - key: dc-average-check-by-day
   card: pca-average-check-by-day
   tab: orders
-  row: 31
+  row: 37
   col: 12
   size_x: 12
   size_y: 7
@@ -374,7 +390,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-denominations
   tab: orders
-  row: 38
+  row: 44
   col: 0
   size_x: 24
   size_y: 1
@@ -386,7 +402,7 @@ dashcards:
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
-  row: 39
+  row: 45
   col: 0
   size_x: 12
   size_y: 7
@@ -397,7 +413,7 @@ dashcards:
 - key: dc-certificate-turnover-by-denomination
   card: pca-certificate-turnover-by-denomination
   tab: orders
-  row: 39
+  row: 45
   col: 12
   size_x: 12
   size_y: 7

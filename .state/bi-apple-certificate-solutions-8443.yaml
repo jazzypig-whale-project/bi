@@ -138,6 +138,9 @@ cards:
   pca-topup-completion-time-percentiles:
     id: 99
     entity_id: kb3zbq94R4GPYJxvJIYFH
+  pca-emails-sent-by-hour-by-domain:
+    id: 100
+    entity_id: vpstCU2whD40BQBSXMUOp
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -234,5 +237,6 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
+      dc-emails-sent-by-hour-by-domain: 101
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
