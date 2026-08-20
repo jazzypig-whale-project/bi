@@ -22,7 +22,7 @@ def run_export(config, client, root_dir: str, overwrite: bool) -> int:
         client, state, root_dir, "collections", "/api/collection/{}",
         {c["id"] for c in listed_collections})
     card_items, dashboard_items = _inventory(client, collection_ids)
-    dashboards = [client.get(f"/api/dashboard/{item['id']}") for item in dashboard_items]
+    dashboards = client.get_many(f"/api/dashboard/{item['id']}" for item in dashboard_items)
     dashboards += _readopt(client, state, root_dir, "dashboards", "/api/dashboard/{}",
                            {d["id"] for d in dashboards})
     card_ids = [item["id"] for item in card_items]
@@ -32,7 +32,7 @@ def run_export(config, client, root_dir: str, overwrite: bool) -> int:
     listed = set(card_ids)
     card_ids += [cid for cid in dict.fromkeys(_referenced_card_ids(dashboards))
                  if cid not in listed]
-    cards = [client.get(f"/api/card/{cid}") for cid in card_ids]
+    cards = client.get_many(f"/api/card/{cid}" for cid in card_ids)
     cards += _readopt(client, state, root_dir, "cards", "/api/card/{}", set(card_ids))
 
     coll_keys = _assign_keys(live_collections, state.reverse_map("collections"))
@@ -105,14 +105,17 @@ def _readopt(client, state, root_dir, section, path_template, live_ids) -> list:
     make the next apply create a duplicate. Keys whose YAML file is gone, and keys whose
     id no longer exists on the instance, are dropped from the state.
     """
-    entities = []
+    candidates = []  # (key, entity_id)
     for key, entry in state.data[section].items():
         entity_id = entry.get("id")
         if entity_id is None or entity_id in live_ids:
             continue
         if not os.path.isfile(os.path.join(root_dir, section, f"{key}.yaml")):
             continue
-        entity = client.get_or_none(path_template.format(entity_id))
+        candidates.append((key, entity_id))
+    fetched = client.get_many_or_none(path_template.format(eid) for _, eid in candidates)
+    entities = []
+    for (key, entity_id), entity in zip(candidates, fetched):
         if entity is None:
             print(f"warning: {section[:-1]} {key!r} (id {entity_id}) is in the state file "
                   "but not on the instance; its state entry is dropped")
@@ -123,13 +126,15 @@ def _readopt(client, state, root_dir, section, path_template, live_ids) -> list:
 
 def _inventory(client, collection_ids):
     """Return ([{'id','name'}, ...] cards, same for dashboards) across all collections."""
+    models = ("card", "dashboard")
+    keys = [(cid, model) for cid in collection_ids for model in models]
+    responses = client.get_many(f"/api/collection/{cid}/items?models={model}"
+                                for cid, model in keys)
     cards, dashboards = [], []
-    targets = {"card": cards, "dashboard": dashboards}
-    for cid in collection_ids:
-        for model, bucket in targets.items():
-            resp = client.get(f"/api/collection/{cid}/items?models={model}")
-            items = resp.get("data") if isinstance(resp, dict) else resp
-            bucket.extend({"id": item["id"], "name": item.get("name")} for item in items or [])
+    buckets = {"card": cards, "dashboard": dashboards}
+    for (_, model), resp in zip(keys, responses):
+        items = resp.get("data") if isinstance(resp, dict) else resp
+        buckets[model].extend({"id": item["id"], "name": item.get("name")} for item in items or [])
     return cards, dashboards
 
 

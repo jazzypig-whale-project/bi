@@ -3,7 +3,50 @@ from __future__ import annotations
 
 import pytest
 
+from helpers import FakeClient
 from mbcode import cli, diff as diff_mod
+from mbcode.repo import Tree
+from mbcode.state import State
+
+
+# --- live-entity prefetch batches into one get_many_or_none wave ----------------
+
+def test_prefetch_live_batches_known_entities_in_one_call():
+    tree = Tree(root="unused",
+               collections={"sales": {}},
+               cards={"daily-revenue": {}, "not-created-yet": {}},
+               dashboards={"overview": {}})
+    state = State("unused", {
+        "collections": {"sales": {"id": 2}},
+        "cards": {"daily-revenue": {"id": 40}},  # "not-created-yet" has no id -> not fetched
+        "dashboards": {"overview": {"id": 5, "tabs": {}, "dashcards": {}}},
+    })
+    client = FakeClient(gets={
+        "/api/collection/2": {"id": 2, "name": "Sales"},
+        "/api/card/40": {"id": 40, "name": "Daily revenue"},
+        "/api/dashboard/5": {"id": 5, "name": "Overview"},
+    })
+
+    live = diff_mod._prefetch_live(client, state, tree)
+
+    assert live[("collections", "sales")]["name"] == "Sales"
+    assert live[("cards", "daily-revenue")]["name"] == "Daily revenue"
+    assert live[("dashboards", "overview")]["name"] == "Overview"
+    assert ("cards", "not-created-yet") not in live
+    assert len(client.batch_calls) == 1
+    assert set(client.batch_calls[0]) == {
+        "/api/collection/2", "/api/card/40", "/api/dashboard/5"}
+
+
+def test_prefetch_live_maps_a_404_to_none():
+    tree = Tree(root="unused", collections={"sales": {}})
+    state = State("unused", {"collections": {"sales": {"id": 2}},
+                             "cards": {}, "dashboards": {}})
+    client = FakeClient(gets={})  # /api/collection/2 unconfigured -> None
+
+    live = diff_mod._prefetch_live(client, state, tree)
+
+    assert live[("collections", "sales")] is None
 
 
 @pytest.mark.parametrize("plan,expected", [
@@ -86,6 +129,29 @@ def test_cli_diff_exit_code_2_from_orphans_plus_a_real_change(tmp_path, monkeypa
             "orphans": [{"section": "cards", "id": 1, "name": "ghost"}]}
     monkeypatch.setattr(cli.diff_mod, "build_plan", lambda tree, state, client: plan)
     assert cli.cmd_diff(args) == 2
+
+
+def test_cli_jobs_flag_defaults_to_8_and_is_wired_into_the_client(tmp_path, monkeypatch):
+    env_file = _prepare_dir(tmp_path)
+    captured = {}
+
+    class _CapturingClient:
+        def __init__(self, config, verbose=False, jobs=None):
+            captured["jobs"] = jobs
+
+    monkeypatch.setattr(cli, "Client", _CapturingClient)
+    monkeypatch.setattr(cli.diff_mod, "build_plan",
+                        lambda tree, state, client: {"creates": [], "updates": [], "orphans": []})
+
+    args = cli.build_parser().parse_args(
+        ["--dir", str(tmp_path), "--env-file", str(env_file), "diff"])
+    cli.cmd_diff(args)
+    assert captured["jobs"] == 8
+
+    args = cli.build_parser().parse_args(
+        ["--dir", str(tmp_path), "--env-file", str(env_file), "diff", "--jobs", "1"])
+    cli.cmd_diff(args)
+    assert captured["jobs"] == 1
 
 
 def test_cli_diff_exit_code_0_when_only_orphans(tmp_path, monkeypatch):

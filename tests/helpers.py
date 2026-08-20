@@ -17,6 +17,7 @@ class FakeClient:
 
     def __init__(self, gets=None, posts=None, puts=None):
         self.calls = []
+        self.batch_calls = []  # each entry: the tuple of paths one get_many(_or_none) call received
         self._gets = dict(gets or {})
         self._posts = dict(posts or {})
         self._puts = dict(puts or {})
@@ -32,6 +33,18 @@ class FakeClient:
         self.calls.append(("GET", path, None))
         value = self._gets.get(path)
         return value(path) if callable(value) else value
+
+    def get_many(self, paths):
+        """Sequential, in input order — keeps `.calls` deterministic for tests
+        asserting an exact request sequence, unlike the real threaded Client."""
+        paths = list(paths)
+        self.batch_calls.append(tuple(paths))
+        return [self.get(path) for path in paths]
+
+    def get_many_or_none(self, paths):
+        paths = list(paths)
+        self.batch_calls.append(tuple(paths))
+        return [self.get_or_none(path) for path in paths]
 
     def post(self, path, body):
         self.calls.append(("POST", path, body))

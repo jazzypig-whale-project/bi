@@ -166,6 +166,28 @@ managed dashboard through the Metabase UI, the next `apply` deletes it,
 because it never existed in the file. To keep a UI-added dashcard, adopt it
 first with `./mbc export --overwrite` before running `apply` again.
 
+## Performance
+
+`export`, `diff` and `apply`'s plan-building step read every collection, card
+and dashboard the tree tracks. Two things keep that fast:
+
+- **Keep-alive connections.** The HTTP client reuses one connection per
+  thread instead of opening a fresh TCP+TLS connection for every request. A
+  connection the peer silently closed (idle keep-alive timeout) is retried
+  once on a fresh connection for `GET`/`PUT`; `POST` is never retried, since
+  retrying a create could double-post the same card or dashboard.
+- **Parallel reads.** `export`'s and `diff`'s GETs run through a small thread
+  pool (`--jobs`, default 8) instead of one request at a time.
+
+`--yes`/`--dry-run` writes in `apply` (`POST`/`PUT`) always stay strictly
+sequential and ordered — only the read phase parallelizes. Pass `--jobs 1` to
+force fully sequential reads too (useful with `--verbose`, whose request
+tracing interleaves across threads otherwise):
+
+```
+./mbc diff --jobs 1
+```
+
 ## Typical workflows
 
 **Initial adoption.** Run `./mbc export`, review the generated YAML and the

@@ -19,7 +19,7 @@ from . import apply as apply_mod
 from . import diff as diff_mod
 from . import export as export_mod
 from .apply import ApplyError
-from .client import ApiError, Client
+from .client import DEFAULT_JOBS, ApiError, Client
 from .config import ConfigError, load_config
 from .state import State
 from .validate import validate_tree
@@ -35,8 +35,12 @@ def _common_flags(parser, suppress: bool):
                         help="path to the .env file (default: <dir>/.env)")
     if suppress:
         parser.add_argument("--verbose", action="store_true", default=default)
+        parser.add_argument("--jobs", type=int, default=default)
         return
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--jobs", type=int, default=DEFAULT_JOBS,
+                        help="parallel GETs during the read phase of "
+                             "export/diff/apply (default: 8; 1 = sequential)")
 
 
 def build_parser():
@@ -66,7 +70,8 @@ def build_parser():
 def _context(args):
     env_file = getattr(args, "env_file", None) or os.path.join(args.dir, ".env")
     config = load_config(env_file)
-    client = Client(config, verbose=bool(getattr(args, "verbose", False)))
+    client = Client(config, verbose=bool(getattr(args, "verbose", False)),
+                    jobs=getattr(args, "jobs", None) or DEFAULT_JOBS)
     state = State.load(args.dir, config.host_slug, config.base_url)
     return config, client, state
 

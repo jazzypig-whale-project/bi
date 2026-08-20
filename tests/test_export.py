@@ -160,6 +160,31 @@ def test_export_drops_state_entry_when_the_entity_is_gone_from_the_instance(tmp_
     assert "not on the instance" in capsys.readouterr().out
 
 
+# --- inventory fetch goes through get_many, preserving per-collection order -----
+
+def test_inventory_batches_through_get_many_and_keeps_bucket_order():
+    """The card/dashboard buckets must come back matching the given collection order,
+    not the (arbitrary, thread-scheduled) order the underlying requests complete in."""
+    gets = {
+        "/api/collection/root/items?models=card": {"data": [{"id": 100, "name": "root-card"}]},
+        "/api/collection/root/items?models=dashboard": {"data": []},
+        "/api/collection/2/items?models=card": {"data": [{"id": 200, "name": "coll2-card"}]},
+        "/api/collection/2/items?models=dashboard": {"data": [{"id": 300, "name": "coll2-dash"}]},
+    }
+    client = FakeClient(gets=gets)
+
+    cards, dashboards = export_mod._inventory(client, ["root", 2])
+
+    assert [c["id"] for c in cards] == [100, 200]
+    assert [d["id"] for d in dashboards] == [300]
+    assert client.batch_calls == [(
+        "/api/collection/root/items?models=card",
+        "/api/collection/root/items?models=dashboard",
+        "/api/collection/2/items?models=card",
+        "/api/collection/2/items?models=dashboard",
+    )]
+
+
 # --- Fix 5: referenced card ids are deduped against themselves ------------------
 
 def test_referenced_card_ids_are_deduped_preserving_order():

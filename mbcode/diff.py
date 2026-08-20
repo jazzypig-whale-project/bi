@@ -39,27 +39,44 @@ def live_dashboard_normalized(live, state, dashboard_key):
 
 
 # --- plan building ----------------------------------------------------------
+_LIVE_PATH_TEMPLATES = {
+    "collections": "/api/collection/{}", "cards": "/api/card/{}", "dashboards": "/api/dashboard/{}",
+}
+
+
 def build_plan(tree, state, client):
     resolver = Resolver(state)
+    live = _prefetch_live(client, state, tree)
     plan = {"creates": [], "updates": [], "orphans": []}
     for key in _collections_parent_first(tree):
         doc = tree.collections[key]
         desired = desired_collection_normalized(doc, resolver)
         _plan_entity(plan, "collections", key, desired,
-                     _fetch_live(client, state, "collections", key, "/api/collection/{}"),
-                     normalize_collection)
+                     live.get(("collections", key)), normalize_collection)
     for key, doc in tree.cards.items():
         desired = desired_card_normalized(doc, resolver)
         _plan_entity(plan, "cards", key, desired,
-                     _fetch_live(client, state, "cards", key, "/api/card/{}"),
-                     normalize_card)
+                     live.get(("cards", key)), normalize_card)
     for key, doc in tree.dashboards.items():
         desired = desired_dashboard_normalized(doc, resolver)
-        live = _fetch_live(client, state, "dashboards", key, "/api/dashboard/{}")
-        live_n = live and live_dashboard_normalized(live, state, key)
+        live_entity = live.get(("dashboards", key))
+        live_n = live_entity and live_dashboard_normalized(live_entity, state, key)
         _plan_normalized(plan, "dashboards", key, desired, live_n)
     plan["orphans"] = _find_orphans(tree, state, client)
     return plan
+
+
+def _prefetch_live(client, state, tree) -> dict:
+    """One get_many_or_none wave for every (section, key) that already has an
+    instance id, instead of one GET per entity spread across the three loops below."""
+    keys = [
+        (section, key, template.format(state.entity_id_of(section, key)))
+        for section, template in _LIVE_PATH_TEMPLATES.items()
+        for key in tree.section(section)
+        if state.entity_id_of(section, key) is not None
+    ]
+    results = client.get_many_or_none(path for _, _, path in keys)
+    return {(section, key): result for (section, key, _), result in zip(keys, results)}
 
 
 def _collections_parent_first(tree):
@@ -77,13 +94,6 @@ def _collections_parent_first(tree):
     for key in tree.collections:
         visit(key)
     return ordered
-
-
-def _fetch_live(client, state, section, key, path_template):
-    entity_id = state.entity_id_of(section, key)
-    if entity_id is None:
-        return None
-    return client.get_or_none(path_template.format(entity_id))
 
 
 def _plan_entity(plan, section, key, desired, live, normalizer):
