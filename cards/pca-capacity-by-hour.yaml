@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
 name: Capacity by hour (upper bound — fleet gates not historised)
-description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars are not the last point of this chart. They apply the live fleet gates (device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap) that no historical query can reconstruct, so they read several times lower. Series ordering matches the scalars in both places, because adding the balance cap can only lower a value.
+description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. All three series restrict to accounts whose validation_status is currently GOOD — a snapshot filter applied retroactively to every past hour, since account validation_status is not historised either; an account promoted or demoted since the hour in question is counted by today's status, not the hour's. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars are not the last point of this chart. They apply the live fleet gates (device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap) that no historical query can reconstruct, so they read several times lower. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance.
 collection: pear-cider-automated
 type: question
 display: line
@@ -30,11 +30,14 @@ dataset_query:
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
           INTERVAL '1 hour') AS h),
       subject AS (
-        -- The accounts currently attached to a device, with a current number.
+        -- The accounts currently attached to a device, with a current number and currently
+        -- GOOD validation status. validation_status is not historised, so this is today's set
+        -- applied to every past hour (see card description).
         SELECT DISTINCT d.active_account_id AS account_id, acc.current_number_id AS number_id
         FROM device d
         JOIN account acc ON acc.account_id = d.active_account_id
-        WHERE acc.current_number_id IS NOT NULL),
+        WHERE acc.current_number_id IS NOT NULL
+          AND acc.validation_status = 'GOOD'),
       ledger AS (
         SELECT subject_type, subject_id, amount,
                (ts AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow') AS ts
@@ -81,7 +84,11 @@ dataset_query:
                     ELSE greatest(0, least(lim.max_tasks_per_account - COALESCE(aw.count24h, 0),
                                            floor((lim.day_limit_account - COALESCE(aw.money24h, 0))
                                                  / lim.min_certificate_amount)))
-               END AS tasks_possible
+               END AS tasks_possible,
+               -- Same admission rule, ignoring cooldown entirely (for the "Quota" series).
+               greatest(0, least(lim.max_tasks_per_account - COALESCE(aw.count24h, 0),
+                                 floor((lim.day_limit_account - COALESCE(aw.money24h, 0))
+                                       / lim.min_certificate_amount))) AS tasks_possible_nocd
         FROM spine s
         CROSS JOIN limits lim
         CROSS JOIN subject sub
@@ -90,6 +97,7 @@ dataset_query:
       per_number AS (
         SELECT ah.h, ah.number_id,
                sum(ah.tasks_possible)             AS tasks_from_accounts,
+               sum(ah.tasks_possible_nocd)        AS tasks_from_accounts_nocd,
                max(COALESCE(b.balance_after, 0))  AS balance
         FROM account_headroom ah
         LEFT JOIN balance b ON b.h = ah.h AND b.number_id = ah.number_id
@@ -100,12 +108,21 @@ dataset_query:
                                  floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
                                  floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount)))
                  AS quota_capacity,
+               greatest(0, least(pn.tasks_from_accounts_nocd,
+                                 floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
+                                 floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount)))
+                 AS quota_capacity_nocd,
                greatest(0, floor(pn.balance / lim.min_certificate_amount)) AS balance_capacity
         FROM per_number pn
         CROSS JOIN limits lim
         LEFT JOIN number_window nw ON nw.h = pn.h AND nw.subject_id = pn.number_id)
-      SELECT h AS hour, 'Quota + cooldown (upper bound)' AS series,
-             sum(quota_capacity)::bigint AS capacity
+      SELECT h AS hour, 'Quota (upper bound)' AS series,
+             sum(quota_capacity_nocd)::bigint AS capacity
+      FROM capped
+      GROUP BY 1
+      UNION ALL
+      SELECT h, 'Quota + cooldown (upper bound)',
+             sum(quota_capacity)::bigint
       FROM capped
       GROUP BY 1
       UNION ALL
@@ -130,6 +147,9 @@ visualization_settings:
   graph.x_axis.scale: timeseries
   graph.y_axis.title_text: Capacity, certificates
   series_settings:
+    Quota (upper bound):
+      title: Quota
+      color: '#88BF4D'
     Quota + cooldown (upper bound):
       title: Quota + cooldown
       color: '#509EE3'

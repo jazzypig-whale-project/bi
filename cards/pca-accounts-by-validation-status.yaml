@@ -1,0 +1,39 @@
+kind: card
+key: pca-accounts-by-validation-status
+name: Accounts by validation status
+description: Current snapshot, not historised — account.validation_status has no history table, so this is a live count grouped by today's status, not a trend. Labels follow AccountValidationStatus.java. There is no account.status column; validation_status is the only stored account state.
+collection: pear-cider-automated
+type: question
+display: row
+cache_ttl: 300
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Current snapshot only: account.validation_status is not historised.
+      -- Labels follow AccountValidationStatus.java.
+      SELECT CASE validation_status
+               WHEN 'GOOD'          THEN 'Good'
+               WHEN 'UNCHECKED'     THEN 'Unchecked'
+               WHEN 'NEEDS_REVIEW'  THEN 'Needs review'
+               ELSE validation_status
+             END           AS validation_status,
+             count(*)::bigint AS accounts
+      FROM account
+      GROUP BY 1
+      ORDER BY 2 DESC, 1
+visualization_settings:
+  graph.dimensions:
+  - validation_status
+  graph.metrics:
+  - accounts
+  graph.x_axis.scale: ordinal
+  graph.y_axis.title_text: Accounts
+  graph.show_values: true
+  series_settings:
+    accounts:
+      color: '#509EE3'
+parameters: []

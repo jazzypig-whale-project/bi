@@ -1,0 +1,77 @@
+kind: card
+key: pca-devices-need-switch
+name: Devices needing switch
+description: Current snapshot, not historised. Reproduces the admin fleet wall's "switch" badge (WallService.isExhausted, WallService.java:190-198) — devices with an agent, not mid in-flight-work (RESERVED/DISPATCHED/BUSY/SWITCHING/LABELING), that have at least one account and none of them eligible. device.validation_status and held_at are deliberately not read here, matching the wall. This count should match the wall's "Switch all (N)" button.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Current snapshot only: none of the inputs below are historised.
+      -- Mirrors WallService.isExhausted (WallService.java:190-198) and the account
+      -- eligibility chain in AccountStatusService.java:137-215, in the same
+      -- first-match-wins order. Keep in sync with pca-accounts-by-slot-status.yaml,
+      -- which duplicates the account status chain.
+      WITH open_cooldown AS (
+        -- AccountCooldownRepository.findOpenActiveByAccountIds.
+        SELECT DISTINCT ON (account_id) account_id, reason, until
+        FROM account_cooldown
+        WHERE cleared_at IS NULL AND (until IS NULL OR until > now())
+        ORDER BY account_id, (until IS NULL) DESC, until DESC, id DESC
+      ),
+      account_window AS (
+        -- QuotaLedgerRepository.SQL_ACCOUNT_WINDOW_24H.
+        SELECT subject_id AS account_id, count(*) AS count24h, COALESCE(sum(amount), 0) AS money24h
+        FROM quota_ledger
+        WHERE subject_type = 'ACCOUNT' AND status IN ('RESERVED', 'COMMITTED')
+          AND ts > (now() AT TIME ZONE 'UTC') - INTERVAL '24 hours'
+        GROUP BY subject_id
+      ),
+      latest_validation AS (
+        -- TaskRepository.findLatestValidationAttemptPerAccountRaw.
+        SELECT DISTINCT ON (account_id) account_id, status
+        FROM task
+        WHERE purpose = 'VALIDATION'
+        ORDER BY account_id, started_at DESC NULLS LAST, attempt_no DESC
+      ),
+      account_status AS (
+        SELECT acc.device_id, acc.account_id,
+          CASE
+            WHEN acc.current_number_id IS NULL OR n.number_id IS NULL THEN 'No number'
+            WHEN acc.validation_status = 'NEEDS_REVIEW' THEN 'Review'
+            WHEN oc.account_id IS NOT NULL AND oc.until IS NULL THEN
+              CASE WHEN oc.reason = 'PASS_MISMATCH' THEN 'Pass' ELSE 'Manual' END
+            WHEN acc.validation_status = 'UNCHECKED' AND lv.status = 'FAILED' THEN 'Interrupted'
+            WHEN oc.account_id IS NOT NULL THEN 'Cooldown'
+            -- app.quota.maxTasksPerAccount=6, dayLimitAccount=35000, bufferAccount=5000.
+            WHEN COALESCE(aw.count24h, 0) >= 6 OR (35000 - COALESCE(aw.money24h, 0)) < 5000 THEN 'Quota'
+            -- app.quota.minCertificateAmount=1000.
+            WHEN n.balance < 1000 THEN 'Balance'
+            WHEN acc.validation_status = 'UNCHECKED' THEN 'Unchecked'
+            ELSE 'Ok'
+          END AS status
+        FROM account acc
+        LEFT JOIN number n             ON n.number_id = acc.current_number_id
+        LEFT JOIN open_cooldown oc     ON oc.account_id = acc.account_id
+        LEFT JOIN account_window aw    ON aw.account_id = acc.account_id
+        LEFT JOIN latest_validation lv ON lv.account_id = acc.account_id
+      ),
+      device_eligibility AS (
+        SELECT device_id, bool_or(status = 'Ok') AS has_eligible_account
+        FROM account_status
+        GROUP BY device_id
+      )
+      SELECT count(*)::bigint AS devices_need_switch
+      FROM device d
+      JOIN device_eligibility de ON de.device_id = d.device_id
+      WHERE d.agent_id IS NOT NULL
+        AND d.state NOT IN ('RESERVED', 'DISPATCHED', 'BUSY', 'SWITCHING', 'LABELING')
+        AND NOT de.has_eligible_account
+visualization_settings: {}
+parameters: []

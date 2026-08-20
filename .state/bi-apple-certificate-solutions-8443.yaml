@@ -147,6 +147,24 @@ cards:
   pca-emails-failed-top-domains:
     id: 102
     entity_id: _XqN_WUBxuC8s2TnuPzNG
+  pca-accounts-by-slot-status:
+    id: 103
+    entity_id: 2-eq17BfR2eL77Uo5R2Bs
+  pca-accounts-by-validation-status:
+    id: 104
+    entity_id: eDL_8ck0YfpZ6tQTJhwB2
+  pca-devices-by-state:
+    id: 105
+    entity_id: 4j9R3QaBg-r0Yo7n0vujU
+  pca-devices-need-switch:
+    id: 106
+    entity_id: A7xQMiHGrGcuo7byh7K3k
+  pca-devices-online:
+    id: 107
+    entity_id: Uf28S8NKf_lMuhd-0H_tF
+  pca-devices-total:
+    id: 108
+    entity_id: 5PyMH2YRsCtQDKcPk1GXC
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -193,9 +211,9 @@ dashboards:
     tabs:
       overview: 6
       orders: 7
+      emails: 10
       production: 8
       topups: 9
-      emails: 10
     dashcards:
       dc-heading-overview-volume: 84
       dc-certificate-face-value-by-day: 54
@@ -227,7 +245,10 @@ dashboards:
       dc-heading-orders-denominations: 93
       dc-certificates-sold-by-denomination: 74
       dc-certificate-turnover-by-denomination: 75
+      dc-heading-emails-delivery: 102
       dc-emails-sent-by-hour-by-domain: 101
+      dc-emails-failed-and-in-progress-by-hour: 103
+      dc-emails-failed-top-domains: 104
       dc-heading-production-requests: 94
       dc-production-requests-by-hour: 76
       dc-heading-production-pool: 95
@@ -236,6 +257,14 @@ dashboards:
       dc-pool-total-value: 79
       dc-heading-production-capacity: 96
       dc-capacity-by-hour: 80
+      dc-heading-production-devices: 112
+      dc-devices-total: 106
+      dc-devices-online: 107
+      dc-devices-need-switch: 108
+      dc-devices-by-state: 109
+      dc-heading-production-accounts: 113
+      dc-accounts-by-slot-status: 110
+      dc-accounts-by-validation-status: 111
       dc-heading-topups-live-state: 97
       dc-topups-in-progress-count: 59
       dc-topups-in-progress-rub: 60
@@ -245,8 +274,5 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
-      dc-heading-emails-delivery: 102
-      dc-emails-failed-and-in-progress-by-hour: 103
-      dc-emails-failed-top-domains: 104
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
