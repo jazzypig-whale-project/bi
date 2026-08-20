@@ -393,7 +393,12 @@ dashcards:
   size_x: 12
   size_y: 7
   visualization_settings: {}
-  parameter_mappings: []
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
   series: []
   inline_parameters: []
 - key: dc-certificate-turnover-by-denomination
@@ -404,7 +409,12 @@ dashcards:
   size_x: 12
   size_y: 7
   visualization_settings: {}
-  parameter_mappings: []
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
   series: []
   inline_parameters: []
 - key: dc-heading-emails-delivery
