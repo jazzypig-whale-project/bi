@@ -45,6 +45,7 @@ Metabase + отдельный Postgres под его метаданные + (н�
 | `BI_HTTPS_PORT` | `8443` | Host-порт nginx-tls в prod. |
 | `BI_DOMAIN` | `bi.apple-certificate.solutions` | Домен серта (prod, DNS-01). |
 | `MB_SITE_URL` | по режиму | URL Metabase. ⚠ На проде ОБЯЗАТЕЛЬНО с `:8443` (без порта Metabase уводит на `:443` → 403 nginx приложения). |
+| `MB_PROMETHEUS_SERVER_PORT` | `8282` | Порт штатного Prometheus-эндпоинта Metabase внутри контейнера (наружу не публикуется; на проде проксируется nginx'ом на `/metrics` только для монитора). |
 | `STAGING` | `0` | `1` = staging-ACME (тест серта без rate-limit). |
 | `METABASE_TAG` / `POSTGRES_TAG` / `NGINX_CERTBOT_BASE_TAG` | пины | Теги образов. |
 | `METABASE_MEM_LIMIT` / `METABASE_XMX` | `2048M` / `1g` | Лимит памяти контейнера + heap JVM Metabase. |
