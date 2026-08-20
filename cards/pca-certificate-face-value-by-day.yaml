@@ -48,6 +48,7 @@ visualization_settings:
   - face_value
   - face_value_today
   graph.x_axis.scale: timeseries
+  graph.y_axis.auto_split: false
   graph.show_values: true
   graph.show_trendline: true
   graph.y_axis.title_text: Certificate face value, ₽
