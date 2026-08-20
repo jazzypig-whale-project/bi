@@ -1,0 +1,21 @@
+kind: card
+key: pca-devices-online
+name: Devices — online
+description: Current snapshot, not historised — device.state has no history table. Online means state <> OFFLINE (DeviceState.java); a device can be online and still unusable (HUNG, DISABLED, LABELING, etc).
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Current snapshot only: device.state is not historised.
+      SELECT count(*)::bigint AS devices_online
+      FROM device
+      WHERE state <> 'OFFLINE'
+visualization_settings: {}
+parameters: []

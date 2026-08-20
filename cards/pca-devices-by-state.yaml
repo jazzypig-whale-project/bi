@@ -1,0 +1,45 @@
+kind: card
+key: pca-devices-by-state
+name: Devices by state
+description: Current snapshot, not historised — device.state has no history table, so this is a live count grouped by today's state, not a trend. Labels follow DeviceState.java.
+collection: pear-cider-automated
+type: question
+display: row
+cache_ttl: 300
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Current snapshot only: device.state is not historised.
+      -- Labels follow DeviceState.java.
+      SELECT CASE state
+               WHEN 'IDLE'       THEN 'Idle'
+               WHEN 'OFFLINE'    THEN 'Offline'
+               WHEN 'RESERVED'   THEN 'Reserved'
+               WHEN 'DISPATCHED' THEN 'Dispatched'
+               WHEN 'BUSY'       THEN 'Busy'
+               WHEN 'HUNG'       THEN 'Hung'
+               WHEN 'DISABLED'   THEN 'Disabled'
+               WHEN 'SWITCHING'  THEN 'Switching'
+               WHEN 'LABELING'   THEN 'Labeling'
+               ELSE state
+             END           AS state,
+             count(*)::bigint AS devices
+      FROM device
+      GROUP BY 1
+      ORDER BY 2 DESC, 1
+visualization_settings:
+  graph.dimensions:
+  - state
+  graph.metrics:
+  - devices
+  graph.x_axis.scale: ordinal
+  graph.y_axis.title_text: Devices
+  graph.show_values: true
+  series_settings:
+    devices:
+      color: '#509EE3'
+parameters: []
