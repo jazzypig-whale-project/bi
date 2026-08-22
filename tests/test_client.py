@@ -71,7 +71,11 @@ class _FakeConnection:
         self.timeout = timeout
         self.requests = []
         self.closed = False
+        self.tunnel = None
         self._behavior = list(behavior or [])
+
+    def set_tunnel(self, host, port=None, headers=None):
+        self.tunnel = (host, port, dict(headers) if headers else headers)
 
     def request(self, method, path, body=None, headers=None):
         self.requests.append((method, path, body, headers))
@@ -308,15 +312,159 @@ def test_pool_propagates_a_real_404_without_retrying_or_losing_the_status():
     assert len(factory.created) == 1  # no retry for a genuine HTTP response
 
 
-def test_pool_ignores_proxy_environment_variables(monkeypatch):
+def test_pool_tunnels_through_http_proxy_for_https_target(monkeypatch):
     monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example.test:3128")
     factory = _connection_factory()
-    c = client_mod.Client(_config(base_url="https://metabase.example.test"))
-    c._opener = client_mod._KeepAlivePool(c.base_url, connection_class=factory)
 
-    c.get("/api/card/1")
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    conn = factory.created[0]
+    assert conn.host == "proxy.example.test"
+    assert conn.port == 3128
+    assert conn.tunnel == ("metabase.example.test", 443, None)
+    assert conn.requests[0][1] == "/api/card/1"  # selector, not the absolute URL
+
+
+def test_pool_uses_absolute_uri_through_http_proxy_for_http_target(monkeypatch):
+    monkeypatch.setenv("HTTP_PROXY", "http://proxy.example.test:3128")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("http://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("http://metabase.example.test/api/card/1"))
+
+    conn = factory.created[0]
+    assert conn.host == "proxy.example.test"
+    assert conn.port == 3128
+    assert conn.tunnel is None
+    assert conn.requests[0][1] == "http://metabase.example.test/api/card/1"
+
+
+def test_pool_bypasses_proxy_for_no_proxy_host(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example.test:3128")
+    monkeypatch.setenv("NO_PROXY", "metabase.example.test")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    conn = factory.created[0]
+    assert conn.host == "metabase.example.test"
+    assert conn.tunnel is None
+
+
+def test_pool_bypasses_proxy_for_no_proxy_star(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example.test:3128")
+    monkeypatch.setenv("NO_PROXY", "*")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
 
     assert factory.created[0].host == "metabase.example.test"
+
+
+def test_pool_sends_proxy_authorization_from_userinfo_on_https_tunnel(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxyuser:proxypass@proxy.example.test:3128")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    header = factory.created[0].tunnel[2]["Proxy-Authorization"]
+    assert header.startswith("Basic ")
+    import base64
+    assert base64.b64decode(header.removeprefix("Basic ")).decode() == "proxyuser:proxypass"
+
+
+def test_pool_sends_proxy_authorization_from_userinfo_on_http_request(monkeypatch):
+    monkeypatch.setenv("HTTP_PROXY", "http://proxyuser:proxypass@proxy.example.test:3128")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("http://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("http://metabase.example.test/api/card/1"))
+
+    headers = factory.created[0].requests[0][3]
+    assert headers["Proxy-Authorization"].startswith("Basic ")
+
+
+def test_pool_rejects_socks_proxy_scheme(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "socks5h://localhost:2080")
+
+    with pytest.raises(client_mod.ConfigError, match="socks5h"):
+        client_mod._KeepAlivePool("https://metabase.example.test")
+
+
+def test_pool_rejects_unsupported_scheme_without_leaking_credentials(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "socks5://proxyuser:proxypass@proxy.example.test:1080")
+
+    with pytest.raises(client_mod.ConfigError, match="socks5") as excinfo:
+        client_mod._KeepAlivePool("https://metabase.example.test")
+
+    assert "proxypass" not in str(excinfo.value)
+
+
+def test_pool_decodes_percent_encoded_proxy_credentials(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxyuser:p%40ss@proxy.example.test:3128")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    header = factory.created[0].tunnel[2]["Proxy-Authorization"]
+    import base64
+    assert base64.b64decode(header.removeprefix("Basic ")).decode() == "proxyuser:p@ss"
+
+
+def test_pool_accepts_a_schemeless_proxy_value(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "proxy.example.test:3128")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    conn = factory.created[0]
+    assert conn.host == "proxy.example.test"
+    assert conn.port == 3128
+
+
+def test_pool_ignores_http_proxy_for_an_https_target(monkeypatch):
+    monkeypatch.setenv("HTTP_PROXY", "http://proxy.example.test:3128")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory)
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    assert factory.created[0].host == "metabase.example.test"
+    assert pool.proxy_display is None
+
+
+def test_pool_proxy_display_redacts_credentials(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxyuser:proxypass@proxy.example.test:3128")
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test")
+
+    assert pool.proxy_display == "http://proxy.example.test:3128"
+    assert "proxypass" not in pool.proxy_display
+
+
+def test_verbose_client_traces_the_proxy_when_configured(monkeypatch, capsys):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxyuser:proxypass@proxy.example.test:3128")
+
+    client_mod.Client(_config(base_url="https://metabase.example.test"), verbose=True)
+
+    captured = capsys.readouterr()
+    assert "via proxy http://proxy.example.test:3128" in captured.err
+    assert "proxypass" not in captured.err
+
+
+def test_non_verbose_client_does_not_trace_proxy(monkeypatch, capsys):
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.example.test:3128")
+
+    client_mod.Client(_config(base_url="https://metabase.example.test"), verbose=False)
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
 
 
 # --- get_many / get_many_or_none -------------------------------------------------

@@ -20,6 +20,16 @@ import pytest
 FIXTURES_DIR = os.path.join(TESTS_DIR, "fixtures")
 
 
+@pytest.fixture(autouse=True)
+def _no_proxy_env(monkeypatch):
+    """The offline suite must behave the same regardless of the developer's shell
+    environment — clear HTTP_PROXY/HTTPS_PROXY/NO_PROXY so ambient proxy vars never
+    leak into a test that isn't specifically exercising proxy support."""
+    for name in ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY",
+                "http_proxy", "https_proxy", "no_proxy"):
+        monkeypatch.delenv(name, raising=False)
+
+
 @pytest.fixture
 def fixtures_dir():
     return FIXTURES_DIR

@@ -12,6 +12,8 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
+from .config import ConfigError
+
 TIMEOUT = 30
 USER_AGENT = "mbcode/1.0"
 ALLOWED_METHODS = ("GET", "POST", "PUT")
@@ -33,6 +35,55 @@ class ApiError(Exception):
         super().__init__(f"{method} {url} -> HTTP {status}: {self.body}")
 
 
+class _Proxy:
+    """A resolved HTTP forward-proxy: where to connect, what to send in
+    Proxy-Authorization (if any), and a credential-free string for --verbose."""
+
+    def __init__(self, host: str, port: int, headers: dict, display: str):
+        self.host = host
+        self.port = port
+        self.headers = headers
+        self.display = display
+
+
+def _resolve_proxy(scheme: str, host: str, port):
+    """Resolve an HTTP forward-proxy for `scheme://host:port` from the standard
+    HTTP_PROXY/HTTPS_PROXY/NO_PROXY environment variables (via urllib.request's own
+    lookup, so lowercase precedence and the CGI HTTP_PROXY guard match stdlib
+    behavior). Returns None when no proxy applies to this request.
+
+    Only http:// proxy URLs are supported: http.client (and mbc's stdlib-only
+    dependency set) cannot speak SOCKS, nor tunnel TLS-to-a-TLS proxy.
+    """
+    proxy_url = urllib.request.getproxies().get(scheme)
+    if not proxy_url:
+        return None
+    netloc = host if port is None else f"{host}:{port}"
+    if urllib.request.proxy_bypass(netloc):
+        return None
+    parsed = urllib.parse.urlsplit(proxy_url)
+    if "://" not in proxy_url:
+        # a bare "host:port" (curl/urllib both accept this form) has no scheme to parse;
+        # urlsplit instead misreads the host as the scheme, so re-split it as http://.
+        parsed = urllib.parse.urlsplit(f"http://{proxy_url}")
+    if not parsed.hostname:
+        raise ConfigError("proxy URL from the environment has no host")
+    display_netloc = parsed.hostname if parsed.port is None else f"{parsed.hostname}:{parsed.port}"
+    display = f"http://{display_netloc}"
+    if parsed.scheme not in ("http", ""):
+        raise ConfigError(
+            f"proxy scheme '{parsed.scheme}' from the environment is not supported by mbc "
+            f"(http:// only) -- '{display}' looks like a SOCKS or HTTPS proxy")
+    headers = {}
+    if parsed.username:
+        username = urllib.parse.unquote(parsed.username)
+        credentials = username
+        if parsed.password is not None:
+            credentials = f"{username}:{urllib.parse.unquote(parsed.password)}"
+        headers["Proxy-Authorization"] = "Basic " + base64.b64encode(credentials.encode()).decode()
+    return _Proxy(host=parsed.hostname, port=parsed.port or 80, headers=headers, display=display)
+
+
 class _KeepAlivePool:
     """Reuses one http.client connection per thread instead of opening a fresh
     TCP+TLS connection for every request (what a plain urllib opener does).
@@ -41,20 +92,38 @@ class _KeepAlivePool:
     Client.request()'s ApiError translation (HTTPError/URLError -> ApiError) is
     unchanged. `connection_class` is injectable for tests; it defaults to
     http.client.HTTPSConnection/HTTPConnection picked from the base URL's scheme.
+
+    Honors HTTP_PROXY/HTTPS_PROXY/NO_PROXY: an https target tunnels through the
+    proxy with CONNECT (TLS stays end-to-end to the target host); an http target
+    is requested with an absolute-URI and Proxy-Authorization, per RFC 7230 §5.3.2.
     """
 
     def __init__(self, base_url: str, connection_class=None):
         parsed = urllib.parse.urlsplit(base_url)
         self._host = parsed.hostname
         self._port = parsed.port
+        self._scheme = parsed.scheme
         self._connection_class = connection_class or _CONNECTION_CLASSES[parsed.scheme]
         self._local = threading.local()
+        self._proxy = _resolve_proxy(parsed.scheme, parsed.hostname, parsed.port)
+
+    @property
+    def proxy_display(self):
+        return self._proxy.display if self._proxy else None
 
     def _connection(self, timeout):
         conn = getattr(self._local, "conn", None)
         if conn is None:
-            conn = self._connection_class(self._host, self._port, timeout=timeout)
+            conn = self._open_connection(timeout)
             self._local.conn = conn
+        return conn
+
+    def _open_connection(self, timeout):
+        if self._proxy is None:
+            return self._connection_class(self._host, self._port, timeout=timeout)
+        conn = self._connection_class(self._proxy.host, self._proxy.port, timeout=timeout)
+        if self._scheme == "https":
+            conn.set_tunnel(self._host, self._port or 443, headers=self._proxy.headers or None)
         return conn
 
     def _drop_connection(self):
@@ -83,9 +152,13 @@ class _KeepAlivePool:
                 raise urllib.error.URLError(retry_err) from retry_err
 
     def _send(self, method, req, timeout):
-        path = req.selector
         conn = self._connection(timeout)
-        conn.request(method, path, body=req.data, headers=dict(req.header_items()))
+        headers = dict(req.header_items())
+        path = req.selector
+        if self._proxy is not None and self._scheme != "https":
+            path = req.full_url
+            headers.update(self._proxy.headers)
+        conn.request(method, path, body=req.data, headers=headers)
         resp = conn.getresponse()
         if resp.status >= 400:
             body = resp.read()
@@ -106,6 +179,8 @@ class Client:
             "User-Agent": USER_AGENT,
         }
         self._opener = _KeepAlivePool(self.base_url)
+        if self._opener.proxy_display:
+            self._trace(f"-> via proxy {self._opener.proxy_display}")
 
     def _trace(self, message: str) -> None:
         if not self.verbose:

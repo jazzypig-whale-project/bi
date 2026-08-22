@@ -188,6 +188,18 @@ tracing interleaves across threads otherwise):
 ./mbc diff --jobs 1
 ```
 
+## Proxies
+
+`mbc` honors the standard `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` environment variables (and their
+lowercase forms) — no `.env` key or CLI flag needed. Only `http://` proxy URLs are supported: the
+client is stdlib-only, so it can't speak SOCKS or tunnel TLS to an `https://` proxy. An `https://`
+Metabase base URL still gets end-to-end TLS to Metabase itself — the proxy only sees a `CONNECT`,
+never the traffic inside it. `--verbose` prints the proxy in use (credentials redacted).
+
+```
+HTTPS_PROXY=http://proxy.example.test:3128 ./mbc diff
+```
+
 ## Typical workflows
 
 **Initial adoption.** Run `./mbc export`, review the generated YAML and the
