@@ -1,7 +1,7 @@
 kind: card
 key: pca-topups-created-by-hour
 name: Top-ups created by hour
-description: Distinct messages created per hour, with the money they carry. Counting rows would triple-count a message that fell through three providers. Hour buckets are Europe/Moscow; money is Russian roubles (₽).
+description: Messages created per hour, stacked by the status they hold now, with the money they carry as a line overlay. Message grain, not payout rows -- a message that fell through three providers would triple-count as rows. Creation hour and money come from the earliest provider attempt; status from the latest. Hour buckets are Europe/Moscow; money is Russian roubles (₽).
 collection: pear-cider-automated
 type: question
 display: combo
@@ -14,26 +14,39 @@ dataset_query:
   - lib/type: mbql.stage/native
     native: |
       -- topup_payout holds one row per (message_id, provider_code): the provider-chain cursor.
-      -- "Created" therefore counts DISTINCT message_id and sums one row per message.
-      -- created_at is timestamptz, so it converts straight to Moscow.
+      -- This works at message grain: creation hour + money from the earliest row (min id),
+      -- status from the latest (max id) -- so SUPERSEDED never surfaces, it only ever marks a
+      -- row a later provider row replaced. created_at is timestamptz, converts straight to Moscow.
       WITH spine AS (
         SELECT generate_series(
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
           INTERVAL '1 hour') AS h),
       msg AS (
-        SELECT DISTINCT ON (message_id)
-               message_id,
-               date_trunc('hour', (created_at AT TIME ZONE 'Europe/Moscow')) AS h,
-               amount
+        SELECT message_id,
+               date_trunc('hour', (min(created_at) AT TIME ZONE 'Europe/Moscow')) AS h,
+               (array_agg(amount ORDER BY id))[1] AS amount,
+               (array_agg(status ORDER BY id DESC))[1] AS last_status
         FROM topup_payout
         WHERE created_at >= now() - ({{days}} * INTERVAL '1 day')
-        ORDER BY message_id, id)
+        GROUP BY message_id),
+      cohort AS (
+        SELECT h, amount,
+               CASE
+                 WHEN last_status IN ('CREATE_RETRY', 'PENDING_POLL', 'SPLIT') THEN 'in_progress'
+                 WHEN last_status = 'COMPLETED' THEN 'completed'
+                 WHEN last_status = 'REFUSED'   THEN 'refused'
+                 ELSE 'problem'
+               END AS state
+        FROM msg)
       SELECT s.h AS hour,
-             count(m.message_id)              AS topups,
-             COALESCE(sum(m.amount), 0)::bigint AS total_rub
+             count(*) FILTER (WHERE c.state = 'in_progress') AS in_progress,
+             count(*) FILTER (WHERE c.state = 'completed')   AS completed,
+             count(*) FILTER (WHERE c.state = 'refused')     AS refused,
+             count(*) FILTER (WHERE c.state = 'problem')     AS problem,
+             COALESCE(sum(c.amount), 0)::bigint               AS total_rub
       FROM spine s
-      LEFT JOIN msg m ON m.h = s.h
+      LEFT JOIN cohort c ON c.h = s.h
       GROUP BY 1
       ORDER BY 1
     template-tags:
@@ -47,20 +60,39 @@ visualization_settings:
   graph.dimensions:
   - hour
   graph.metrics:
-  - topups
+  - in_progress
+  - completed
+  - refused
+  - problem
   - total_rub
   graph.x_axis.scale: timeseries
   graph.y_axis.title_text: Top-ups created
+  stackable.stack_type: stacked
   column_settings:
     '["name","total_rub"]':
       suffix: ' ₽'
       decimals: 0
   series_settings:
-    topups:
+    in_progress:
       display: bar
       axis: left
-      title: Top-ups created
-      color: '#949AAB'
+      title: In progress
+      color: '#F9D45C'
+    completed:
+      display: bar
+      axis: left
+      title: Completed
+      color: '#88BF4D'
+    refused:
+      display: bar
+      axis: left
+      title: Refused
+      color: '#ED8535'
+    problem:
+      display: bar
+      axis: left
+      title: Problem
+      color: '#E03131'
     total_rub:
       display: line
       axis: right

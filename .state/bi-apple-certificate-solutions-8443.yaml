@@ -165,6 +165,9 @@ cards:
   pca-devices-total:
     id: 108
     entity_id: 5PyMH2YRsCtQDKcPk1GXC
+  pca-topups-by-status-by-hour:
+    id: 109
+    entity_id: eZJ1yH0_Qlej4n5hiayWP
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5

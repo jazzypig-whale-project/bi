@@ -1,0 +1,95 @@
+kind: card
+key: pca-topups-by-status-by-hour
+name: Top-ups by status over time
+description: Merged into pca-topups-created-by-hour (the "Top-ups created by hour" card now shows the status stack plus the money line). Kept archived, not deleted, so mbc's state file still recognizes the key -- see docs/metabase-as-code.md, "Safety guarantees".
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: true
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- topup_payout holds one row per (message_id, provider_code): the provider-chain cursor.
+      -- A message that fell through three providers writes three rows for the same money, so this
+      -- works at message grain -- creation hour from the earliest row, outcome from the latest one.
+      -- SUPERSEDED therefore never surfaces: it only ever marks a row a later provider row replaced.
+      -- created_at is timestamptz, so it converts straight to Moscow.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      states AS (
+        SELECT * FROM (VALUES ('In progress'), ('Completed'), ('Refused'), ('Problem')) AS t(state)),
+      msg AS (
+        SELECT message_id,
+               date_trunc('hour', (min(created_at) AT TIME ZONE 'Europe/Moscow')) AS h,
+               (array_agg(status ORDER BY id DESC))[1] AS last_status
+        FROM topup_payout
+        WHERE created_at >= now() - ({{days}} * INTERVAL '1 day')
+        GROUP BY message_id),
+      cohort AS (
+        SELECT h,
+               CASE
+                 WHEN last_status IN ('CREATE_RETRY', 'PENDING_POLL', 'SPLIT') THEN 'In progress'
+                 WHEN last_status = 'COMPLETED' THEN 'Completed'
+                 WHEN last_status = 'REFUSED'   THEN 'Refused'
+                 ELSE 'Problem'
+               END AS state
+        FROM msg)
+      SELECT s.h AS hour,
+             st.state,
+             count(c.state)::bigint AS topups
+      FROM spine s
+      CROSS JOIN states st
+      LEFT JOIN cohort c ON c.h = s.h AND c.state = st.state
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: c67de4e9-793c-4cb8-8fa6-32d1725b57da
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - state
+  graph.metrics:
+  - topups
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Top-ups
+  stackable.stack_type: stacked
+  graph.series_order_dimension: state
+  graph.series_order:
+  - key: In progress
+    name: In progress
+    color: '#F9D45C'
+    enabled: true
+  - key: Completed
+    name: Completed
+    color: '#88BF4D'
+    enabled: true
+  - key: Refused
+    name: Refused
+    color: '#ED8535'
+    enabled: true
+  - key: Problem
+    name: Problem
+    color: '#E03131'
+    enabled: true
+  series_settings:
+    In progress:
+      color: '#F9D45C'
+    Completed:
+      color: '#88BF4D'
+    Refused:
+      color: '#ED8535'
+    Problem:
+      color: '#E03131'
+parameters: []
