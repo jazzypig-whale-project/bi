@@ -1,7 +1,7 @@
 kind: card
 key: pca-topups-created-by-hour
 name: Top-ups created by hour
-description: Messages created per hour, stacked by the status they hold now, with the money they carry as a line overlay. Message grain, not payout rows -- a message that fell through three providers would triple-count as rows. Creation hour and money come from the earliest provider attempt; status from the latest. Hour buckets are Europe/Moscow; money is Russian roubles (₽).
+description: Messages created per hour, stacked by the status they hold now, with the money they carry as a line overlay. Message grain, not payout rows -- a message that fell through three providers would triple-count as rows. Creation hour and money come from the earliest provider attempt; status from the latest. The money line excludes refused top-ups. Hour buckets are Europe/Moscow; money is Russian roubles (₽).
 collection: pear-cider-automated
 type: question
 display: combo
@@ -44,7 +44,7 @@ dataset_query:
              count(*) FILTER (WHERE c.state = 'completed')   AS completed,
              count(*) FILTER (WHERE c.state = 'refused')     AS refused,
              count(*) FILTER (WHERE c.state = 'problem')     AS problem,
-             COALESCE(sum(c.amount), 0)::bigint               AS total_rub
+             COALESCE(sum(c.amount) FILTER (WHERE c.state <> 'refused'), 0)::bigint AS total_rub
       FROM spine s
       LEFT JOIN cohort c ON c.h = s.h
       GROUP BY 1
@@ -96,7 +96,7 @@ visualization_settings:
     total_rub:
       display: line
       axis: right
-      title: Total value, ₽
+      title: Total value (excl. refused), ₽
       color: '#509EE3'
       line.size: L
 parameters: []
