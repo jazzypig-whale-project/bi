@@ -1,0 +1,71 @@
+kind: card
+key: pca-certificates-produced-by-day
+name: Certificates produced by day, by denomination
+description: Successful PRODUCTION tasks per Europe/Moscow day, stacked by face value — the same "produced" definition as the Produced series in Flow by hour (task.succeeded_at, purpose PRODUCTION, status SUCCESS). The 8 denominations produced most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. The rightmost bar is the still-running current day and is always short — it does not indicate a drop in output.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Produced = a PRODUCTION task that succeeded; task.amount is the certificate
+      -- face value, so it doubles as the denomination (no join needed).
+      -- Days are Europe/Moscow days; task.succeeded_at is naive UTC.
+      WITH spine AS (
+        SELECT generate_series(
+          date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day'),
+          date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 day') AS d),
+      produced AS (
+        SELECT date_trunc('day', (succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS d,
+               amount
+        FROM task
+        WHERE purpose = 'PRODUCTION' AND status = 'SUCCESS'
+          AND succeeded_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow'))
+                                - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')),
+      ranked AS (
+        -- Top 8 denominations by task count over the window; the rest fall into Other.
+        SELECT amount, row_number() OVER (ORDER BY count(*) DESC, amount) AS rn
+        FROM produced
+        GROUP BY amount),
+      labelled AS (
+        SELECT p.d,
+               CASE WHEN r.rn <= 8 THEN p.amount::text ELSE 'Other' END AS denomination
+        FROM produced p
+        JOIN ranked r ON r.amount = p.amount),
+      denoms AS (
+        SELECT CASE WHEN rn <= 8 THEN amount::text ELSE 'Other' END AS denomination,
+               min(CASE WHEN rn <= 8 THEN amount END)               AS sort_key
+        FROM ranked
+        GROUP BY 1)
+      SELECT s.d AS day, x.denomination, count(l.d) AS certificates
+      FROM spine s
+      CROSS JOIN denoms x
+      LEFT JOIN labelled l ON l.d = s.d AND l.denomination = x.denomination
+      GROUP BY 1, 2, x.sort_key
+      ORDER BY 1, (x.sort_key IS NULL), x.sort_key
+    template-tags:
+      days:
+        id: 2d9b9853-75f0-49a4-9c87-c3959ff3b15f
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - denomination
+  graph.metrics:
+  - certificates
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificates produced
+  stackable.stack_type: stacked
+  series_settings:
+    Other:
+      color: '#949AAB'
+parameters: []

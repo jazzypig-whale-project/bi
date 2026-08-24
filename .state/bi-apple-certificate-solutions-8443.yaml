@@ -168,6 +168,9 @@ cards:
   pca-topups-by-status-by-hour:
     id: 109
     entity_id: eZJ1yH0_Qlej4n5hiayWP
+  pca-certificates-produced-by-day:
+    id: 110
+    entity_id: rDrt4GMp2vUYu3rKC6p8Q
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -277,5 +280,7 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
+      dc-heading-production-produced: 115
+      dc-certificates-produced-by-day: 116
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
