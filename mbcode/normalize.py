@@ -121,6 +121,12 @@ def normalize_card(obj: dict) -> dict:
     card.setdefault("archived", False)
     card.setdefault("description", None)
     card.setdefault("cache_ttl", None)
+    if card["archived"]:
+        # Metabase forces an archived card's collection_id to wherever archiving
+        # parked it and ignores collection_id in the same/later PUT (verified against
+        # the live instance: PUT echoes the requested value but a follow-up GET shows
+        # it reverted) -- so this field isn't ours to manage once archived.
+        card.pop("collection_id", None)
     return _drop_empty(card)
 
 

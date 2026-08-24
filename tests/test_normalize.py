@@ -94,6 +94,19 @@ def test_normalize_card_strips_server_generated_fields(load_fixture):
     assert not (forbidden & out.keys())
 
 
+def test_normalize_card_drops_collection_id_when_archived():
+    # Metabase forces an archived card's collection_id server-side and ignores
+    # collection_id sent in the same/later PUT, so it isn't a field mbc can manage
+    # once archived -- keeping it in the comparison produces a diff no apply can clear.
+    out = normalize_card({**_CARD_BASE, "archived": True, "collection_id": 16})
+    assert "collection_id" not in out
+
+
+def test_normalize_card_keeps_collection_id_when_not_archived():
+    out = normalize_card({**_CARD_BASE, "archived": False, "collection_id": 16})
+    assert out["collection_id"] == 16
+
+
 def test_normalize_collection_parent_id_from_location_when_field_is_present_but_null(load_fixture):
     live = load_fixture("collection-9.json")
     assert "parent_id" in live and live["parent_id"] is None  # real API shape, confirmed
