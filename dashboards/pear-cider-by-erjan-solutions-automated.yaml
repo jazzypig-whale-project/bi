@@ -583,7 +583,7 @@ dashcards:
   visualization_settings:
     virtual_card:
       display: heading
-    text: Capacity
+    text: Quota headroom
     dashcard.background: false
 - key: dc-capacity-by-hour
   card: pca-capacity-by-hour

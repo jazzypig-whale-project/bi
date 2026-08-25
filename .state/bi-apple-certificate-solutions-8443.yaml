@@ -255,6 +255,8 @@ dashboards:
       dc-emails-sent-by-hour-by-domain: 101
       dc-emails-failed-and-in-progress-by-hour: 103
       dc-emails-failed-top-domains: 104
+      dc-heading-production-produced: 115
+      dc-certificates-produced-by-day: 116
       dc-heading-production-requests: 94
       dc-production-requests-by-hour: 76
       dc-heading-production-pool: 95
@@ -280,7 +282,5 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
-      dc-heading-production-produced: 115
-      dc-certificates-produced-by-day: 116
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

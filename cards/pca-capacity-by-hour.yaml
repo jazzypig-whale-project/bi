@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
-name: Capacity by hour (upper bound — fleet gates not historised)
-description: Historical capacity from quota windows, cooldowns and balances only. Fleet readiness is not historised, so this is an upper bound. All three series restrict to accounts whose validation_status is currently GOOD — a snapshot filter applied retroactively to every past hour, since account validation_status is not historised either; an account promoted or demoted since the hour in question is counted by today's status, not the hour's. The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars are not the last point of this chart. They apply the live fleet gates (device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap) that no historical query can reconstruct, so they read several times lower. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance.
+name: Quota headroom by hour (24h rotation ceiling)
+description: Sums remaining quota across every account with validation_status currently GOOD that is attached to a device (up to app.registry.max-accounts-per-device = 4 per device), not only the one currently signed in. A device runs one account at a time, so this total is reachable only if devices rotate through all their accounts over 24h — it is not certificates issuable this instant. Fleet readiness and account validation_status are not historised, so this is an upper bound — today's account status and device attachment are applied retroactively to every past hour, and no device-state gate is applied at all (by design — this card carries no fleet gates). The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars measure a different question — certificates placeable right this instant, gated by device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap, and restricted to only the active account per device — so they read several times lower and are not the last point of this chart. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance.
 collection: pear-cider-automated
 type: question
 display: line
@@ -30,13 +30,15 @@ dataset_query:
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
           INTERVAL '1 hour') AS h),
       subject AS (
-        -- The accounts currently attached to a device, with a current number and currently
-        -- GOOD validation status. validation_status is not historised, so this is today's set
-        -- applied to every past hour (see card description).
-        SELECT DISTINCT d.active_account_id AS account_id, acc.current_number_id AS number_id
-        FROM device d
-        JOIN account acc ON acc.account_id = d.active_account_id
-        WHERE acc.current_number_id IS NOT NULL
+        -- EVERY account attached to a device (app.registry.max-accounts-per-device = 4), not only
+        -- the one currently signed in, with a current number and currently GOOD validation
+        -- status. validation_status is not historised, so this is today's set applied to every
+        -- past hour (see card description). No device-state gate: this card carries no fleet
+        -- gates by design.
+        SELECT acc.account_id, acc.current_number_id AS number_id
+        FROM account acc
+        WHERE acc.device_id IS NOT NULL
+          AND acc.current_number_id IS NOT NULL
           AND acc.validation_status = 'GOOD'),
       ledger AS (
         SELECT subject_type, subject_id, amount,
@@ -145,7 +147,7 @@ visualization_settings:
   graph.metrics:
   - capacity
   graph.x_axis.scale: timeseries
-  graph.y_axis.title_text: Capacity, certificates
+  graph.y_axis.title_text: Certificates
   series_settings:
     Quota (upper bound):
       title: Quota
