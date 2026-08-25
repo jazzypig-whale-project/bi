@@ -46,20 +46,53 @@ dataset_query:
         FROM quota_ledger
         WHERE status IN ('RESERVED', 'COMMITTED')
           AND ts > (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day') - INTERVAL '31 days'),
+      -- account_window / number_window used to be a Nested Loop of every ledger row against every
+      -- spine hour (rows x 169), filtered post-hoc: O(events x hours). Rewritten below as a single
+      -- ordered running-sum per subject (merge real events with spine-hour checkpoints, then window
+      -- SUM/COUNT with a time RANGE frame): O(events log events) per subject, exact result (no
+      -- date_trunc bucketing, so no boundary-hour misclassification).
+      account_timeline AS (
+        SELECT subject_id, ts, amount, false AS is_checkpoint
+        FROM ledger
+        WHERE subject_type = 'ACCOUNT'
+          AND subject_id IN (SELECT account_id FROM subject)
+        UNION ALL
+        SELECT sub.account_id, s.h, 0::bigint, true
+        FROM spine s
+        CROSS JOIN (SELECT DISTINCT account_id FROM subject) sub),
+      account_running AS (
+        SELECT subject_id, ts, is_checkpoint,
+               count(*)    FILTER (WHERE NOT is_checkpoint) OVER w AS count24h,
+               sum(amount)                                  OVER w AS money24h
+        FROM account_timeline
+        WINDOW w AS (PARTITION BY subject_id ORDER BY ts
+                     RANGE BETWEEN INTERVAL '24 hours' PRECEDING AND CURRENT ROW)),
       account_window AS (
-        SELECT s.h, l.subject_id, count(*) AS count24h, sum(l.amount) AS money24h
+        SELECT ts AS h, subject_id, count24h, money24h
+        FROM account_running
+        WHERE is_checkpoint),
+      number_timeline AS (
+        SELECT subject_id, ts, amount, false AS is_checkpoint
+        FROM ledger
+        WHERE subject_type = 'NUMBER'
+          AND subject_id IN (SELECT DISTINCT number_id FROM subject)
+        UNION ALL
+        SELECT sn.number_id, s.h, 0::bigint, true
         FROM spine s
-        JOIN ledger l ON l.subject_type = 'ACCOUNT'
-                     AND l.ts > s.h - INTERVAL '24 hours' AND l.ts <= s.h
-        GROUP BY 1, 2),
+        CROSS JOIN (SELECT DISTINCT number_id FROM subject) sn),
+      number_running AS (
+        SELECT subject_id, ts, is_checkpoint,
+               sum(amount) OVER w24 AS money24h,
+               sum(amount) OVER w30 AS money30d
+        FROM number_timeline
+        WINDOW w24 AS (PARTITION BY subject_id ORDER BY ts
+                       RANGE BETWEEN INTERVAL '24 hours' PRECEDING AND CURRENT ROW),
+               w30 AS (PARTITION BY subject_id ORDER BY ts
+                       RANGE BETWEEN INTERVAL '30 days' PRECEDING AND CURRENT ROW)),
       number_window AS (
-        SELECT s.h, l.subject_id,
-               COALESCE(sum(l.amount) FILTER (WHERE l.ts > s.h - INTERVAL '24 hours'), 0) AS money24h,
-               sum(l.amount) AS money30d
-        FROM spine s
-        JOIN ledger l ON l.subject_type = 'NUMBER'
-                     AND l.ts > s.h - INTERVAL '30 days' AND l.ts <= s.h
-        GROUP BY 1, 2),
+        SELECT ts AS h, subject_id, money24h, money30d
+        FROM number_running
+        WHERE is_checkpoint),
       cooldown AS (
         SELECT s.h, c.account_id
         FROM spine s
@@ -68,18 +101,34 @@ dataset_query:
          AND (c.until      IS NULL OR c.until      > (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
          AND (c.cleared_at IS NULL OR c.cleared_at > (s.h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
         GROUP BY 1, 2),
-      balance AS (
-        -- Last balance_after per number at or before the hour. balance_ledger.created_at is timestamptz.
-        SELECT s.h, sn.number_id, bal.balance_after
+      -- balance used to be a per-(hour, number) LATERAL index probe (175084 separate "last balance
+      -- as of this hour" lookups). Rewritten as a single ordered forward-fill pass: merge real
+      -- balance_ledger rows with spine-hour checkpoints, group rows by how many real events precede
+      -- them (grp), then MAX(balance_after) per group carries the one real value in that group
+      -- forward to every checkpoint until the next real event. Same result, one sort instead of
+      -- 175084 index scans.
+      balance_timeline AS (
+        SELECT number_id, (created_at AT TIME ZONE 'Europe/Moscow') AS ts, balance_after, false AS is_checkpoint
+        FROM balance_ledger
+        WHERE number_id IN (SELECT DISTINCT number_id FROM subject)
+        UNION ALL
+        SELECT sn.number_id, s.h, NULL::bigint, true
         FROM spine s
-        CROSS JOIN (SELECT DISTINCT number_id FROM subject) sn
-        LEFT JOIN LATERAL (
-          SELECT bl.balance_after
-          FROM balance_ledger bl
-          WHERE bl.number_id = sn.number_id
-            AND bl.created_at <= (s.h AT TIME ZONE 'Europe/Moscow')
-          ORDER BY bl.created_at DESC
-          LIMIT 1) bal ON true),
+        CROSS JOIN (SELECT DISTINCT number_id FROM subject) sn),
+      balance_grouped AS (
+        SELECT number_id, ts, is_checkpoint, balance_after,
+               count(*) FILTER (WHERE NOT is_checkpoint)
+                 OVER (PARTITION BY number_id ORDER BY ts, is_checkpoint
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS grp
+        FROM balance_timeline),
+      balance_running AS (
+        SELECT number_id, ts, is_checkpoint,
+               max(balance_after) OVER (PARTITION BY number_id, grp) AS balance_after
+        FROM balance_grouped),
+      balance AS (
+        SELECT ts AS h, number_id, balance_after
+        FROM balance_running
+        WHERE is_checkpoint),
       account_headroom AS (
         SELECT s.h, sub.number_id,
                CASE WHEN cd.account_id IS NOT NULL THEN 0
@@ -96,14 +145,22 @@ dataset_query:
         CROSS JOIN subject sub
         LEFT JOIN account_window aw ON aw.h = s.h AND aw.subject_id = sub.account_id
         LEFT JOIN cooldown cd       ON cd.h = s.h AND cd.account_id = sub.account_id),
-      per_number AS (
-        SELECT ah.h, ah.number_id,
-               sum(ah.tasks_possible)             AS tasks_from_accounts,
-               sum(ah.tasks_possible_nocd)        AS tasks_from_accounts_nocd,
-               max(COALESCE(b.balance_after, 0))  AS balance
-        FROM account_headroom ah
-        LEFT JOIN balance b ON b.h = ah.h AND b.number_id = ah.number_id
+      -- Collapse to (h, number_id) BEFORE joining balance, so balance is joined 1:1 against an
+      -- already-aggregated row per hour x number instead of fanning out across every account
+      -- sharing that number.
+      account_headroom_agg AS (
+        SELECT h, number_id,
+               sum(tasks_possible)      AS tasks_from_accounts,
+               sum(tasks_possible_nocd) AS tasks_from_accounts_nocd
+        FROM account_headroom
         GROUP BY 1, 2),
+      per_number AS (
+        SELECT ag.h, ag.number_id,
+               ag.tasks_from_accounts,
+               ag.tasks_from_accounts_nocd,
+               COALESCE(b.balance_after, 0) AS balance
+        FROM account_headroom_agg ag
+        LEFT JOIN balance b ON b.h = ag.h AND b.number_id = ag.number_id),
       capped AS (
         SELECT pn.h, pn.number_id,
                greatest(0, least(pn.tasks_from_accounts,
