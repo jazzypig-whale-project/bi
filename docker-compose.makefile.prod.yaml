@@ -38,6 +38,15 @@ services:
       - ./nginx/spaceship.ini:/etc/letsencrypt/spaceship.ini:ro
       - ./nginx/user_conf.d:/etc/nginx/user_conf.d:ro            # TLS-vhost (bi.conf, рендерится)
       - ./nginx/creds.htpasswd:/etc/nginx/creds.htpasswd:ro
+      # ⚠ Логи nginx НА ХОСТ. Каталог монтируется поверх /var/log/nginx, куда уже указывают
+      # директивы образа (`error_log … notice`, `access_log … main`), поэтому правок конфига не
+      # нужно — в образе там лежат симлинки на /dev/stdout и /dev/stderr, и монтирование их
+      # перекрывает. Читатель у файла один: fail2ban на хосте (jail `bi-nginx-auth`, объявлен в
+      # инфраструктурном репозитории; сигнал — провал пароля из error_log, а не код ответа).
+      # ⚠ Цена: access и error БОЛЬШЕ НЕ ВИДНЫ в `docker logs` этого контейнера — они уходят в
+      # файлы. Каталог и его ротацию (logrotate, copytruncate) создаёт инфраструктурный репозиторий;
+      # если он не создан, nginx создаст файлы сам, но ротировать их будет некому.
+      - ${BI_NGINX_LOG_DIR:-/var/log/bi-nginx}:/var/log/nginx
     networks: [bi]
     deploy:
       resources:
