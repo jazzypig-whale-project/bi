@@ -118,6 +118,68 @@ verbatim:
 structure on every write; they are stripped when exporting and ignored when
 comparing files to the instance — do not hand-maintain them.
 
+### Timezone
+
+Every chart buckets and compares time in Europe/Moscow. The app's database is
+Postgres; most columns are naive `timestamp` storing UTC, a few are
+`timestamptz`. Metabase's `report-timezone` setting (`MB_REPORT_TIMEZONE`,
+`Europe/Moscow` here) only affects `timestamptz` values — it does nothing for
+a naive column, so every naive-column chart must convert explicitly.
+`mbcode/lint_timezone.py` enforces this in `mbc validate` (and therefore
+`diff`/`apply`); the four idioms below are what it accepts.
+
+**Native SQL cards** — convert with `AT TIME ZONE`:
+
+| situation | idiom |
+|---|---|
+| "now" vs a naive-UTC column | `(now() AT TIME ZONE 'UTC')` |
+| "now" for a spine / display value | `(now() AT TIME ZONE 'Europe/Moscow')` |
+| naive-UTC column → Moscow wall clock | `(col AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')` |
+| `timestamptz` column → Moscow wall clock | `(col AT TIME ZONE 'Europe/Moscow')` |
+
+The lint forbids `CURRENT_DATE`/`CURRENT_TIMESTAMP`/`LOCALTIMESTAMP`/`::date`,
+any `AT TIME ZONE` literal other than `'UTC'`/`'Europe/Moscow'`, a bare
+`now()` with no conversion, and a `date_trunc(...)` argument with no `AT TIME
+ZONE` in it. A column that is genuinely `timestamptz` already (so a bare
+`now()` compares correctly) is exempt with an inline comment naming the
+reason:
+
+```sql
+-- tz-ok: created_at is timestamptz; the bare now() below compares timestamptz to timestamptz.
+```
+
+**MBQL (GUI) cards** — a naive column cannot be bucketed correctly by
+breakout/`time-interval` directly (they inherit `report-timezone`, which does
+not apply). Add a `convert-timezone` expression to the stage and
+breakout/filter on that instead of the raw field:
+
+```yaml
+expressions:
+- - convert-timezone
+  - lib/expression-name: sent_at_msk
+  - - field
+    - effective-type: type/DateTime
+      base-type: type/DateTime
+    - 111
+  - Europe/Moscow
+  - UTC
+breakout:
+- - expression
+  - effective-type: type/DateTime
+    base-type: type/DateTime
+    temporal-unit: day
+  - sent_at_msk
+```
+
+`convert-timezone`'s `source` argument is mandatory for a naive column. The
+lint forbids a `temporal-unit` breakout or `time-interval` filter that
+targets a raw `field` instead of an `expression`, and checks that the
+targeted expression is a `convert-timezone` to `Europe/Moscow` defined in the
+same stage. There is no per-card exemption for MBQL cards — a card built
+directly in the Metabase UI with no such expression fails validation once
+adopted into the repo; exempt one by key in `MBQL_TZ_OK` in
+`mbcode/lint_timezone.py` only with a recorded reason.
+
 ## `dashboards/<key>.yaml`
 
 ```yaml

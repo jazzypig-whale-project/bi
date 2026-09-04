@@ -13,6 +13,15 @@ dataset_query:
   stages:
   - source-table: 23
     lib/type: mbql.stage/mbql
+    expressions:
+    - - convert-timezone
+      - lib/expression-name: sent_at_msk
+      - - field
+        - effective-type: type/DateTime
+          base-type: type/DateTime
+        - 111
+      - Europe/Moscow
+      - UTC
     aggregation:
     - - sum
       - {}
@@ -21,16 +30,16 @@ dataset_query:
           base-type: type/BigInteger
         - 105
     breakout:
-    - - field
-      - base-type: type/DateTime
-        effective-type: type/DateTime
+    - - expression
+      - effective-type: type/DateTime
+        base-type: type/DateTime
         temporal-unit: day
-      - 111
+      - sent_at_msk
 visualization_settings:
   graph.show_values: true
   graph.x_axis.scale: timeseries
   graph.dimensions:
-  - sent_at
+  - sent_at_msk
   graph.show_trendline: true
   graph.metrics:
   - sum

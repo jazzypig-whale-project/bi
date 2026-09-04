@@ -17,6 +17,7 @@ dataset_query:
       -- This works at message grain: creation hour + money from the earliest row (min id),
       -- status from the latest (max id) -- so SUPERSEDED never surfaces, it only ever marks a
       -- row a later provider row replaced. created_at is timestamptz, converts straight to Moscow.
+      -- tz-ok: created_at is timestamptz; the bare now() below compares timestamptz to timestamptz.
       WITH spine AS (
         SELECT generate_series(
           date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),

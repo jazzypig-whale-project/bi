@@ -57,6 +57,10 @@ services:
       # База = локальный тест (metabase напрямую на loopback); prod-оверрайд ставит https://<домен>:8443/.
       MB_SITE_URL: ${MB_SITE_URL:-http://localhost:3000/}
       MB_JETTY_HOST: 0.0.0.0
+      # Report timezone — влияет только на отображение timestamptz-колонок (naive timestamp
+      # Metabase не конвертирует, см. docs/FORMAT.md, "Timezone"). Раньше жило только как
+      # состояние UI в metadata-volume; теперь воспроизводимо из кода.
+      MB_REPORT_TIMEZONE: ${MB_REPORT_TIMEZONE:-Europe/Moscow}
       # Штатный Prometheus-эндпоинт Metabase (OSS, начиная с v0.44.4): отдельный listener
       # http://metabase:8282/metrics. Наружу порт НЕ публикуем — только внутри сети `bi`
       # (на проде его проксирует nginx-tls: location = /metrics, allow только адрес монитора).

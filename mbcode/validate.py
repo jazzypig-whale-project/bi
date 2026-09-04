@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from . import repo
+from .lint_timezone import check_card_timezone
 from .model import KEY_RE
 
 FORBIDDEN_KEYS = frozenset((
@@ -106,6 +107,7 @@ def _check_card(tree, key, doc, problems):
     if not doc.get("display"):
         problems.append(f"{path}: 'display' is required")
     _check_dataset_query(path, doc.get("dataset_query"), problems)
+    check_card_timezone(path, key, doc, problems)
 
 
 def _check_dataset_query(path, query, problems):

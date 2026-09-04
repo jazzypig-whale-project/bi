@@ -6,7 +6,38 @@ import glob as glob_module
 import pytest
 
 from helpers import minimal_card, minimal_collection, minimal_dashboard, minimal_dashcard, write_doc
+from mbcode import lint_timezone
 from mbcode.validate import FORBIDDEN_KEYS, validate_tree
+
+
+def _native_query(sql):
+    return {
+        "lib/type": "mbql/query", "database": 2,
+        "stages": [{"lib/type": "mbql.stage/native", "native": sql}],
+    }
+
+
+def _mbql_query(**stage_overrides):
+    stage = {"lib/type": "mbql.stage/mbql", "source-table": 23}
+    stage.update(stage_overrides)
+    return {"lib/type": "mbql/query", "database": 2, "stages": [stage]}
+
+
+RAW_FIELD_BREAKOUT = [
+    ["field", {"effective-type": "type/DateTime", "base-type": "type/DateTime",
+               "temporal-unit": "day"}, 111],
+]
+
+MOSCOW_EXPRESSION = [
+    ["convert-timezone", {"lib/expression-name": "sent_at_msk"},
+     ["field", {"effective-type": "type/DateTime", "base-type": "type/DateTime"}, 111],
+     "Europe/Moscow", "UTC"],
+]
+
+EXPRESSION_BREAKOUT = [
+    ["expression", {"effective-type": "type/DateTime", "base-type": "type/DateTime",
+                     "temporal-unit": "day"}, "sent_at_msk"],
+]
 
 
 def _problems(tmp_path):
@@ -237,4 +268,117 @@ def test_single_tab_dashboard_with_tab_declared_is_valid(tmp_path):
 def test_untabbed_dashboard_still_allows_tabless_dashcards(tmp_path):
     write_doc(tmp_path, "cards", "daily-revenue", minimal_card())
     write_doc(tmp_path, "dashboards", "overview", minimal_dashboard(dashcards=[minimal_dashcard()]))
+    assert _problems(tmp_path) == []
+
+
+# --- timezone gate: native SQL cards --------------------------------------------
+
+def test_native_sql_forbidden_construct_rejected(tmp_path):
+    query = _native_query("SELECT * FROM certificate WHERE sent_at > CURRENT_DATE")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("CURRENT_DATE" in p for p in problems)
+
+
+def test_native_sql_disallowed_tz_literal_rejected(tmp_path):
+    query = _native_query("SELECT (now() AT TIME ZONE 'MSK') AS h")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("'MSK'" in p and "not UTC or Europe/Moscow" in p for p in problems)
+
+
+def test_native_sql_bare_now_rejected(tmp_path):
+    query = _native_query("SELECT * FROM certificate WHERE sent_at >= now() - INTERVAL '1 day'")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("bare now()" in p for p in problems)
+
+
+def test_native_sql_now_wrapped_in_at_time_zone_is_valid(tmp_path):
+    query = _native_query(
+        "SELECT * FROM certificate WHERE sent_at >= (now() AT TIME ZONE 'UTC') - INTERVAL '1 day'")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    assert _problems(tmp_path) == []
+
+
+def test_native_sql_date_trunc_without_conversion_rejected(tmp_path):
+    query = _native_query("SELECT date_trunc('day', sent_at) AS d FROM certificate")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("date_trunc(...) argument has no AT TIME ZONE" in p for p in problems)
+
+
+def test_native_sql_date_trunc_with_conversion_is_valid(tmp_path):
+    query = _native_query(
+        "SELECT date_trunc('day', (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) "
+        "AS d FROM certificate")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    assert _problems(tmp_path) == []
+
+
+def test_native_sql_line_wrapped_date_trunc_is_not_a_false_positive(tmp_path):
+    """A date_trunc call split across lines must still be seen as one flattened argument."""
+    query = _native_query(
+        "SELECT date_trunc('day',\n  (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'))\n"
+        "AS d FROM certificate")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    assert _problems(tmp_path) == []
+
+
+def test_native_sql_tz_ok_comment_suppresses_the_gate(tmp_path):
+    """created_at is timestamptz here, so a bare now() is correct — annotate instead of convert."""
+    query = _native_query(
+        "-- tz-ok: created_at is timestamptz.\n"
+        "SELECT * FROM topup_payout WHERE created_at >= now() - INTERVAL '1 day'")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    assert _problems(tmp_path) == []
+
+
+# --- timezone gate: MBQL cards ---------------------------------------------------
+
+def test_mbql_breakout_on_raw_field_rejected(tmp_path):
+    query = _mbql_query(breakout=RAW_FIELD_BREAKOUT)
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("breakout buckets a raw field" in p for p in problems)
+
+
+def test_mbql_time_interval_on_raw_field_rejected(tmp_path):
+    query = _mbql_query(filters=[
+        ["time-interval", {"include-current": True}, RAW_FIELD_BREAKOUT[0], -7, "day"],
+    ])
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("time-interval filter buckets a raw field" in p for p in problems)
+
+
+def test_mbql_breakout_on_moscow_expression_is_valid(tmp_path):
+    query = _mbql_query(expressions=MOSCOW_EXPRESSION, breakout=EXPRESSION_BREAKOUT)
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    assert _problems(tmp_path) == []
+
+
+def test_mbql_breakout_on_undefined_expression_rejected(tmp_path):
+    """The expression name doesn't resolve to any convert-timezone in this stage."""
+    query = _mbql_query(breakout=EXPRESSION_BREAKOUT)
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("is not a convert-timezone to Europe/Moscow" in p for p in problems)
+
+
+def test_mbql_expression_targeting_non_moscow_zone_does_not_count(tmp_path):
+    bad_expression = [
+        ["convert-timezone", {"lib/expression-name": "sent_at_msk"},
+         ["field", {}, 111], "UTC", "UTC"],
+    ]
+    query = _mbql_query(expressions=bad_expression, breakout=EXPRESSION_BREAKOUT)
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("is not a convert-timezone to Europe/Moscow" in p for p in problems)
+
+
+def test_mbql_key_in_allowlist_is_exempt(tmp_path, monkeypatch):
+    monkeypatch.setitem(lint_timezone.MBQL_TZ_OK, "daily-revenue", "test exemption")
+    query = _mbql_query(breakout=RAW_FIELD_BREAKOUT)
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
     assert _problems(tmp_path) == []

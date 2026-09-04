@@ -22,7 +22,7 @@ dataset_query:
         -- AccountCooldownRepository.findOpenActiveByAccountIds.
         SELECT DISTINCT ON (account_id) account_id, reason, until
         FROM account_cooldown
-        WHERE cleared_at IS NULL AND (until IS NULL OR until > now())
+        WHERE cleared_at IS NULL AND (until IS NULL OR until > (now() AT TIME ZONE 'UTC'))
         ORDER BY account_id, (until IS NULL) DESC, until DESC, id DESC
       ),
       account_window AS (

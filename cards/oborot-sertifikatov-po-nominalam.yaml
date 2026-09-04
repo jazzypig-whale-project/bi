@@ -12,6 +12,15 @@ dataset_query:
   database: 2
   stages:
   - source-table: 23
+    expressions:
+    - - convert-timezone
+      - lib/expression-name: sent_at_msk
+      - - field
+        - effective-type: type/DateTime
+          base-type: type/DateTime
+        - 111
+      - Europe/Moscow
+      - UTC
     aggregation:
     - - sum
       - {}
@@ -34,10 +43,10 @@ dataset_query:
       - SENT
     - - time-interval
       - effective-type: type/Boolean
-      - - field
+      - - expression
         - effective-type: type/DateTime
           base-type: type/DateTime
-        - 111
+        - sent_at_msk
       - 0
       - year
     lib/type: mbql.stage/mbql
