@@ -58,6 +58,9 @@ Dashboards and questions on the live Metabase instance are managed as YAML files
   Also wired into `make mbc-validate` / `make mbc-diff` / `make mbc-test`.
 - Reads `.env` for `METABASE_BASE_URL` / `METABASE_BASIC_USERNAME` / `METABASE_BASIC_PASSWORD` /
   `METABASE_API_KEY` — the same file as the bi-stack secrets (`MB_DB_PASS` etc.), all required.
+  Optional `METABASE_PROXY=http://host:port` routes `mbc` through a forward-proxy (wins over
+  `HTTP_PROXY`/`HTTPS_PROXY`) — needed when direct HTTPS to Metabase stalls on larger responses
+  (DPI cutting connections above ~16 KB); see "Proxies" in `docs/metabase-as-code.md`.
 - **`.state/<host>.yaml` MUST be committed.** It maps logical keys to server ids/entity_ids; lose
   it and the next `apply` cannot recognize existing entities and recreates all of them as duplicates.
 - **`apply` replaces a dashboard's dashcards wholesale** (`PUT /api/dashboard/:id` has no partial

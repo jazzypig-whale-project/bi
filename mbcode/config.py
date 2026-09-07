@@ -37,6 +37,7 @@ class Config:
     basic_username: str
     basic_password: str
     api_key: str
+    proxy: str = ""
 
     @property
     def host_slug(self) -> str:
@@ -54,4 +55,5 @@ def load_config(env_file: str) -> Config:
         basic_username=values["METABASE_BASIC_USERNAME"],
         basic_password=values["METABASE_BASIC_PASSWORD"],
         api_key=values["METABASE_API_KEY"],
+        proxy=values.get("METABASE_PROXY", ""),
     )

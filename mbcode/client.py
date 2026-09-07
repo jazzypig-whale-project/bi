@@ -46,18 +46,20 @@ class _Proxy:
         self.display = display
 
 
-def _resolve_proxy(scheme: str, host: str, port):
-    """Resolve an HTTP forward-proxy for `scheme://host:port` from the standard
-    HTTP_PROXY/HTTPS_PROXY/NO_PROXY environment variables (via urllib.request's own
-    lookup, so lowercase precedence and the CGI HTTP_PROXY guard match stdlib
+def _resolve_proxy(scheme: str, host: str, port, configured: str = ""):
+    """Resolve an HTTP forward-proxy for `scheme://host:port`. A proxy URL configured
+    explicitly (.env's METABASE_PROXY) takes precedence; otherwise falls back to the
+    standard HTTP_PROXY/HTTPS_PROXY/NO_PROXY environment variables (via urllib.request's
+    own lookup, so lowercase precedence and the CGI HTTP_PROXY guard match stdlib
     behavior). Returns None when no proxy applies to this request.
 
     Only http:// proxy URLs are supported: http.client (and mbc's stdlib-only
     dependency set) cannot speak SOCKS, nor tunnel TLS-to-a-TLS proxy.
     """
-    proxy_url = urllib.request.getproxies().get(scheme)
+    proxy_url = configured or urllib.request.getproxies().get(scheme)
     if not proxy_url:
         return None
+    source = ".env METABASE_PROXY" if configured else "the environment"
     netloc = host if port is None else f"{host}:{port}"
     if urllib.request.proxy_bypass(netloc):
         return None
@@ -67,12 +69,12 @@ def _resolve_proxy(scheme: str, host: str, port):
         # urlsplit instead misreads the host as the scheme, so re-split it as http://.
         parsed = urllib.parse.urlsplit(f"http://{proxy_url}")
     if not parsed.hostname:
-        raise ConfigError("proxy URL from the environment has no host")
+        raise ConfigError(f"proxy URL from {source} has no host")
     display_netloc = parsed.hostname if parsed.port is None else f"{parsed.hostname}:{parsed.port}"
     display = f"http://{display_netloc}"
     if parsed.scheme not in ("http", ""):
         raise ConfigError(
-            f"proxy scheme '{parsed.scheme}' from the environment is not supported by mbc "
+            f"proxy scheme '{parsed.scheme}' from {source} is not supported by mbc "
             f"(http:// only) -- '{display}' looks like a SOCKS or HTTPS proxy")
     headers = {}
     if parsed.username:
@@ -93,19 +95,21 @@ class _KeepAlivePool:
     unchanged. `connection_class` is injectable for tests; it defaults to
     http.client.HTTPSConnection/HTTPConnection picked from the base URL's scheme.
 
-    Honors HTTP_PROXY/HTTPS_PROXY/NO_PROXY: an https target tunnels through the
-    proxy with CONNECT (TLS stays end-to-end to the target host); an http target
-    is requested with an absolute-URI and Proxy-Authorization, per RFC 7230 §5.3.2.
+    Honors `proxy_url` (.env's METABASE_PROXY) if given, else falls back to
+    HTTP_PROXY/HTTPS_PROXY. NO_PROXY always applies, to either source. An https
+    target tunnels through the proxy with CONNECT (TLS stays end-to-end to the
+    target host); an http target is requested with an absolute-URI and
+    Proxy-Authorization, per RFC 7230 §5.3.2.
     """
 
-    def __init__(self, base_url: str, connection_class=None):
+    def __init__(self, base_url: str, connection_class=None, proxy_url: str = ""):
         parsed = urllib.parse.urlsplit(base_url)
         self._host = parsed.hostname
         self._port = parsed.port
         self._scheme = parsed.scheme
         self._connection_class = connection_class or _CONNECTION_CLASSES[parsed.scheme]
         self._local = threading.local()
-        self._proxy = _resolve_proxy(parsed.scheme, parsed.hostname, parsed.port)
+        self._proxy = _resolve_proxy(parsed.scheme, parsed.hostname, parsed.port, proxy_url)
 
     @property
     def proxy_display(self):
@@ -178,7 +182,7 @@ class Client:
             "Authorization": "Basic " + base64.b64encode(credentials).decode(),
             "User-Agent": USER_AGENT,
         }
-        self._opener = _KeepAlivePool(self.base_url)
+        self._opener = _KeepAlivePool(self.base_url, proxy_url=config.proxy)
         if self._opener.proxy_display:
             self._trace(f"-> via proxy {self._opener.proxy_display}")
 

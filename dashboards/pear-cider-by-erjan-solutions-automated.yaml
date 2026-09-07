@@ -3,7 +3,7 @@ key: pear-cider-by-erjan-solutions-automated
 name: Pear Cider by Erjan.Solutions (automated)
 description: English rebuild of the Pear Cider dashboard plus operational metrics. The Days filter drives every time-windowed card.
 collection: pear-cider-automated
-width: fixed
+width: full
 auto_apply_filters: true
 cache_ttl: null
 archived: false

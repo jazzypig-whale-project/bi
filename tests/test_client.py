@@ -467,6 +467,58 @@ def test_non_verbose_client_does_not_trace_proxy(monkeypatch, capsys):
     assert captured.err == ""
 
 
+# --- proxy configured via .env (METABASE_PROXY), not the environment -----------
+
+def test_pool_tunnels_through_the_proxy_from_the_env_file():
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory,
+                                      proxy_url="http://proxy.example.test:3128")
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    conn = factory.created[0]
+    assert conn.host == "proxy.example.test"
+    assert conn.port == 3128
+    assert conn.tunnel == ("metabase.example.test", 443, None)
+
+
+def test_pool_prefers_the_env_file_proxy_over_the_https_proxy_variable(monkeypatch):
+    monkeypatch.setenv("HTTPS_PROXY", "http://ambient.example.test:8888")
+    factory = _connection_factory()
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test", connection_class=factory,
+                                      proxy_url="http://proxy.example.test:3128")
+    pool.open(client_mod.urllib.request.Request("https://metabase.example.test/api/card/1"))
+
+    assert factory.created[0].host == "proxy.example.test"
+
+
+def test_pool_rejects_a_socks_proxy_from_the_env_file():
+    with pytest.raises(client_mod.ConfigError, match="METABASE_PROXY") as excinfo:
+        client_mod._KeepAlivePool("https://metabase.example.test",
+                                   proxy_url="socks5h://user:secretpass@localhost:2080")
+
+    assert ".env" in str(excinfo.value)
+    assert "secretpass" not in str(excinfo.value)
+
+
+def test_no_proxy_star_bypasses_the_env_file_proxy(monkeypatch):
+    monkeypatch.setenv("NO_PROXY", "*")
+
+    pool = client_mod._KeepAlivePool("https://metabase.example.test",
+                                      proxy_url="http://proxy.example.test:3128")
+
+    assert pool.proxy_display is None
+
+
+def test_verbose_client_traces_the_proxy_from_the_env_file(capsys):
+    client_mod.Client(_config(base_url="https://metabase.example.test",
+                               proxy="http://proxy.example.test:3128"), verbose=True)
+
+    captured = capsys.readouterr()
+    assert "via proxy http://proxy.example.test:3128" in captured.err
+
+
 # --- get_many / get_many_or_none -------------------------------------------------
 
 def test_get_many_returns_results_in_input_order_regardless_of_completion_order():

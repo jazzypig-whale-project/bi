@@ -190,11 +190,20 @@ tracing interleaves across threads otherwise):
 
 ## Proxies
 
-`mbc` honors the standard `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY` environment variables (and their
-lowercase forms) — no `.env` key or CLI flag needed. Only `http://` proxy URLs are supported: the
-client is stdlib-only, so it can't speak SOCKS or tunnel TLS to an `https://` proxy. An `https://`
-Metabase base URL still gets end-to-end TLS to Metabase itself — the proxy only sees a `CONNECT`,
-never the traffic inside it. `--verbose` prints the proxy in use (credentials redacted).
+Set `METABASE_PROXY` in `.env` to route every `mbc` request through an `http://` forward-proxy. This
+is the primary knob — it survives a shell that `unset`s proxy variables, and it wins over the standard
+`HTTP_PROXY`/`HTTPS_PROXY` environment variables (and their lowercase forms) when both are set:
+
+```
+METABASE_PROXY=http://localhost:2080
+```
+
+Without `METABASE_PROXY`, `mbc` falls back to those environment variables, same as before. Either way,
+only `http://` proxy URLs are supported: the client is stdlib-only, so it can't speak SOCKS or tunnel
+TLS to an `https://` proxy. `NO_PROXY` still applies and bypasses either source (`NO_PROXY=*` disables
+proxying entirely, including `METABASE_PROXY`). An `https://` Metabase base URL still gets end-to-end
+TLS to Metabase itself — the proxy only sees a `CONNECT`, never the traffic inside it. `--verbose`
+prints the proxy in use (credentials redacted).
 
 ```
 HTTPS_PROXY=http://proxy.example.test:3128 ./mbc diff
