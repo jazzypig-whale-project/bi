@@ -444,8 +444,8 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-emails-failed-and-in-progress-by-hour
-  card: pca-emails-failed-and-in-progress-by-hour
+- key: dc-emails-failed-by-hour-by-domain
+  card: pca-emails-failed-by-hour-by-domain
   tab: emails
   row: 7
   col: 0
@@ -460,13 +460,78 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-emails-failed-top-domains
-  card: pca-emails-failed-top-domains
+- key: dc-heading-emails-domains
   tab: emails
   row: 13
   col: 0
   size_x: 24
-  size_y: 6
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Recipient domains
+    dashcard.background: false
+- key: dc-emails-delivery-by-domain
+  card: pca-emails-delivery-by-domain
+  tab: emails
+  row: 14
+  col: 0
+  size_x: 24
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-heading-emails-late-bounces
+  tab: emails
+  row: 22
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Late bounces
+    dashcard.background: false
+- key: dc-emails-late-bounces-unresolved
+  card: pca-emails-late-bounces-unresolved
+  tab: emails
+  row: 23
+  col: 0
+  size_x: 6
+  size_y: 4
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
+- key: dc-emails-late-bounces-by-day
+  card: pca-emails-late-bounces-by-day
+  tab: emails
+  row: 23
+  col: 6
+  size_x: 18
+  size_y: 4
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  series: []
+  inline_parameters: []
+- key: dc-emails-late-bounce-lag
+  card: pca-emails-late-bounce-lag
+  tab: emails
+  row: 27
+  col: 0
+  size_x: 24
+  size_y: 5
   visualization_settings: {}
   parameter_mappings:
   - parameter_id: 821ec3b1

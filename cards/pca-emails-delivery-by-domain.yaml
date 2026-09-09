@@ -1,0 +1,57 @@
+kind: card
+key: pca-emails-delivery-by-domain
+name: Email delivery by recipient domain
+description: Per-recipient-domain (delivery_email, else buyer_email) delivery funnel over the Days window — attempted, delivered, still in progress (SENDING), failed (FAILED_MANUAL with an email_* or delivery_forced_failed failure_reason), retried at least once, late-bounced (delivered then bounced after the order completed) and still-unresolved late bounces, plus delivered_pct and net_success_pct (delivered and never late-bounced). median_delivery_sec is the median seconds from sent_confirmed_at to delivered_at, ignoring undelivered rows. Anchored to sent_confirmed_at when known, else paid_at. Top 25 domains by attempted volume.
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH mail AS (
+        SELECT lower(split_part(COALESCE(delivery_email, buyer_email), '@', 2)) AS domain,
+               status, failure_reason, sent_confirmed_at, delivered_at,
+               late_bounce_at, late_bounce_resolved_at, send_attempt_count
+        FROM order_
+        WHERE COALESCE(sent_confirmed_at, paid_at) >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+          AND COALESCE(delivery_email, buyer_email) IS NOT NULL
+          AND (sent_confirmed_at IS NOT NULL
+               OR status = 'SENDING'
+               OR (status = 'FAILED_MANUAL'
+                   AND (failure_reason LIKE 'email\_%' OR failure_reason = 'delivery_forced_failed'))))
+      SELECT domain,
+             count(*) AS attempted,
+             count(*) FILTER (WHERE delivered_at IS NOT NULL) AS delivered,
+             count(*) FILTER (WHERE status = 'SENDING') AS in_progress,
+             count(*) FILTER (WHERE status = 'FAILED_MANUAL'
+                                AND (failure_reason LIKE 'email\_%'
+                                     OR failure_reason = 'delivery_forced_failed')) AS failed,
+             count(*) FILTER (WHERE send_attempt_count > 0) AS retried,
+             count(*) FILTER (WHERE late_bounce_at IS NOT NULL) AS late_bounced,
+             count(*) FILTER (WHERE late_bounce_at IS NOT NULL
+                                AND late_bounce_resolved_at IS NULL) AS late_bounce_open,
+             round(100.0 * count(*) FILTER (WHERE delivered_at IS NOT NULL)
+                   / nullif(count(*), 0), 1) AS delivered_pct,
+             round(100.0 * count(*) FILTER (WHERE delivered_at IS NOT NULL AND late_bounce_at IS NULL)
+                   / nullif(count(*), 0), 1) AS net_success_pct,
+             round(percentile_cont(0.5) WITHIN GROUP (
+                     ORDER BY extract(epoch FROM delivered_at - sent_confirmed_at))::numeric, 1)
+               AS median_delivery_sec
+      FROM mail
+      GROUP BY domain
+      ORDER BY attempted DESC, domain
+      LIMIT 25
+    template-tags:
+      days:
+        id: 2a5e68f5-e267-4722-955c-1e63251c998c
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings: {}
+parameters: []

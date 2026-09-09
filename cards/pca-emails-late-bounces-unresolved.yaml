@@ -1,0 +1,21 @@
+kind: card
+key: pca-emails-late-bounces-unresolved
+name: Unresolved late bounces
+description: Orders whose email was reported delivered and then bounced or failed after the order was already COMPLETED (late_bounce_at set), and that late bounce has not yet been resolved (late_bounce_resolved_at still NULL). Mirrors the app's own unresolved-late-bounce count. Not windowed by Days — this is a current backlog, not a rate.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      SELECT count(*) AS unresolved_late_bounces
+      FROM order_
+      WHERE late_bounce_at IS NOT NULL
+        AND late_bounce_resolved_at IS NULL
+visualization_settings: {}
+parameters: []

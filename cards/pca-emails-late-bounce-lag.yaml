@@ -1,0 +1,48 @@
+kind: card
+key: pca-emails-late-bounce-lag
+name: Late bounce lag
+description: Late bounces over the Days window (late_bounce_at) bucketed by how long after delivered_at the bounce landed. A large 01 <1 min bucket points at the SES delivered-then-bounced race (both events arrive within seconds) rather than a genuine asynchronous DSN hours later.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH buckets AS (
+        SELECT * FROM (VALUES
+          ('01 <1 min'), ('02 1-5 min'), ('03 5-60 min'), ('04 1-6 h'),
+          ('05 6-24 h'), ('06 >24 h'), ('07 no delivered_at')) AS t(bucket)),
+      lb AS (
+        SELECT CASE
+                 WHEN delivered_at IS NULL                                  THEN '07 no delivered_at'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '1 minute'   THEN '01 <1 min'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '5 minutes'  THEN '02 1-5 min'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '1 hour'     THEN '03 5-60 min'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '6 hours'    THEN '04 1-6 h'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '24 hours'   THEN '05 6-24 h'
+                 ELSE '06 >24 h' END AS bucket
+        FROM order_
+        WHERE late_bounce_at IS NOT NULL
+          AND late_bounce_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day'))
+      SELECT b.bucket, count(l.bucket) AS late_bounces
+      FROM buckets b LEFT JOIN lb l ON l.bucket = b.bucket
+      GROUP BY 1 ORDER BY 1
+    template-tags:
+      days:
+        id: 617ca69d-072a-425a-bb9b-a1cee63fd822
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - bucket
+  graph.metrics:
+  - late_bounces
+  graph.y_axis.title_text: Late bounces
+parameters: []

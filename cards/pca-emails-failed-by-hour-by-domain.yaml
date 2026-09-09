@@ -1,0 +1,64 @@
+kind: card
+key: pca-emails-failed-by-hour-by-domain
+name: Failed emails by hour by recipient domain
+description: Orders per hour over the Days window whose certificate email failed (FAILED_MANUAL with an email_* or delivery_forced_failed failure_reason), broken down by recipient (delivery_email, else buyer_email) domain — top 7 domains by failed count get their own series, the rest are grouped as Other. Anchored to sent_confirmed_at when known, else paid_at — FAILED_MANUAL carries no terminal timestamp. Hour buckets are Europe/Moscow. In-progress (SENDING) emails moved out of this chart — see the domain delivery table below.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH failed AS (
+        SELECT date_trunc('hour',
+                 (COALESCE(sent_confirmed_at, paid_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h,
+               lower(split_part(COALESCE(delivery_email, buyer_email), '@', 2)) AS domain
+        FROM order_
+        WHERE status = 'FAILED_MANUAL'
+          AND (failure_reason LIKE 'email\_%' OR failure_reason = 'delivery_forced_failed')
+          AND COALESCE(sent_confirmed_at, paid_at) >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+          AND COALESCE(delivery_email, buyer_email) IS NOT NULL),
+      top_domains AS (
+        SELECT domain FROM failed GROUP BY domain ORDER BY count(*) DESC, domain LIMIT 7),
+      labelled AS (
+        SELECT f.h, COALESCE(t.domain, 'Other') AS series
+        FROM failed f LEFT JOIN top_domains t ON t.domain = f.domain),
+      spine AS (
+        SELECT generate_series(
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
+          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
+          INTERVAL '1 hour') AS h),
+      series AS (
+        SELECT domain AS series FROM top_domains
+        UNION ALL
+        SELECT 'Other' WHERE (SELECT count(DISTINCT domain) FROM failed) > 7)
+      SELECT s.h AS hour, se.series AS domain, count(l.series) AS emails
+      FROM spine s
+      CROSS JOIN series se
+      LEFT JOIN labelled l ON l.h = s.h AND l.series = se.series
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: db88a41d-2a64-4674-af31-dab1fe62d9b3
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - domain
+  graph.metrics:
+  - emails
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Failed emails
+  stackable.stack_type: stacked
+  series_settings:
+    Other:
+      color: '#A0A8B0'
+parameters: []
