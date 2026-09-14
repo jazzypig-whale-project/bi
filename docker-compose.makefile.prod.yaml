@@ -23,7 +23,8 @@ services:
       metabase:
         condition: service_healthy
     ports:
-      - "${BI_HTTPS_PORT:-8443}:443"
+      # Только v4: без адреса docker публикует порт и на [::], а хост теряет AF_INET6.
+      - "0.0.0.0:${BI_HTTPS_PORT:-8443}:443"
     environment:
       CERTBOT_EMAIL: ${CERTBOT_EMAIL:-jazzypig-whale-project@proton.me}
       STAGING: ${STAGING:-0}                  # 0 = боевой серт; тест — STAGING=1 make up ENV=prod (staging-ACME)
@@ -37,6 +38,9 @@ services:
       # jonasal ждёт креды `<authenticator>.ini` = spaceship.ini в /etc/letsencrypt (рендерится скриптом).
       - ./nginx/spaceship.ini:/etc/letsencrypt/spaceship.ini:ro
       - ./nginx/user_conf.d:/etc/nginx/user_conf.d:ro            # TLS-vhost (bi.conf, рендерится)
+      # Перекрывает редиректор ОБРАЗА: в его копии есть v6-слушатель, а ядро хоста теряет
+      # AF_INET6 — без него nginx не стартует вовсе, а не деградирует.
+      - ./nginx/redirector.conf:/etc/nginx/conf.d/redirector.conf:ro
       - ./nginx/creds.htpasswd:/etc/nginx/creds.htpasswd:ro
       # ⚠ Логи nginx НА ХОСТ. Каталог монтируется поверх /var/log/nginx, куда уже указывают
       # директивы образа (`error_log … notice`, `access_log … main`), поэтому правок конфига не
