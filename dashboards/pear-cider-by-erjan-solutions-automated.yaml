@@ -1,7 +1,8 @@
 kind: dashboard
 key: pear-cider-by-erjan-solutions-automated
 name: Pear Cider by Erjan.Solutions (automated)
-description: English rebuild of the Pear Cider dashboard plus operational metrics. The Days filter drives every time-windowed card.
+description: English rebuild of the Pear Cider dashboard plus operational metrics. The Days filter drives every time-windowed
+  card.
 collection: pear-cider-automated
 width: full
 auto_apply_filters: true
@@ -15,6 +16,11 @@ parameters:
   type: number/=
   default:
   - 7
+- id: 758bc410
+  name: Provider
+  slug: provider
+  sectionId: string
+  type: string/=
 tabs:
 - key: overview
   name: Overview
@@ -38,6 +44,9 @@ dashcards:
       display: heading
     text: Volume
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-certificate-face-value-by-day
   card: pca-certificate-face-value-by-day
   tab: overview
@@ -48,10 +57,17 @@ dashcards:
   visualization_settings: {}
   parameter_mappings:
   - parameter_id: 821ec3b1
+    card_id: 69
     target:
     - variable
     - - template-tag
       - days
+  - parameter_id: 758bc410
+    card_id: 69
+    target:
+    - dimension
+    - - template-tag
+      - provider
   series: []
   inline_parameters: []
 - key: dc-heading-overview-live-state
@@ -65,6 +81,9 @@ dashcards:
       display: heading
     text: Live state
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-production-queue-depth
   card: pca-production-queue-depth
   tab: overview
@@ -90,6 +109,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 70
   series: []
   inline_parameters: []
 - key: dc-time-since-last-certificate
@@ -147,6 +167,9 @@ dashcards:
       display: heading
     text: Partners
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-time-since-last-order-by-partner
   card: pca-time-since-last-order-by-partner
   tab: overview
@@ -169,6 +192,9 @@ dashcards:
       display: heading
     text: Pipeline
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-flow-by-hour
   card: pca-flow-by-hour
   tab: overview
@@ -183,6 +209,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 78
   series: []
   inline_parameters: []
 - key: dc-heading-orders-volume
@@ -196,6 +223,9 @@ dashcards:
       display: heading
     text: Volume
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-orders-by-hour-sber
   card: pca-orders-by-hour-sber
   tab: orders
@@ -210,6 +240,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 81
   series: []
   inline_parameters: []
 - key: dc-orders-by-hour-other
@@ -226,6 +257,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 80
   series: []
   inline_parameters: []
 - key: dc-heading-orders-pipeline
@@ -239,6 +271,9 @@ dashcards:
       display: heading
     text: Pipeline
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-orders-in-progress-by-status-partner
   card: pca-orders-in-progress-by-status-partner
   tab: orders
@@ -264,6 +299,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 83
   series: []
   inline_parameters: []
 - key: dc-heading-orders-aging
@@ -277,6 +313,9 @@ dashcards:
       display: heading
     text: Aging
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-orders-aging-sber
   card: pca-orders-aging-sber
   tab: orders
@@ -291,6 +330,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 85
   series: []
   inline_parameters: []
 - key: dc-orders-aging-other
@@ -307,6 +347,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 84
   series: []
   inline_parameters: []
 - key: dc-heading-orders-certificates
@@ -320,6 +361,9 @@ dashcards:
       display: heading
     text: Certificates
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-certificates-sent-by-hour
   card: pca-certificates-sent-by-hour
   tab: orders
@@ -334,6 +378,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 88
   series: []
   inline_parameters: []
 - key: dc-heading-orders-partners
@@ -347,6 +392,9 @@ dashcards:
       display: heading
     text: Partners
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-sales-distribution-by-partner
   card: pca-sales-distribution-by-partner
   tab: orders
@@ -372,6 +420,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 86
   series: []
   inline_parameters: []
 - key: dc-heading-orders-denominations
@@ -385,6 +434,9 @@ dashcards:
       display: heading
     text: Denominations
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
@@ -399,6 +451,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 89
   series: []
   inline_parameters: []
 - key: dc-certificate-turnover-by-denomination
@@ -415,6 +468,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 87
   series: []
   inline_parameters: []
 - key: dc-heading-emails-delivery
@@ -428,6 +482,9 @@ dashcards:
       display: heading
     text: Email delivery
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-emails-sent-by-hour-by-domain
   card: pca-emails-sent-by-hour-by-domain
   tab: emails
@@ -442,6 +499,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 100
   series: []
   inline_parameters: []
 - key: dc-emails-failed-by-hour-by-domain
@@ -458,6 +516,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 101
   series: []
   inline_parameters: []
 - key: dc-heading-emails-domains
@@ -471,6 +530,9 @@ dashcards:
       display: heading
     text: Recipient domains
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-emails-delivery-by-domain
   card: pca-emails-delivery-by-domain
   tab: emails
@@ -485,6 +547,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 119
   series: []
   inline_parameters: []
 - key: dc-heading-emails-late-bounces
@@ -498,6 +561,9 @@ dashcards:
       display: heading
     text: Late bounces
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-emails-late-bounces-unresolved
   card: pca-emails-late-bounces-unresolved
   tab: emails
@@ -523,6 +589,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 121
   series: []
   inline_parameters: []
 - key: dc-emails-late-bounce-lag
@@ -539,6 +606,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 120
   series: []
   inline_parameters: []
 - key: dc-heading-production-produced
@@ -552,6 +620,9 @@ dashcards:
       display: heading
     text: Production
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-certificates-produced-by-day
   card: pca-certificates-produced-by-day
   tab: production
@@ -566,6 +637,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 110
   series: []
   inline_parameters: []
 - key: dc-heading-production-requests
@@ -579,6 +651,9 @@ dashcards:
       display: heading
     text: Requests
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-production-requests-by-hour
   card: pca-production-requests-by-hour
   tab: production
@@ -593,6 +668,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 94
   series: []
   inline_parameters: []
 - key: dc-heading-production-pool
@@ -606,6 +682,9 @@ dashcards:
       display: heading
     text: Pool
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-certificates-in-pool-by-denomination
   card: pca-certificates-in-pool-by-denomination
   tab: production
@@ -650,6 +729,9 @@ dashcards:
       display: heading
     text: Quota headroom
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-capacity-by-hour
   card: pca-capacity-by-hour
   tab: production
@@ -664,6 +746,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 95
   series: []
   inline_parameters: []
 - key: dc-heading-production-devices
@@ -677,6 +760,9 @@ dashcards:
       display: heading
     text: Devices
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-devices-total
   card: pca-devices-total
   tab: production
@@ -732,6 +818,9 @@ dashcards:
       display: heading
     text: Accounts
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-accounts-by-slot-status
   card: pca-accounts-by-slot-status
   tab: production
@@ -765,6 +854,9 @@ dashcards:
       display: heading
     text: Live state
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-topups-in-progress-count
   card: pca-topups-in-progress-count
   tab: topups
@@ -798,6 +890,9 @@ dashcards:
       display: heading
     text: Volume
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-topups-created-by-hour
   card: pca-topups-created-by-hour
   tab: topups
@@ -812,6 +907,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 98
   series: []
   inline_parameters: []
 - key: dc-heading-topups-status
@@ -825,6 +921,9 @@ dashcards:
       display: heading
     text: Status
     dashcard.background: false
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-topups-aging
   card: pca-topups-aging
   tab: topups
@@ -839,6 +938,7 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 96
   series: []
   inline_parameters: []
 - key: dc-topups-by-status
@@ -866,5 +966,6 @@ dashcards:
     - variable
     - - template-tag
       - days
+    card_id: 99
   series: []
   inline_parameters: []

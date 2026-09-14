@@ -1,7 +1,9 @@
 kind: card
 key: summa-nominalov-sertifikatov-po-dnyam
 name: Сумма номиналов сертификатов по дням
-description: null
+description: Сумма номиналов отправленных сертификатов по дням (Europe/Moscow), с разбивкой по оператору номера, оплатившего
+  сертификат (certificate → production_request → успешная задача → number → provider). Для сертификатов, отправленных до появления
+  production_request_id (2026-08-26), оператор не определяется — они попадают в «Неизвестно».
 collection: certs-business-analytics
 type: question
 display: bar
@@ -11,36 +13,57 @@ dataset_query:
   lib/type: mbql/query
   database: 2
   stages:
-  - source-table: 23
-    lib/type: mbql.stage/mbql
-    expressions:
-    - - convert-timezone
-      - lib/expression-name: sent_at_msk
-      - - field
-        - effective-type: type/DateTime
-          base-type: type/DateTime
-        - 111
-      - Europe/Moscow
-      - UTC
-    aggregation:
-    - - sum
-      - {}
-      - - field
-        - effective-type: type/BigInteger
-          base-type: type/BigInteger
-        - 105
-    breakout:
-    - - expression
-      - effective-type: type/DateTime
-        base-type: type/DateTime
-        temporal-unit: day
-      - sent_at_msk
+  - lib/type: mbql.stage/native
+    native: "-- Дни считаются по Europe/Moscow; certificate.sent_at хранится как naive UTC.\n-- Провайдер определяется по\
+      \ успешной задаче, обработавшей production_request\n-- сертификата; на один production_request может приходиться несколько\
+      \ успешных\n-- задач (повторные попытки), поэтому LATERAL берёт последнюю по succeeded_at,\n-- иначе обычный JOIN задвоил\
+      \ бы номинал. Если задачу найти не удаётся -> Неизвестно.\nWITH cert AS (\n  SELECT date_trunc('day', (c.sent_at AT\
+      \ TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,\n         c.amount,\n         COALESCE(phone_provider.name,\
+      \ 'Неизвестно') AS provider\n  FROM certificate c\n  LEFT JOIN LATERAL (\n    SELECT t.number_id\n    FROM task t\n\
+      \    WHERE t.production_request_id = c.production_request_id\n      AND t.succeeded_at IS NOT NULL\n    ORDER BY t.succeeded_at\
+      \ DESC\n    LIMIT 1\n  ) won ON true\n  LEFT JOIN number         ON number.number_id = won.number_id\n  LEFT JOIN phone_provider\
+      \ ON phone_provider.code = number.provider_code\n  WHERE c.status = 'SENT'\n    AND c.sent_at >= ((date_trunc('day',\
+      \ (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')\n\
+      \    AND c.sent_at <  (now() AT TIME ZONE 'UTC')\n    AND {{provider}}\n)\nSELECT day, provider, sum(amount)::bigint\
+      \ AS face_value\nFROM cert\nGROUP BY day, provider\nORDER BY day, provider\n"
+    template-tags:
+      days:
+        display-name: Days
+        type: number
+        id: 95086a3f-11e2-49bc-ab70-4c48eb8871e4
+        name: days
+        default: '30'
+      provider:
+        dimension:
+        - field
+        - {}
+        - 472
+        widget-type: string/=
+        id: 0b956cee-1c23-4a97-86da-a1bbfe9a305b
+        name: provider
+        display-name: Provider
+        type: dimension
+        default: null
 visualization_settings:
-  graph.show_values: true
+  graph.y_axis.title_text: Сумма номиналов сертификатов, ₽
+  graph.show_values: false
+  graph.y_axis.auto_split: false
+  graph.metrics:
+  - face_value
+  column_settings:
+    '["name","face_value"]':
+      suffix: ' ₽'
+      decimals: 1
+  series_settings:
+    Beeline:
+      color: '#509EE3'
+    MTS:
+      color: '#88BF4D'
+    Неизвестно:
+      color: '#A989C5'
   graph.x_axis.scale: timeseries
   graph.dimensions:
-  - sent_at_msk
-  graph.show_trendline: true
-  graph.metrics:
-  - sum
+  - day
+  - provider
+  stackable.stack_type: stacked
 parameters: []
