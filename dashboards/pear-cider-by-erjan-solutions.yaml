@@ -7,19 +7,7 @@ width: fixed
 auto_apply_filters: true
 cache_ttl: null
 archived: false
-parameters:
-- id: 8e554880
-  name: Days
-  slug: days
-  sectionId: number
-  type: number/=
-  default:
-  - 30
-- id: a9122744
-  name: Provider
-  slug: provider
-  sectionId: string
-  type: string/=
+parameters: []
 dashcards:
 - key: summa-nominalov-sertifikatov-po-dnyam
   card: summa-nominalov-sertifikatov-po-dnyam
@@ -28,23 +16,9 @@ dashcards:
   size_x: 24
   size_y: 9
   visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 8e554880
-    card_id: 42
-    target:
-    - variable
-    - - template-tag
-      - days
-  - parameter_id: a9122744
-    card_id: 42
-    target:
-    - dimension
-    - - template-tag
-      - provider
+  parameter_mappings: []
   series: []
-  inline_parameters:
-  - 8e554880
-  - a9122744
+  inline_parameters: []
 - key: kolichestvo-otpravlennykh-sertifikatov
   card: kolichestvo-otpravlennykh-sertifikatov
   row: 9
