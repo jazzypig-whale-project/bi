@@ -37,7 +37,7 @@ dataset_query:
         LEFT JOIN client_billing b ON b.client_id = o.client_id
         WHERE o.status NOT IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL')
           AND c.name IS DISTINCT FROM 'sber'
-          AND (o.completed_at IS NULL OR o.completed_at >= date_trunc('hour', (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day'))))
+          AND (o.completed_at IS NULL OR o.completed_at >= (date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')))
       SELECT s.h AS hour,
              CASE
                WHEN s.h - o.created_at < INTERVAL '1 minute'   THEN '01 <1m'

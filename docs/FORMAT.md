@@ -139,8 +139,8 @@ a naive column, so every naive-column chart must convert explicitly.
 
 The lint forbids `CURRENT_DATE`/`CURRENT_TIMESTAMP`/`LOCALTIMESTAMP`/`::date`,
 any `AT TIME ZONE` literal other than `'UTC'`/`'Europe/Moscow'`, a bare
-`now()` with no conversion, and a `date_trunc(...)` argument with no `AT TIME
-ZONE` in it. A column that is genuinely `timestamptz` already (so a bare
+`now()` with no conversion, and a `date_trunc(...)` or `date_bin(...)`
+argument with no `AT TIME ZONE` in it. A column that is genuinely `timestamptz` already (so a bare
 `now()` compares correctly) is exempt with an inline comment naming the
 reason:
 

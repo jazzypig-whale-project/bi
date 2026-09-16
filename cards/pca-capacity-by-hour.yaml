@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
-name: Quota headroom by hour (24h rotation ceiling)
-description: Sums remaining quota across every account with validation_status currently GOOD that is attached to a device (up to app.registry.max-accounts-per-device = 4 per device), not only the one currently signed in. A device runs one account at a time, so this total is reachable only if devices rotate through all their accounts over 24h — it is not certificates issuable this instant. Fleet readiness and account validation_status are not historised, so this is an upper bound — today's account status and device attachment are applied retroactively to every past hour, and no device-state gate is applied at all (by design — this card carries no fleet gates). The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars measure a different question — certificates placeable right this instant, gated by device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap, and restricted to only the active account per device — so they read several times lower and are not the last point of this chart. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance.
+name: Quota headroom over time (24h rotation ceiling)
+description: Sums remaining quota across every account with validation_status currently GOOD that is attached to a device (up to app.registry.max-accounts-per-device = 4 per device), not only the one currently signed in. A device runs one account at a time, so this total is reachable only if devices rotate through all their accounts over 24h — it is not certificates issuable this instant. Fleet readiness and account validation_status are not historised, so this is an upper bound — today's account status and device attachment are applied retroactively to every past hour, and no device-state gate is applied at all (by design — this card carries no fleet gates). The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Sampled once per the selected Granularity interval. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars measure a different question — certificates placeable right this instant, gated by device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap, and restricted to only the active account per device — so they read several times lower and are not the last point of this chart. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance.
 collection: pear-cider-automated
 type: question
 display: line
@@ -26,9 +26,9 @@ dataset_query:
       ),
       spine AS (
         SELECT generate_series(
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - (least({{days}}, 14) * INTERVAL '1 day')),
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
-          INTERVAL '1 hour') AS h),
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - (least({{days}}, 14) * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
       subject AS (
         -- EVERY account attached to a device (app.registry.max-accounts-per-device = 4), not only
         -- the one currently signed in, with a current number and currently GOOD validation
@@ -50,7 +50,7 @@ dataset_query:
       -- spine hour (rows x 169), filtered post-hoc: O(events x hours). Rewritten below as a single
       -- ordered running-sum per subject (merge real events with spine-hour checkpoints, then window
       -- SUM/COUNT with a time RANGE frame): O(events log events) per subject, exact result (no
-      -- date_trunc bucketing, so no boundary-hour misclassification).
+      -- date_bin bucketing, so no boundary-hour misclassification).
       account_timeline AS (
         SELECT subject_id, ts, amount, false AS is_checkpoint
         FROM ledger
@@ -197,6 +197,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 3ed4f5fe-f173-4ff3-d8d3-e3d4e5f6a7d3
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - hour

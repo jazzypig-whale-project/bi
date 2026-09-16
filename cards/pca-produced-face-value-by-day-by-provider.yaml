@@ -1,7 +1,7 @@
 kind: card
 key: pca-produced-face-value-by-day-by-provider
-name: Produced certificate face value by day by provider, ₽
-description: Sum of face values from successful PRODUCTION tasks per Europe/Moscow day, stacked by phone provider — the same "produced" definition as Certificates produced by day, by denomination (task.succeeded_at, purpose PRODUCTION, status SUCCESS, task.amount is the face value). The task carries number_id directly, so provider needs no fallback chain here. The rightmost bar is the still-running current day and is always short — it does not indicate a drop in output.
+name: Produced certificate face value over time by provider, ₽
+description: Sum of face values from successful PRODUCTION tasks per bucket, Europe/Moscow, stacked by phone provider — the same "produced" definition as Certificates produced over time, by denomination (task.succeeded_at, purpose PRODUCTION, status SUCCESS, task.amount is the face value). The task carries number_id directly, so provider needs no fallback chain here. Buckets follow the Granularity filter; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -17,23 +17,23 @@ dataset_query:
       -- The task carries number_id directly, so the provider needs no fallback chain here.
       -- Days are Europe/Moscow days; task.succeeded_at is naive UTC.
       WITH mts_start AS (
-        SELECT date_trunc('day', (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day
+        SELECT date_bin({{granularity}}::text::interval, (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day
         FROM task t
         JOIN number n ON n.number_id = t.number_id
         WHERE n.provider_code IS DISTINCT FROM 'beeline'
       ),
       produced AS (
-        SELECT date_trunc('day', (t.succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+        SELECT date_bin({{granularity}}::text::interval, (t.succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
                t.amount,
                COALESCE(p.name,
-                        CASE WHEN date_trunc('day', (t.succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) < m.day
+                        CASE WHEN date_bin({{granularity}}::text::interval, (t.succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') < m.day
                              THEN 'Beeline' ELSE 'Unknown' END) AS provider
         FROM task t
         CROSS JOIN mts_start m
         LEFT JOIN number         n ON n.number_id = t.number_id
         LEFT JOIN phone_provider p ON p.code = n.provider_code
         WHERE t.purpose = 'PRODUCTION' AND t.status = 'SUCCESS'
-          AND t.succeeded_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND t.succeeded_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
       )
       SELECT day, provider, sum(amount)::bigint AS face_value
       FROM produced
@@ -47,6 +47,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 7c1d8e1f-1395-41f5-b1b5-17b8c9d0e1b7
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
       provider:
         id: 9c4d5e6f-7a8b-4c0d-9e2f-3a4b5c6d7e8f
         name: provider

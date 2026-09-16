@@ -1,7 +1,7 @@
 kind: card
 key: pca-emails-sent-by-hour-by-domain
-name: Emails sent by hour by sender domain
-description: Emails sent per hour over the Days window, split by the domain of the From address. Domains come from the data, so new sender domains appear automatically. Hour buckets are Europe/Moscow.
+name: Emails sent over time, by sender domain
+description: Emails sent per bucket over the Days window, split by the domain of the From address. Domains come from the data, so new sender domains appear automatically. Buckets follow the Granularity filter, Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -15,14 +15,14 @@ dataset_query:
     native: |
       WITH spine AS (
         SELECT generate_series(
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
-          INTERVAL '1 hour') AS h),
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
       mail AS (
-        SELECT date_trunc('hour', (sent_confirmed_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h,
+        SELECT date_bin({{granularity}}::text::interval, (sent_confirmed_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
                lower(split_part(sent_from_address, '@', 2)) AS domain
         FROM order_
-        WHERE sent_confirmed_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        WHERE sent_confirmed_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND sent_from_address IS NOT NULL),
       domains AS (SELECT DISTINCT domain FROM mail)
       SELECT s.h AS hour, d.domain, count(m.domain) AS emails
@@ -38,6 +38,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: a5c6e8d9-7b9a-4ebc-cf4b-5a6b7c8d9e0b
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - hour

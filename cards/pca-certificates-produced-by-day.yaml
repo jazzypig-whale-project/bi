@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-produced-by-day
-name: Certificates produced by day, by denomination
-description: Successful PRODUCTION tasks per Europe/Moscow day, stacked by face value — the same "produced" definition as the Produced series in Flow by hour (task.succeeded_at, purpose PRODUCTION, status SUCCESS). The 8 denominations produced most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. The rightmost bar is the still-running current day and is always short — it does not indicate a drop in output.
+name: Certificates produced over time, by denomination
+description: Successful PRODUCTION tasks per bucket, stacked by face value — the same "produced" definition as the Produced series in Flow over time (task.succeeded_at, purpose PRODUCTION, status SUCCESS). The 8 denominations produced most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. Buckets follow the Granularity filter, Europe/Moscow; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -18,16 +18,15 @@ dataset_query:
       -- Days are Europe/Moscow days; task.succeeded_at is naive UTC.
       WITH spine AS (
         SELECT generate_series(
-          date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day'),
-          date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')),
-          INTERVAL '1 day') AS d),
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS d),
       produced AS (
-        SELECT date_trunc('day', (succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS d,
+        SELECT date_bin({{granularity}}::text::interval, (succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS d,
                amount
         FROM task
         WHERE purpose = 'PRODUCTION' AND status = 'SUCCESS'
-          AND succeeded_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow'))
-                                - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')),
+          AND succeeded_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')),
       ranked AS (
         -- Top 8 denominations by task count over the window; the rest fall into Other.
         SELECT amount, row_number() OVER (ORDER BY count(*) DESC, amount) AS rn
@@ -56,6 +55,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: e9a0b1fd-bf3e-4faf-a38f-9e0f1a2b3c4f
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - day

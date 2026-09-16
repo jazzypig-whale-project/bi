@@ -1,7 +1,7 @@
 kind: card
 key: pca-topups-aging
 name: Top-ups in progress, aging
-description: How old the open payout rows were at each hour. updated_at is the last touch, which for a terminal row is the moment it became terminal. Age buckets 01-10 run from freshest (<1m) to oldest (>3d); same ramp and order as the orders aging — Sber card. Hour buckets are Europe/Moscow.
+description: How old the open payout rows were at each sample. Sampled once per the selected Granularity interval, so a row that opens and closes between two sample marks never appears. updated_at is the last touch, which for a terminal row is the moment it became terminal. Age buckets 01-10 run from freshest (<1m) to oldest (>3d); same ramp and order as the orders aging — Sber card. Sample marks follow the Granularity filter, Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -23,16 +23,16 @@ dataset_query:
       -- closed in the gap between the floor and the unrounded instant.
       WITH spine AS (
         SELECT generate_series(
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
-          INTERVAL '1 hour') AS h),
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
       tp AS (
         SELECT (created_at AT TIME ZONE 'Europe/Moscow') AS created_at,
                CASE WHEN status IN ('CREATE_RETRY', 'PENDING_POLL') THEN NULL
                     ELSE (updated_at AT TIME ZONE 'Europe/Moscow') END AS closed_at
         FROM topup_payout
         WHERE status IN ('CREATE_RETRY', 'PENDING_POLL')
-           OR updated_at >= (date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow'))
+           OR updated_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow'))
       SELECT s.h AS hour,
              CASE
                WHEN s.h - tp.created_at < INTERVAL '1 minute'   THEN '01 <1m'
@@ -58,6 +58,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 2dc3e4fe-e062-4fe2-c7c2-d2c3d4e5f6c2
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - hour

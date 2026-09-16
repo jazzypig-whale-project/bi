@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-by-hour-sber
-name: Orders by hour — Sber
-description: Sber orders bucketed by the hour they were created, segmented by where they ended up. Hour buckets are Europe/Moscow.
+name: Orders over time — Sber
+description: Sber orders bucketed by when they were created, segmented by where they ended up. Buckets follow the Granularity filter, Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -17,11 +17,11 @@ dataset_query:
       -- cohort chart is the only one that invents nothing.
       WITH spine AS (
         SELECT generate_series(
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
-          date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow')),
-          INTERVAL '1 hour') AS h),
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
       o AS (
-        SELECT date_trunc('hour', (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS h,
+        SELECT date_bin({{granularity}}::text::interval, (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
                CASE
                  WHEN o.status = 'COMPLETED' THEN 'Completed'
                  WHEN o.status IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL') THEN 'Failed'
@@ -29,7 +29,7 @@ dataset_query:
                END AS outcome
         FROM order_ o
         LEFT JOIN api_client c ON c.client_id = o.client_id
-        WHERE o.created_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        WHERE o.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND c.name = 'sber'),
       outcomes AS (SELECT unnest(ARRAY['Completed', 'In progress', 'Failed']) AS outcome)
       SELECT s.h AS hour, x.outcome, count(o.h) AS orders
@@ -45,6 +45,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 8d3a4c6b-5f7e-4c9b-ad2f-3e4d5b6c7d8f
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - hour

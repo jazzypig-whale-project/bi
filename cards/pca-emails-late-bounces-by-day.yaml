@@ -1,7 +1,7 @@
 kind: card
 key: pca-emails-late-bounces-by-day
-name: Late bounces by day
-description: Late bounces per day over the Days window (late_bounce_at bucketed) split by resolution — Unresolved (late_bounce_resolved_at still NULL), Resent (late_bounce_resolution = resent) or Resolved manually (late_bounce_resolution = manual). Day buckets are Europe/Moscow; the rightmost bar is the still-running current day and is always short. Late bounces are rare — expect mostly empty days.
+name: Late bounces over time
+description: Late bounces per bucket over the Days window (late_bounce_at bucketed) split by resolution — Unresolved (late_bounce_resolved_at still NULL), Resent (late_bounce_resolution = resent) or Resolved manually (late_bounce_resolution = manual). Buckets follow the Granularity filter, Europe/Moscow; the rightmost bar is the still-running current bucket and is always short. Late bounces are rare — expect mostly empty buckets.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -15,19 +15,18 @@ dataset_query:
     native: |
       WITH spine AS (
         SELECT generate_series(
-          date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')),
-          date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')),
-          INTERVAL '1 day') AS d),
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS d),
       states AS (SELECT * FROM (VALUES ('Unresolved'), ('Resent'), ('Resolved manually')) AS t(state)),
       lb AS (
-        SELECT date_trunc('day', (late_bounce_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS d,
+        SELECT date_bin({{granularity}}::text::interval, (late_bounce_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS d,
                CASE WHEN late_bounce_resolved_at IS NULL THEN 'Unresolved'
                     WHEN late_bounce_resolution = 'resent' THEN 'Resent'
                     ELSE 'Resolved manually' END AS state
         FROM order_
         WHERE late_bounce_at IS NOT NULL
-          AND late_bounce_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow'))
-                                  - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
+          AND late_bounce_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
       SELECT s.d AS day, st.state, count(l.state) AS late_bounces
       FROM spine s
       CROSS JOIN states st
@@ -41,6 +40,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: d8f9a0fc-ae2d-4fde-f27e-8d9e0f1a2b3e
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - day

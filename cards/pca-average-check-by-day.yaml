@@ -1,7 +1,7 @@
 kind: card
 key: pca-average-check-by-day
-name: Average check by day, ₽
-description: Mean face value (₽) of the certificates sent each day, over the Days window. Days are Europe/Moscow days.
+name: Average check over time, ₽
+description: Mean face value (₽) of the certificates sent per bucket, over the Days window. Buckets follow the Granularity filter, Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,11 +13,11 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      SELECT date_trunc('day', (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+      SELECT date_bin({{granularity}}::text::interval, (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
              round(avg(amount), 0)::bigint                                                AS average_check
       FROM certificate
       WHERE status = 'SENT'
-        AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+        AND sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
       GROUP BY 1
       ORDER BY 1
     template-tags:
@@ -27,6 +27,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 4fe5a6fe-a284-4fa4-e9e4-f4e5f6a7b8e4
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - day

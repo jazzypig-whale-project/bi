@@ -1,7 +1,7 @@
 kind: dashboard
 key: pear-cider-by-erjan-solutions-automated
 name: Pear Cider by Erjan.Solutions (automated)
-description: English rebuild of the Pear Cider dashboard plus operational metrics. The Days filter drives every time-windowed card.
+description: English rebuild of the Pear Cider dashboard plus operational metrics. The Days filter drives every time-windowed card; Granularity sets the time bucket on every time-series chart.
 collection: pear-cider-automated
 width: full
 auto_apply_filters: true
@@ -15,6 +15,24 @@ parameters:
   type: number/=
   default:
   - 7
+- id: 3f9a20c7
+  name: Granularity
+  slug: granularity
+  sectionId: string
+  type: string/=
+  isMultiSelect: false
+  values_query_type: list
+  values_source_type: static-list
+  values_source_config:
+    values:
+    - '1 day'
+    - '12 hours'
+    - '6 hours'
+    - '3 hours'
+    - '2 hours'
+    - '1 hour'
+  default:
+  - '1 day'
 - id: 5c1d7a3e
   name: Provider
   slug: provider
@@ -65,6 +83,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-overview-live-state
@@ -196,6 +219,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-certificate-face-value-by-day-by-provider
@@ -217,6 +245,11 @@ dashcards:
     - variable
     - - template-tag
       - provider
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-orders-volume
@@ -244,6 +277,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-orders-by-hour-other
@@ -260,6 +298,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-orders-pipeline
@@ -368,6 +411,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-orders-partners
@@ -406,6 +454,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-orders-denominations
@@ -476,6 +529,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-emails-failed-by-hour-by-domain
@@ -492,6 +550,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-emails-domains
@@ -557,6 +620,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-emails-late-bounce-lag
@@ -600,6 +668,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-produced-face-value-by-day-by-provider
@@ -621,6 +694,11 @@ dashcards:
     - variable
     - - template-tag
       - provider
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-production-requests
@@ -648,6 +726,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-production-pool
@@ -719,6 +802,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-production-devices
@@ -867,6 +955,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-heading-topups-status
@@ -894,6 +987,11 @@ dashcards:
     - variable
     - - template-tag
       - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
   series: []
   inline_parameters: []
 - key: dc-topups-by-status

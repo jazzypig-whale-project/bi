@@ -28,6 +28,7 @@ ALLOWED_ZONES = frozenset(("UTC", "Europe/Moscow"))
 TZ_LITERAL_RE = re.compile(r"AT\s+TIME\s+ZONE\s*'([^']+)'", re.IGNORECASE)
 BARE_NOW_RE = re.compile(r"\bnow\s*\(\s*\)(?!\s*AT\s+TIME\s+ZONE\b)", re.IGNORECASE)
 DATE_TRUNC_CALL_RE = re.compile(r"date_trunc\s*\(", re.IGNORECASE)
+DATE_BIN_CALL_RE = re.compile(r"date_bin\s*\(", re.IGNORECASE)
 
 # MBQL cards have no SQL to annotate; exempt by key with a reason instead. Empty once every
 # GUI card buckets on a convert-timezone expression (see cards/pca-*.yaml for the pattern).
@@ -63,11 +64,12 @@ def _check_native_stage(path, stage, problems):
         problems.append(
             f"{path}: bare now() — wrap as (now() AT TIME ZONE 'UTC') or 'Europe/Moscow', "
             "or mark the column tz-ok if it is already timestamptz")
-    for arg in _call_args(flat, DATE_TRUNC_CALL_RE):
-        if "AT TIME ZONE" not in arg.upper():
-            problems.append(
-                f"{path}: date_trunc(...) argument has no AT TIME ZONE conversion: "
-                f"{arg.strip()[:80]}")
+    for label, call_re in (("date_trunc", DATE_TRUNC_CALL_RE), ("date_bin", DATE_BIN_CALL_RE)):
+        for arg in _call_args(flat, call_re):
+            if "AT TIME ZONE" not in arg.upper():
+                problems.append(
+                    f"{path}: {label}(...) argument has no AT TIME ZONE conversion: "
+                    f"{arg.strip()[:80]}")
 
 
 def _flatten_sql(sql):

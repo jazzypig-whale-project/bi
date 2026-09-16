@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day
-name: Certificate face value by day, ₽
-description: Sum of SENT certificate face values per Europe/Moscow day. Complete days are drawn in the default color; the still-running current day is a separate series in a different color, since it never covers a full day. The dashed line is Metabase's linear trend fitted over the complete days only.
+name: Certificate face value over time, ₽
+description: Sum of SENT certificate face values per bucket, Europe/Moscow. Complete buckets are drawn in the default color; the still-running current bucket is a separate series in a different color, since it never covers a full bucket. The dashed line is Metabase's linear trend fitted over the complete buckets only. Buckets follow the Granularity filter.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,26 +13,26 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
-      -- Complete days go in face_value, the still-running current day goes in
+      -- Buckets follow the Granularity filter, Europe/Moscow; certificate.sent_at is naive UTC.
+      -- Complete buckets go in face_value, the still-running current bucket goes in
       -- face_value_today (separate column = separate, differently-colored series),
-      -- so the trend line (fit on face_value only) never reads a partial day as movement.
-      WITH today_msk AS (
-        SELECT date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) AS day
+      -- so the trend line (fit on face_value only) never reads a partial bucket as movement.
+      WITH current_bucket AS (
+        SELECT date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day
       ),
       daily AS (
-        SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+        SELECT date_bin({{granularity}}::text::interval, (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
                sum(c.amount)::bigint                                                          AS face_value
         FROM certificate c
         WHERE c.status = 'SENT'
-          AND c.sent_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND c.sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND c.sent_at <  (now() AT TIME ZONE 'UTC')
         GROUP BY 1
       )
       SELECT d.day,
              CASE WHEN d.day <  t.day THEN d.face_value END AS face_value,
              CASE WHEN d.day =  t.day THEN d.face_value END AS face_value_today
-      FROM daily d, today_msk t
+      FROM daily d, current_bucket t
       ORDER BY d.day
     template-tags:
       days:
@@ -41,6 +41,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 5af6b7ff-b395-4fb5-fafd-a5f6a7b8c9f5
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
 visualization_settings:
   graph.dimensions:
   - day
@@ -61,9 +67,9 @@ visualization_settings:
       decimals: 1
   series_settings:
     face_value:
-      title: Complete days
+      title: Complete buckets
       color: '#509EE3'
     face_value_today:
-      title: Today
+      title: Current bucket
       color: '#84BB4C'
 parameters: []

@@ -325,6 +325,23 @@ def test_native_sql_line_wrapped_date_trunc_is_not_a_false_positive(tmp_path):
     assert _problems(tmp_path) == []
 
 
+def test_native_sql_date_bin_without_conversion_rejected(tmp_path):
+    query = _native_query(
+        "SELECT date_bin(INTERVAL '1 day', sent_at, TIMESTAMP '2000-01-03') AS d FROM certificate")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    problems = _problems(tmp_path)
+    assert any("date_bin(...) argument has no AT TIME ZONE" in p for p in problems)
+
+
+def test_native_sql_date_bin_with_conversion_is_valid(tmp_path):
+    query = _native_query(
+        "SELECT date_bin(INTERVAL '1 day', "
+        "(sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') "
+        "AS d FROM certificate")
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card(dataset_query=query))
+    assert _problems(tmp_path) == []
+
+
 def test_native_sql_tz_ok_comment_suppresses_the_gate(tmp_path):
     """created_at is timestamptz here, so a bare now() is correct — annotate instead of convert."""
     query = _native_query(

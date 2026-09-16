@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day-by-provider
-name: Certificate face value by day by provider, ₽
-description: Sum of SENT certificate face values per Europe/Moscow day, stacked by phone provider. Provider is resolved through the certificate's own task, else the production request's most recent successful task, else the account named in intake_reply_to — closing the attribution gap that a prior version of this chart left as Unknown. Rows still unresolved on a day before the first non-Beeline production success are counted as Beeline, since MTS did not exist yet; anything unresolved after that date stays Unknown.
+name: Certificate face value over time by provider, ₽
+description: Sum of SENT certificate face values per bucket, Europe/Moscow, stacked by phone provider. Buckets follow the Granularity filter. Provider is resolved through the certificate's own task, else the production request's most recent successful task, else the account named in intake_reply_to — closing the attribution gap that a prior version of this chart left as Unknown. Rows still unresolved in a bucket before the first non-Beeline production success are counted as Beeline, since MTS did not exist yet; anything unresolved after that date stays Unknown.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -22,7 +22,7 @@ dataset_query:
       -- Rows still unresolved on a day before the first non-Beeline production success are Beeline
       -- by definition — MTS did not exist yet. Anything unresolved after it stays Unknown.
       WITH mts_start AS (
-        SELECT date_trunc('day', (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day
+        SELECT date_bin({{granularity}}::text::interval, (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day
         FROM task t
         JOIN number n ON n.number_id = t.number_id
         WHERE n.provider_code IS DISTINCT FROM 'beeline'
@@ -34,7 +34,7 @@ dataset_query:
         ORDER BY production_request_id, (status = 'SUCCESS') DESC, created_at DESC
       ),
       cert AS (
-        SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+        SELECT date_bin({{granularity}}::text::interval, (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
                c.amount,
                COALESCE(n_direct.provider_code, n_pr.provider_code, n_reply.provider_code) AS provider_code
         FROM certificate c
@@ -45,7 +45,7 @@ dataset_query:
         LEFT JOIN account a_reply  ON lower(a_reply.apple_id) = lower(regexp_replace(c.intake_reply_to, '[\[\]"]', '', 'g'))
         LEFT JOIN number  n_reply  ON n_reply.number_id = a_reply.current_number_id
         WHERE c.status = 'SENT'
-          AND c.sent_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND c.sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND c.sent_at <  (now() AT TIME ZONE 'UTC')
       ),
       labelled AS (
@@ -67,6 +67,12 @@ dataset_query:
         display-name: Days
         type: number
         default: '7'
+      granularity:
+        id: 6b0c7d0f-0284-40f4-a0a4-06a7b8c9d0a6
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
       provider:
         id: 7a2b3c4d-5e6f-4a8b-9c0d-1e2f3a4b5c6d
         name: provider
