@@ -183,6 +183,12 @@ cards:
   pca-emails-late-bounces-unresolved:
     id: 122
     entity_id: YdIOQ8CiVdcjyeZtsGpK8
+  pca-certificate-face-value-by-day-by-provider:
+    id: 127
+    entity_id: Q1irXXZde61jn1Eoahzrg
+  pca-produced-face-value-by-day-by-provider:
+    id: 128
+    entity_id: a0bd5uNJ5IZquHwyGfDji
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -246,6 +252,7 @@ dashboards:
       dc-time-since-last-order-by-partner: 63
       dc-heading-overview-pipeline: 87
       dc-flow-by-hour: 64
+      dc-certificate-face-value-by-day-by-provider: 124
       dc-heading-orders-volume: 88
       dc-orders-by-hour-sber: 65
       dc-orders-by-hour-other: 66
@@ -266,8 +273,15 @@ dashboards:
       dc-heading-emails-delivery: 102
       dc-emails-sent-by-hour-by-domain: 101
       dc-emails-failed-by-hour-by-domain: 103
+      dc-heading-emails-domains: 117
+      dc-emails-delivery-by-domain: 118
+      dc-heading-emails-late-bounces: 119
+      dc-emails-late-bounces-unresolved: 120
+      dc-emails-late-bounces-by-day: 121
+      dc-emails-late-bounce-lag: 122
       dc-heading-production-produced: 115
       dc-certificates-produced-by-day: 116
+      dc-produced-face-value-by-day-by-provider: 125
       dc-heading-production-requests: 94
       dc-production-requests-by-hour: 76
       dc-heading-production-pool: 95
@@ -293,11 +307,5 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
-      dc-heading-emails-domains: 117
-      dc-emails-delivery-by-domain: 118
-      dc-heading-emails-late-bounces: 119
-      dc-emails-late-bounces-unresolved: 120
-      dc-emails-late-bounces-by-day: 121
-      dc-emails-late-bounce-lag: 122
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

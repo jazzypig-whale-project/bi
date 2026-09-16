@@ -1,0 +1,92 @@
+kind: card
+key: pca-produced-face-value-by-day-by-provider
+name: Produced certificate face value by day by provider, ₽
+description: Sum of face values from successful PRODUCTION tasks per Europe/Moscow day, stacked by phone provider — the same "produced" definition as Certificates produced by day, by denomination (task.succeeded_at, purpose PRODUCTION, status SUCCESS, task.amount is the face value). The task carries number_id directly, so provider needs no fallback chain here. The rightmost bar is the still-running current day and is always short — it does not indicate a drop in output.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Produced = a PRODUCTION task that succeeded; task.amount is the certificate face value.
+      -- The task carries number_id directly, so the provider needs no fallback chain here.
+      -- Days are Europe/Moscow days; task.succeeded_at is naive UTC.
+      WITH mts_start AS (
+        SELECT date_trunc('day', (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day
+        FROM task t
+        JOIN number n ON n.number_id = t.number_id
+        WHERE n.provider_code IS DISTINCT FROM 'beeline'
+      ),
+      produced AS (
+        SELECT date_trunc('day', (t.succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+               t.amount,
+               COALESCE(p.name,
+                        CASE WHEN date_trunc('day', (t.succeeded_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) < m.day
+                             THEN 'Beeline' ELSE 'Unknown' END) AS provider
+        FROM task t
+        CROSS JOIN mts_start m
+        LEFT JOIN number         n ON n.number_id = t.number_id
+        LEFT JOIN phone_provider p ON p.code = n.provider_code
+        WHERE t.purpose = 'PRODUCTION' AND t.status = 'SUCCESS'
+          AND t.succeeded_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+      )
+      SELECT day, provider, sum(amount)::bigint AS face_value
+      FROM produced
+      WHERE TRUE [[AND provider = {{provider}}]]
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 8b3c4d5e-6f7a-4b9c-8d1e-2f3a4b5c6d7e
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      provider:
+        id: 9c4d5e6f-7a8b-4c0d-9e2f-3a4b5c6d7e8f
+        name: provider
+        display-name: Provider
+        type: text
+        default: null
+visualization_settings:
+  graph.dimensions:
+  - day
+  - provider
+  graph.metrics:
+  - face_value
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Produced face value, ₽
+  graph.y_axis.auto_split: false
+  graph.show_values: false
+  stackable.stack_type: stacked
+  column_settings:
+    '["name","face_value"]':
+      suffix: ' ₽'
+      decimals: 0
+  graph.series_order_dimension: provider
+  graph.series_order:
+  - key: Beeline
+    name: Beeline
+    color: '#509EE3'
+    enabled: true
+  - key: MTS
+    name: MTS
+    color: '#88BF4D'
+    enabled: true
+  - key: Unknown
+    name: Unknown
+    color: '#949AAB'
+    enabled: true
+  series_settings:
+    Beeline:
+      color: '#509EE3'
+    MTS:
+      color: '#88BF4D'
+    Unknown:
+      color: '#949AAB'
+parameters: []

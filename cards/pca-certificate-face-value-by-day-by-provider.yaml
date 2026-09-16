@@ -1,0 +1,112 @@
+kind: card
+key: pca-certificate-face-value-by-day-by-provider
+name: Certificate face value by day by provider, ₽
+description: Sum of SENT certificate face values per Europe/Moscow day, stacked by phone provider. Provider is resolved through the certificate's own task, else the production request's most recent successful task, else the account named in intake_reply_to — closing the attribution gap that a prior version of this chart left as Unknown. Rows still unresolved on a day before the first non-Beeline production success are counted as Beeline, since MTS did not exist yet; anything unresolved after that date stays Unknown.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
+      -- Provider = the phone number the certificate was issued on, resolved in three steps:
+      --   1. the certificate's own task (certificate.task_id),
+      --   2. else the production request's task — success-preferred, then newest, so a retried
+      --      placement does not double-count the certificate,
+      --   3. else the account named in intake_reply_to, via its current number.
+      -- Rows still unresolved on a day before the first non-Beeline production success are Beeline
+      -- by definition — MTS did not exist yet. Anything unresolved after it stays Unknown.
+      WITH mts_start AS (
+        SELECT date_trunc('day', (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day
+        FROM task t
+        JOIN number n ON n.number_id = t.number_id
+        WHERE n.provider_code IS DISTINCT FROM 'beeline'
+      ),
+      pr_task AS (
+        SELECT DISTINCT ON (production_request_id) production_request_id, number_id
+        FROM task
+        WHERE production_request_id IS NOT NULL
+        ORDER BY production_request_id, (status = 'SUCCESS') DESC, created_at DESC
+      ),
+      cert AS (
+        SELECT date_trunc('day', (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow')) AS day,
+               c.amount,
+               COALESCE(n_direct.provider_code, n_pr.provider_code, n_reply.provider_code) AS provider_code
+        FROM certificate c
+        LEFT JOIN task    t_direct ON t_direct.task_id = c.task_id
+        LEFT JOIN number  n_direct ON n_direct.number_id = t_direct.number_id
+        LEFT JOIN pr_task pt       ON pt.production_request_id = c.production_request_id
+        LEFT JOIN number  n_pr     ON n_pr.number_id = pt.number_id
+        LEFT JOIN account a_reply  ON lower(a_reply.apple_id) = lower(regexp_replace(c.intake_reply_to, '[\[\]"]', '', 'g'))
+        LEFT JOIN number  n_reply  ON n_reply.number_id = a_reply.current_number_id
+        WHERE c.status = 'SENT'
+          AND c.sent_at >= ((date_trunc('day', (now() AT TIME ZONE 'Europe/Moscow')) - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND c.sent_at <  (now() AT TIME ZONE 'UTC')
+      ),
+      labelled AS (
+        SELECT c.day, c.amount,
+               COALESCE(p.name, CASE WHEN c.day < m.day THEN 'Beeline' ELSE 'Unknown' END) AS provider
+        FROM cert c
+        CROSS JOIN mts_start m
+        LEFT JOIN phone_provider p ON p.code = c.provider_code
+      )
+      SELECT day, provider, sum(amount)::bigint AS face_value
+      FROM labelled
+      WHERE TRUE [[AND provider = {{provider}}]]
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 6f1a2c3d-4e5b-4a7f-8c9d-0e1f2a3b4c5d
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      provider:
+        id: 7a2b3c4d-5e6f-4a8b-9c0d-1e2f3a4b5c6d
+        name: provider
+        display-name: Provider
+        type: text
+        default: null
+visualization_settings:
+  graph.dimensions:
+  - day
+  - provider
+  graph.metrics:
+  - face_value
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificate face value, ₽
+  graph.y_axis.auto_split: false
+  graph.show_values: false
+  stackable.stack_type: stacked
+  column_settings:
+    '["name","face_value"]':
+      suffix: ' ₽'
+      decimals: 0
+  graph.series_order_dimension: provider
+  graph.series_order:
+  - key: Beeline
+    name: Beeline
+    color: '#509EE3'
+    enabled: true
+  - key: MTS
+    name: MTS
+    color: '#88BF4D'
+    enabled: true
+  - key: Unknown
+    name: Unknown
+    color: '#949AAB'
+    enabled: true
+  series_settings:
+    Beeline:
+      color: '#509EE3'
+    MTS:
+      color: '#88BF4D'
+    Unknown:
+      color: '#949AAB'
+parameters: []

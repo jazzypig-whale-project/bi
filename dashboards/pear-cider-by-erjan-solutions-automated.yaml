@@ -15,6 +15,19 @@ parameters:
   type: number/=
   default:
   - 7
+- id: 5c1d7a3e
+  name: Provider
+  slug: provider
+  sectionId: string
+  type: string/=
+  isMultiSelect: false
+  values_query_type: list
+  values_source_type: static-list
+  values_source_config:
+    values:
+    - Beeline
+    - MTS
+    - Unknown
 tabs:
 - key: overview
   name: Overview
@@ -185,9 +198,30 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-heading-orders-volume
+- key: dc-certificate-face-value-by-day-by-provider
+  card: pca-certificate-face-value-by-day-by-provider
   tab: orders
   row: 0
+  col: 0
+  size_x: 24
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 5c1d7a3e
+    target:
+    - variable
+    - - template-tag
+      - provider
+  series: []
+  inline_parameters: []
+- key: dc-heading-orders-volume
+  tab: orders
+  row: 8
   col: 0
   size_x: 24
   size_y: 1
@@ -199,7 +233,7 @@ dashcards:
 - key: dc-orders-by-hour-sber
   card: pca-orders-by-hour-sber
   tab: orders
-  row: 1
+  row: 9
   col: 0
   size_x: 12
   size_y: 7
@@ -215,7 +249,7 @@ dashcards:
 - key: dc-orders-by-hour-other
   card: pca-orders-by-hour-other
   tab: orders
-  row: 1
+  row: 9
   col: 12
   size_x: 12
   size_y: 7
@@ -230,7 +264,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-pipeline
   tab: orders
-  row: 8
+  row: 16
   col: 0
   size_x: 24
   size_y: 1
@@ -242,7 +276,7 @@ dashcards:
 - key: dc-orders-in-progress-by-status-partner
   card: pca-orders-in-progress-by-status-partner
   tab: orders
-  row: 9
+  row: 17
   col: 0
   size_x: 12
   size_y: 6
@@ -253,7 +287,7 @@ dashcards:
 - key: dc-completion-time-percentiles
   card: pca-completion-time-percentiles
   tab: orders
-  row: 9
+  row: 17
   col: 12
   size_x: 12
   size_y: 6
@@ -268,7 +302,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-aging
   tab: orders
-  row: 15
+  row: 23
   col: 0
   size_x: 24
   size_y: 1
@@ -280,7 +314,7 @@ dashcards:
 - key: dc-orders-aging-sber
   card: pca-orders-aging-sber
   tab: orders
-  row: 16
+  row: 24
   col: 0
   size_x: 12
   size_y: 7
@@ -296,7 +330,7 @@ dashcards:
 - key: dc-orders-aging-other
   card: pca-orders-aging-other
   tab: orders
-  row: 16
+  row: 24
   col: 12
   size_x: 12
   size_y: 7
@@ -311,7 +345,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-certificates
   tab: orders
-  row: 23
+  row: 31
   col: 0
   size_x: 24
   size_y: 1
@@ -323,7 +357,7 @@ dashcards:
 - key: dc-certificates-sent-by-hour
   card: pca-certificates-sent-by-hour
   tab: orders
-  row: 24
+  row: 32
   col: 0
   size_x: 24
   size_y: 6
@@ -338,7 +372,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-partners
   tab: orders
-  row: 30
+  row: 38
   col: 0
   size_x: 24
   size_y: 1
@@ -350,7 +384,7 @@ dashcards:
 - key: dc-sales-distribution-by-partner
   card: pca-sales-distribution-by-partner
   tab: orders
-  row: 31
+  row: 39
   col: 0
   size_x: 12
   size_y: 7
@@ -361,7 +395,7 @@ dashcards:
 - key: dc-average-check-by-day
   card: pca-average-check-by-day
   tab: orders
-  row: 31
+  row: 39
   col: 12
   size_x: 12
   size_y: 7
@@ -376,7 +410,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-denominations
   tab: orders
-  row: 38
+  row: 46
   col: 0
   size_x: 24
   size_y: 1
@@ -388,7 +422,7 @@ dashcards:
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
-  row: 39
+  row: 47
   col: 0
   size_x: 12
   size_y: 7
@@ -404,7 +438,7 @@ dashcards:
 - key: dc-certificate-turnover-by-denomination
   card: pca-certificate-turnover-by-denomination
   tab: orders
-  row: 39
+  row: 47
   col: 12
   size_x: 12
   size_y: 7
@@ -568,9 +602,30 @@ dashcards:
       - days
   series: []
   inline_parameters: []
-- key: dc-heading-production-requests
+- key: dc-produced-face-value-by-day-by-provider
+  card: pca-produced-face-value-by-day-by-provider
   tab: production
   row: 8
+  col: 0
+  size_x: 24
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 5c1d7a3e
+    target:
+    - variable
+    - - template-tag
+      - provider
+  series: []
+  inline_parameters: []
+- key: dc-heading-production-requests
+  tab: production
+  row: 15
   col: 0
   size_x: 24
   size_y: 1
@@ -582,7 +637,7 @@ dashcards:
 - key: dc-production-requests-by-hour
   card: pca-production-requests-by-hour
   tab: production
-  row: 9
+  row: 16
   col: 0
   size_x: 24
   size_y: 7
@@ -597,7 +652,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-pool
   tab: production
-  row: 16
+  row: 23
   col: 0
   size_x: 24
   size_y: 1
@@ -609,7 +664,7 @@ dashcards:
 - key: dc-certificates-in-pool-by-denomination
   card: pca-certificates-in-pool-by-denomination
   tab: production
-  row: 17
+  row: 24
   col: 0
   size_x: 8
   size_y: 7
@@ -620,7 +675,7 @@ dashcards:
 - key: dc-production-queue-by-denomination
   card: pca-production-queue-by-denomination
   tab: production
-  row: 17
+  row: 24
   col: 8
   size_x: 8
   size_y: 7
@@ -631,7 +686,7 @@ dashcards:
 - key: dc-pool-total-value
   card: pca-pool-total-value
   tab: production
-  row: 17
+  row: 24
   col: 16
   size_x: 8
   size_y: 7
@@ -641,7 +696,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-capacity
   tab: production
-  row: 24
+  row: 31
   col: 0
   size_x: 24
   size_y: 1
@@ -653,7 +708,7 @@ dashcards:
 - key: dc-capacity-by-hour
   card: pca-capacity-by-hour
   tab: production
-  row: 25
+  row: 32
   col: 0
   size_x: 24
   size_y: 7
@@ -668,7 +723,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-devices
   tab: production
-  row: 32
+  row: 39
   col: 0
   size_x: 24
   size_y: 1
@@ -680,7 +735,7 @@ dashcards:
 - key: dc-devices-total
   card: pca-devices-total
   tab: production
-  row: 33
+  row: 40
   col: 0
   size_x: 8
   size_y: 3
@@ -691,7 +746,7 @@ dashcards:
 - key: dc-devices-online
   card: pca-devices-online
   tab: production
-  row: 33
+  row: 40
   col: 8
   size_x: 8
   size_y: 3
@@ -702,7 +757,7 @@ dashcards:
 - key: dc-devices-need-switch
   card: pca-devices-need-switch
   tab: production
-  row: 33
+  row: 40
   col: 16
   size_x: 8
   size_y: 3
@@ -713,7 +768,7 @@ dashcards:
 - key: dc-devices-by-state
   card: pca-devices-by-state
   tab: production
-  row: 36
+  row: 43
   col: 0
   size_x: 24
   size_y: 7
@@ -723,7 +778,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-accounts
   tab: production
-  row: 43
+  row: 50
   col: 0
   size_x: 24
   size_y: 1
@@ -735,7 +790,7 @@ dashcards:
 - key: dc-accounts-by-slot-status
   card: pca-accounts-by-slot-status
   tab: production
-  row: 44
+  row: 51
   col: 0
   size_x: 12
   size_y: 7
@@ -746,7 +801,7 @@ dashcards:
 - key: dc-accounts-by-validation-status
   card: pca-accounts-by-validation-status
   tab: production
-  row: 44
+  row: 51
   col: 12
   size_x: 12
   size_y: 7
