@@ -1,0 +1,59 @@
+kind: card
+key: pca-provider-deposits
+name: Provider deposits (DEPOSIT mode)
+description: >-
+  One row per phone_provider in DEPOSIT mode, sorted by pool size. deposit_balance is the provider's
+  authoritative pool, whole rubles; available_deposit is that pool minus every open RESERVED NUMBER
+  reservation across ALL of the provider's numbers (active or not) — the same expression
+  MoneyProvidersScreen.toRow / QuotaLedgerRepository.sumProviderReservedAmount uses, so this must match
+  the app's own Money > Providers console exactly. active_numbers, by contrast, counts only is_active
+  numbers — a deliberate asymmetry, not a bug: it mirrors what the app's spend gate actually reserves
+  against versus what an operator would call "in service" right now. Neither money column is floored at
+  zero; a deposit may legitimately go negative.
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- phone_provider is the provider registry (V98). Only DEPOSIT-mode providers have a
+      -- meaningful pool; a DEFAULT provider's deposit_balance stays 0 by construction.
+      -- available_deposit mirrors MoneyProvidersScreen.toRow: deposit_balance minus
+      -- QuotaLedgerRepository.sumProviderReservedAmount — the open RESERVED NUMBER
+      -- reservations across every number bound to the provider, active or not. Neither
+      -- column is floored at zero: a deposit may legitimately be negative.
+      SELECT p.code,
+             p.name,
+             p.deposit_balance::bigint                              AS deposit_balance,
+             (p.deposit_balance - COALESCE(r.reserved, 0))::bigint  AS available_deposit,
+             COALESCE(n.active_numbers, 0)::bigint                  AS active_numbers
+      FROM phone_provider p
+      LEFT JOIN (
+        SELECT pn.provider_code, sum(l.amount) AS reserved
+        FROM quota_ledger l
+        JOIN number pn ON pn.number_id = l.subject_id
+        WHERE l.subject_type = 'NUMBER' AND l.status = 'RESERVED'
+        GROUP BY pn.provider_code
+      ) r ON r.provider_code = p.code
+      LEFT JOIN (
+        SELECT provider_code, count(*) AS active_numbers
+        FROM number
+        WHERE is_active
+        GROUP BY provider_code
+      ) n ON n.provider_code = p.code
+      WHERE p.mode = 'DEPOSIT'
+      ORDER BY p.deposit_balance DESC, p.code
+visualization_settings:
+  column_settings:
+    '["name","deposit_balance"]':
+      suffix: ' ₽'
+      decimals: 0
+    '["name","available_deposit"]':
+      suffix: ' ₽'
+      decimals: 0
+parameters: []

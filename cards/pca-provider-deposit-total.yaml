@@ -1,0 +1,31 @@
+kind: card
+key: pca-provider-deposit-total
+name: Provider deposit total, ₽
+description: >-
+  Combined deposit pool (₽) across every phone_provider in DEPOSIT mode. Live value, no time window.
+  DEFAULT-mode providers are excluded: their deposit_balance stays 0 and is meaningless, since their
+  numbers spend their own balance. A provider's deposit is allowed to go negative, so this total is not
+  floored at zero.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- mode is EnumType.STRING, so 'DEPOSIT' is the literal in the text column
+      -- (PhoneProviderRepository.SQL_IS_DEPOSIT_FUNDED compares it the same way).
+      -- No GREATEST(0, ...): PhoneProviderDepositService lets a deposit go negative.
+      SELECT COALESCE(sum(p.deposit_balance), 0)::bigint AS provider_deposit_total
+      FROM phone_provider p
+      WHERE p.mode = 'DEPOSIT'
+visualization_settings:
+  column_settings:
+    '["name","provider_deposit_total"]':
+      suffix: ' ₽'
+      decimals: 0
+parameters: []

@@ -189,6 +189,12 @@ cards:
   pca-produced-face-value-by-day-by-provider:
     id: 128
     entity_id: a0bd5uNJ5IZquHwyGfDji
+  pca-provider-deposit-total:
+    id: 129
+    entity_id: SpO4opjp79pQuM6sUpkmt
+  pca-provider-deposits:
+    id: 130
+    entity_id: -fPkeqNpxQaS-xazDoXlE
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -307,5 +313,8 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
+      dc-heading-topups-provider-deposits: 126
+      dc-provider-deposit-total: 127
+      dc-provider-deposits: 128
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
