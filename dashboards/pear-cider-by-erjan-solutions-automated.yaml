@@ -29,7 +29,6 @@ parameters:
     - '12 hours'
     - '6 hours'
     - '3 hours'
-    - '2 hours'
     - '1 hour'
   default:
   - '1 day'
