@@ -1,7 +1,7 @@
 kind: card
 key: pca-produced-face-value-by-day-by-provider
 name: Produced certificate face value over time by provider, ₽
-description: Sum of face values from successful PRODUCTION tasks per bucket, Europe/Moscow, stacked by phone provider — the same "produced" definition as Certificates produced over time, by denomination (task.succeeded_at, purpose PRODUCTION, status SUCCESS, task.amount is the face value). The task carries number_id directly, so provider needs no fallback chain here. Buckets follow the Granularity filter; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
+description: Face value entering the pool per bucket, Europe/Moscow, stacked by phone provider. Two sources are counted together — successful PRODUCTION tasks (task.succeeded_at, purpose PRODUCTION, status SUCCESS, task.amount is the face value; the same "produced" definition as Certificates produced over time, by denomination), where the task carries number_id directly so provider needs no fallback chain, and bulk CSV imports, which carry no task and no number and are therefore always Unknown, bucketed by certificate.created_at, their load time. Buckets follow the Granularity filter; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -15,7 +15,8 @@ dataset_query:
     native: |
       -- Produced = a PRODUCTION task that succeeded; task.amount is the certificate face value.
       -- The task carries number_id directly, so the provider needs no fallback chain here.
-      -- Days are Europe/Moscow days; task.succeeded_at is naive UTC.
+      -- Bulk CSV imports are counted too, always as Unknown — see the second branch of `produced`.
+      -- Days are Europe/Moscow days; task.succeeded_at and certificate.created_at are naive UTC.
       WITH mts_start AS (
         SELECT date_bin({{granularity}}::text::interval, (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day
         FROM task t
@@ -34,6 +35,20 @@ dataset_query:
         LEFT JOIN phone_provider p ON p.code = n.provider_code
         WHERE t.purpose = 'PRODUCTION' AND t.status = 'SUCCESS'
           AND t.succeeded_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+        UNION ALL
+        -- Bulk CSV imports carry no task and no number (CertificateCsvService inserts source='CSV'
+        -- with every attribution column NULL), so no provider can ever be resolved for them: they
+        -- are Unknown by construction. Deliberately NOT subject to the pre-MTS Beeline fallback —
+        -- that fallback only makes sense for rows that did go through production on a phone number.
+        -- certificate.created_at is the load time, the only anchor such a row has. No status filter:
+        -- the task branch counts a production regardless of the certificate's later fate, and this
+        -- branch is symmetric. No double counting — a CSV row never acquires a task_id.
+        SELECT date_bin({{granularity}}::text::interval, (c.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03'),
+               c.amount,
+               'Unknown'
+        FROM certificate c
+        WHERE c.source = 'CSV'
+          AND c.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
       )
       SELECT day, provider, sum(amount)::bigint AS face_value
       FROM produced

@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-produced-by-day
 name: Certificates produced over time, by denomination
-description: Successful PRODUCTION tasks per bucket, stacked by face value — the same "produced" definition as the Produced series in Flow over time (task.succeeded_at, purpose PRODUCTION, status SUCCESS). The 8 denominations produced most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. Buckets follow the Granularity filter, Europe/Moscow; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
+description: Certificates entering the pool per bucket, stacked by face value. Two sources are counted together — successful PRODUCTION tasks (task.succeeded_at, purpose PRODUCTION, status SUCCESS, the same "produced" definition as the Produced series in Flow over time) and bulk CSV imports, which carry no task and are therefore bucketed by certificate.created_at, their load time. The 8 denominations seen most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. Buckets follow the Granularity filter, Europe/Moscow; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -14,8 +14,9 @@ dataset_query:
   - lib/type: mbql.stage/native
     native: |
       -- Produced = a PRODUCTION task that succeeded; task.amount is the certificate
-      -- face value, so it doubles as the denomination (no join needed).
-      -- Days are Europe/Moscow days; task.succeeded_at is naive UTC.
+      -- face value, so it doubles as the denomination (no join needed). Bulk CSV imports
+      -- are counted too — see the second branch of `produced`.
+      -- Days are Europe/Moscow days; task.succeeded_at and certificate.created_at are naive UTC.
       WITH spine AS (
         SELECT generate_series(
           date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
@@ -26,9 +27,20 @@ dataset_query:
                amount
         FROM task
         WHERE purpose = 'PRODUCTION' AND status = 'SUCCESS'
-          AND succeeded_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')),
+          AND succeeded_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+        UNION ALL
+        -- A bulk CSV import has no PRODUCTION task (CertificateCsvService inserts source='CSV' with
+        -- every attribution column NULL), so certificate.created_at — the load time — is its only
+        -- anchor. No status filter: the task branch counts a production regardless of the
+        -- certificate's later fate, and this branch is symmetric. No double counting — a CSV row
+        -- never acquires a task_id (the attribution backfill only considers source='MQ').
+        SELECT date_bin({{granularity}}::text::interval, (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS d,
+               amount
+        FROM certificate
+        WHERE source = 'CSV'
+          AND created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')),
       ranked AS (
-        -- Top 8 denominations by task count over the window; the rest fall into Other.
+        -- Top 8 denominations by row count over the window; the rest fall into Other.
         SELECT amount, row_number() OVER (ORDER BY count(*) DESC, amount) AS rn
         FROM produced
         GROUP BY amount),
