@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-produced-by-day
 name: Certificates produced over time, by denomination
-description: Certificates entering the pool per bucket, stacked by face value. Two sources are counted together — successful PRODUCTION and VALIDATION tasks (task.succeeded_at, status SUCCESS; a successful validation purchase is a real paid certificate that enters the pool, so it is counted to match the operator's charges — the Produced series in Flow over time counts PRODUCTION only) and bulk CSV imports, which carry no task and are therefore bucketed by certificate.created_at, their load time. The 8 denominations seen most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. Buckets follow the Granularity filter, Europe/Moscow; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
+description: Certificates entering the pool per bucket, stacked by face value. Two sources are counted together — successful PRODUCTION and VALIDATION tasks (task.succeeded_at, status SUCCESS; a successful validation purchase is a real paid certificate that enters the pool, so it is counted to match the operator's charges — the Produced series in Flow over time counts PRODUCTION only), plus FAILED tasks whose certificate still arrived and is linked to them (device timed out but the purchase went through; bucketed by certificate.created_at), and bulk CSV imports, which carry no task and are therefore bucketed by certificate.created_at, their load time. The 8 denominations seen most often over the selected window are shown individually, the rest are grouped as Other; which denominations make the top 8 therefore depends on the Days filter. Buckets follow the Granularity filter, Europe/Moscow; the rightmost bar is the still-running current bucket and is always short — it does not indicate a drop in output.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -16,7 +16,11 @@ dataset_query:
       -- Produced = a PRODUCTION or VALIDATION task that succeeded; task.amount is the certificate
       -- face value, so it doubles as the denomination (no join needed). A successful validation
       -- purchase yields a real certificate (one per task) and is charged by the operator like any
-      -- other, so it is counted. Bulk CSV imports are counted too — see the second branch of `produced`.
+      -- other, so it is counted. A FAILED task whose certificate still arrived (device timed out, but
+      -- the operator charged and the certificate was delivered and linked to that task) is counted too,
+      -- at certificate.created_at since it has no succeeded_at; a successful retry in the same request
+      -- carries its own, separate certificate, so nothing is counted twice.
+      -- Bulk CSV imports are counted too — see the last branch of `produced`.
       -- Days are Europe/Moscow days; task.succeeded_at and certificate.created_at are naive UTC.
       WITH spine AS (
         SELECT generate_series(
@@ -29,6 +33,13 @@ dataset_query:
         FROM task
         WHERE purpose IN ('PRODUCTION', 'VALIDATION') AND status = 'SUCCESS'
           AND succeeded_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+        UNION ALL
+        SELECT date_bin({{granularity}}::text::interval, (c.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS d,
+               c.amount
+        FROM task t
+        JOIN certificate c ON c.task_id = t.task_id
+        WHERE t.purpose IN ('PRODUCTION', 'VALIDATION') AND t.status = 'FAILED'
+          AND c.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
         UNION ALL
         -- A bulk CSV import has no PRODUCTION task (CertificateCsvService inserts source='CSV' with
         -- every attribution column NULL), so certificate.created_at — the load time — is its only
