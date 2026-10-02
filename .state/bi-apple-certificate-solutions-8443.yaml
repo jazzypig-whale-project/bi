@@ -262,6 +262,7 @@ dashboards:
       dc-heading-overview-pipeline: 87
       dc-flow-by-hour: 64
       dc-certificate-face-value-by-day-by-provider: 124
+      dc-certificate-face-value-by-day-by-client: 129
       dc-heading-orders-certificates: 91
       dc-certificates-sent-by-hour: 71
       dc-heading-orders-partners: 92
@@ -309,6 +310,5 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-certificate-face-value-by-day-by-client: 129
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

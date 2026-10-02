@@ -225,31 +225,10 @@ dashcards:
       - granularity
   series: []
   inline_parameters: []
-- key: dc-certificate-face-value-by-day-by-client
-  card: pca-certificate-face-value-by-day-by-client
-  tab: orders
-  row: 0
-  col: 0
-  size_x: 24
-  size_y: 8
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  - parameter_id: 3f9a20c7
-    target:
-    - variable
-    - - template-tag
-      - granularity
-  series: []
-  inline_parameters: []
 - key: dc-certificate-face-value-by-day-by-provider
   card: pca-certificate-face-value-by-day-by-provider
   tab: orders
-  row: 8
+  row: 0
   col: 0
   size_x: 24
   size_y: 8
@@ -265,6 +244,27 @@ dashcards:
     - variable
     - - template-tag
       - provider
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
+  series: []
+  inline_parameters: []
+- key: dc-certificate-face-value-by-day-by-client
+  card: pca-certificate-face-value-by-day-by-client
+  tab: orders
+  row: 8
+  col: 0
+  size_x: 24
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
   - parameter_id: 3f9a20c7
     target:
     - variable
