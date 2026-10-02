@@ -195,6 +195,9 @@ cards:
   pca-provider-deposits:
     id: 130
     entity_id: -fPkeqNpxQaS-xazDoXlE
+  pca-certificate-face-value-by-day-by-client:
+    id: 133
+    entity_id: zpW-8pdvjYPQMowv4bs4N
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -259,19 +262,9 @@ dashboards:
       dc-heading-overview-pipeline: 87
       dc-flow-by-hour: 64
       dc-certificate-face-value-by-day-by-provider: 124
-      dc-heading-orders-volume: 88
-      dc-orders-by-hour-sber: 65
-      dc-orders-by-hour-other: 66
-      dc-heading-orders-pipeline: 89
-      dc-orders-in-progress-by-status-partner: 67
-      dc-completion-time-percentiles: 68
-      dc-heading-orders-aging: 90
-      dc-orders-aging-sber: 69
-      dc-orders-aging-other: 70
       dc-heading-orders-certificates: 91
       dc-certificates-sent-by-hour: 71
       dc-heading-orders-partners: 92
-      dc-sales-distribution-by-partner: 72
       dc-average-check-by-day: 73
       dc-heading-orders-denominations: 93
       dc-certificates-sold-by-denomination: 74
@@ -316,5 +309,6 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
+      dc-certificate-face-value-by-day-by-client: 129
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

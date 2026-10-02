@@ -1,0 +1,71 @@
+kind: card
+key: pca-certificate-face-value-by-day-by-client
+name: Certificate face value over time by client, ₽
+description: Sum of SENT certificate face values per bucket, Europe/Moscow, stacked by API client. Buckets follow the Granularity filter. Client is resolved through the order the certificate was reserved for, else its bulk order; certificates with neither link are counted as Unknown.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
+      -- Client = the API client of the order the certificate was reserved for, else of its bulk order
+      -- (falling back to bulk_order.client_name). No link at all = Unknown.
+      WITH cert AS (
+        SELECT date_bin({{granularity}}::text::interval, (c.sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
+               c.amount,
+               COALESCE(oc.name, bc.name, NULLIF(b.client_name, '')) AS client_name
+        FROM certificate c
+        LEFT JOIN order_      o  ON o.order_id = c.reserved_order_id
+        LEFT JOIN api_client  oc ON oc.client_id = o.client_id
+        LEFT JOIN bulk_order  b  ON b.bulk_order_id = c.reserved_bulk_order_id
+        LEFT JOIN api_client  bc ON bc.client_id = b.client_id
+        WHERE c.status = 'SENT'
+          AND c.sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND c.sent_at <  (now() AT TIME ZONE 'UTC')
+      )
+      SELECT day,
+             CASE WHEN client_name = 'sber' THEN 'Sber' ELSE COALESCE(initcap(client_name), 'Unknown') END AS client,
+             sum(amount)::bigint AS face_value
+      FROM cert
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 20747880-a461-440c-9948-a05059347791
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 6370e78c-4b4c-45cb-9284-50ce83928db0
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - client
+  graph.metrics:
+  - face_value
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificate face value, ₽
+  graph.y_axis.auto_split: false
+  graph.show_values: false
+  stackable.stack_type: stacked
+  column_settings:
+    '["name","face_value"]':
+      suffix: ' ₽'
+      decimals: 0
+  series_settings:
+    Sber:
+      color: '#509EE3'
+    Unknown:
+      color: '#949AAB'
+parameters: []

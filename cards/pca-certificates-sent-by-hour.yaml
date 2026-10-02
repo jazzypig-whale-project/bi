@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificates-sent-by-hour
 name: Certificates sent over time
-description: Certificates sent per bucket over the Days window. Supersedes the by-day form of the original card. Buckets follow the Granularity filter, Europe/Moscow.
+description: Certificates sent per bucket over the Days window, stacked by face value (top 8 denominations, the rest as Other). Supersedes the by-day form of the original card. Buckets follow the Granularity filter, Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,21 +13,24 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      WITH spine AS (
-        SELECT generate_series(
-          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
-          (now() AT TIME ZONE 'Europe/Moscow'),
-          {{granularity}}::text::interval) AS h),
-      sent AS (
-        SELECT date_bin({{granularity}}::text::interval, (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h
+      -- Top 8 denominations by count over the window, individually; the rest are grouped as Other.
+      WITH sent AS (
+        SELECT date_bin({{granularity}}::text::interval, (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               amount
         FROM certificate
         WHERE status = 'SENT'
-          AND sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC'))
-      SELECT s.h AS hour, count(x.h) AS certificates
-      FROM spine s
-      LEFT JOIN sent x ON x.h = s.h
-      GROUP BY 1
-      ORDER BY 1
+          AND sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')),
+      ranked AS (
+        SELECT amount, row_number() OVER (ORDER BY count(*) DESC, amount) AS rn
+        FROM sent
+        GROUP BY amount)
+      SELECT s.h AS hour,
+             CASE WHEN r.rn <= 8 THEN s.amount::text ELSE 'Other' END AS denomination,
+             count(*) AS certificates
+      FROM sent s
+      JOIN ranked r ON r.amount = s.amount
+      GROUP BY 1, 2
+      ORDER BY 1, 2
     template-tags:
       days:
         id: dbdb0727-f4bb-4aa6-9909-efd9a5d8ed5f
@@ -44,11 +47,10 @@ dataset_query:
 visualization_settings:
   graph.dimensions:
   - hour
+  - denomination
   graph.metrics:
   - certificates
   graph.x_axis.scale: timeseries
   graph.y_axis.title_text: Certificates sent
-  series_settings:
-    certificates:
-      color: '#509EE3'
+  stackable.stack_type: stacked
 parameters: []

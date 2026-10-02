@@ -225,10 +225,31 @@ dashcards:
       - granularity
   series: []
   inline_parameters: []
+- key: dc-certificate-face-value-by-day-by-client
+  card: pca-certificate-face-value-by-day-by-client
+  tab: orders
+  row: 0
+  col: 0
+  size_x: 24
+  size_y: 8
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
+  series: []
+  inline_parameters: []
 - key: dc-certificate-face-value-by-day-by-provider
   card: pca-certificate-face-value-by-day-by-provider
   tab: orders
-  row: 0
+  row: 8
   col: 0
   size_x: 24
   size_y: 8
@@ -251,143 +272,9 @@ dashcards:
       - granularity
   series: []
   inline_parameters: []
-- key: dc-heading-orders-volume
-  tab: orders
-  row: 8
-  col: 0
-  size_x: 24
-  size_y: 1
-  visualization_settings:
-    virtual_card:
-      display: heading
-    text: Volume
-    dashcard.background: false
-- key: dc-orders-by-hour-sber
-  card: pca-orders-by-hour-sber
-  tab: orders
-  row: 9
-  col: 0
-  size_x: 12
-  size_y: 7
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  - parameter_id: 3f9a20c7
-    target:
-    - variable
-    - - template-tag
-      - granularity
-  series: []
-  inline_parameters: []
-- key: dc-orders-by-hour-other
-  card: pca-orders-by-hour-other
-  tab: orders
-  row: 9
-  col: 12
-  size_x: 12
-  size_y: 7
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  - parameter_id: 3f9a20c7
-    target:
-    - variable
-    - - template-tag
-      - granularity
-  series: []
-  inline_parameters: []
-- key: dc-heading-orders-pipeline
-  tab: orders
-  row: 16
-  col: 0
-  size_x: 24
-  size_y: 1
-  visualization_settings:
-    virtual_card:
-      display: heading
-    text: Pipeline
-    dashcard.background: false
-- key: dc-orders-in-progress-by-status-partner
-  card: pca-orders-in-progress-by-status-partner
-  tab: orders
-  row: 17
-  col: 0
-  size_x: 12
-  size_y: 6
-  visualization_settings: {}
-  parameter_mappings: []
-  series: []
-  inline_parameters: []
-- key: dc-completion-time-percentiles
-  card: pca-completion-time-percentiles
-  tab: orders
-  row: 17
-  col: 12
-  size_x: 12
-  size_y: 6
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  series: []
-  inline_parameters: []
-- key: dc-heading-orders-aging
-  tab: orders
-  row: 23
-  col: 0
-  size_x: 24
-  size_y: 1
-  visualization_settings:
-    virtual_card:
-      display: heading
-    text: Aging
-    dashcard.background: false
-- key: dc-orders-aging-sber
-  card: pca-orders-aging-sber
-  tab: orders
-  row: 24
-  col: 0
-  size_x: 12
-  size_y: 7
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  series: []
-  inline_parameters: []
-- key: dc-orders-aging-other
-  card: pca-orders-aging-other
-  tab: orders
-  row: 24
-  col: 12
-  size_x: 12
-  size_y: 7
-  visualization_settings: {}
-  parameter_mappings:
-  - parameter_id: 821ec3b1
-    target:
-    - variable
-    - - template-tag
-      - days
-  series: []
-  inline_parameters: []
 - key: dc-heading-orders-certificates
   tab: orders
-  row: 31
+  row: 16
   col: 0
   size_x: 24
   size_y: 1
@@ -399,7 +286,7 @@ dashcards:
 - key: dc-certificates-sent-by-hour
   card: pca-certificates-sent-by-hour
   tab: orders
-  row: 32
+  row: 17
   col: 0
   size_x: 24
   size_y: 6
@@ -419,7 +306,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-partners
   tab: orders
-  row: 38
+  row: 23
   col: 0
   size_x: 24
   size_y: 1
@@ -428,23 +315,12 @@ dashcards:
       display: heading
     text: Partners
     dashcard.background: false
-- key: dc-sales-distribution-by-partner
-  card: pca-sales-distribution-by-partner
-  tab: orders
-  row: 39
-  col: 0
-  size_x: 12
-  size_y: 7
-  visualization_settings: {}
-  parameter_mappings: []
-  series: []
-  inline_parameters: []
 - key: dc-average-check-by-day
   card: pca-average-check-by-day
   tab: orders
-  row: 39
-  col: 12
-  size_x: 12
+  row: 24
+  col: 0
+  size_x: 24
   size_y: 7
   visualization_settings: {}
   parameter_mappings:
@@ -462,7 +338,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-denominations
   tab: orders
-  row: 46
+  row: 31
   col: 0
   size_x: 24
   size_y: 1
@@ -474,7 +350,7 @@ dashcards:
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
-  row: 47
+  row: 32
   col: 0
   size_x: 12
   size_y: 7
@@ -490,7 +366,7 @@ dashcards:
 - key: dc-certificate-turnover-by-denomination
   card: pca-certificate-turnover-by-denomination
   tab: orders
-  row: 47
+  row: 32
   col: 12
   size_x: 12
   size_y: 7
