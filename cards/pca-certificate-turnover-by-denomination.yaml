@@ -4,7 +4,7 @@ name: Certificate face value sent by denomination, ₽
 description: Sum of certificate.amount per face value over certificates already SENT, over the dashboard's Days filter window. It measures delivered certificates, including those issued for bulk orders that have no order_ row, so it is not a subset of Order value by partner and the two totals must not be compared or reconciled.
 collection: pear-cider-automated
 type: question
-display: pie
+display: bar
 cache_ttl: null
 archived: false
 dataset_query:
@@ -13,25 +13,12 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      -- Top 8 denominations by turnover, individually; the rest are grouped as Other.
-      WITH by_denom AS (
-        SELECT amount, sum(amount)::bigint AS turnover
-        FROM certificate
-        WHERE status = 'SENT'
-          AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
-        GROUP BY 1),
-      ranked AS (
-        SELECT amount, turnover,
-               row_number() OVER (ORDER BY turnover DESC, amount) AS rn
-        FROM by_denom),
-      bucketed AS (
-        SELECT CASE WHEN rn <= 8 THEN amount::text ELSE 'Other' END AS denomination,
-               turnover
-        FROM ranked)
-      SELECT denomination, sum(turnover)::bigint AS turnover
-      FROM bucketed
+      SELECT amount AS denomination, sum(amount)::bigint AS turnover
+      FROM certificate
+      WHERE status = 'SENT'
+        AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
       GROUP BY 1
-      ORDER BY (denomination = 'Other'), 2 DESC, 1
+      ORDER BY 1
     template-tags:
       days:
         id: 9ef89d3f-eaba-47b5-bd6c-c8fd5969201c
@@ -40,10 +27,15 @@ dataset_query:
         type: number
         default: '7'
 visualization_settings:
-  pie.dimension:
+  graph.dimensions:
   - denomination
-  pie.metric: turnover
-  pie.slice_threshold: 0
+  graph.metrics:
+  - turnover
+  graph.x_axis.scale: ordinal
+  graph.show_values: false
+  series_settings:
+    turnover:
+      color: '#509EE3'
   column_settings:
     '["name","turnover"]':
       suffix: ' ₽'

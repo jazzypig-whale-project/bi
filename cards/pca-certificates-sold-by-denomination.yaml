@@ -4,7 +4,7 @@ name: Certificates sent by denomination
 description: How many certificates reached status SENT at each face value, over the dashboard's Days filter window. Counts certificates rather than orders and covers every issuance path, bulk orders included. Its money-valued twin is Certificate face value sent by denomination.
 collection: pear-cider-automated
 type: question
-display: pie
+display: bar
 cache_ttl: null
 archived: false
 dataset_query:
@@ -13,25 +13,12 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      -- Top 8 denominations by count, individually; the rest are grouped as Other.
-      WITH by_denom AS (
-        SELECT amount, count(*) AS certificates
-        FROM certificate
-        WHERE status = 'SENT'
-          AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
-        GROUP BY 1),
-      ranked AS (
-        SELECT amount, certificates,
-               row_number() OVER (ORDER BY certificates DESC, amount) AS rn
-        FROM by_denom),
-      bucketed AS (
-        SELECT CASE WHEN rn <= 8 THEN amount::text ELSE 'Other' END AS denomination,
-               certificates
-        FROM ranked)
-      SELECT denomination, sum(certificates) AS certificates
-      FROM bucketed
+      SELECT amount AS denomination, count(*) AS certificates
+      FROM certificate
+      WHERE status = 'SENT'
+        AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
       GROUP BY 1
-      ORDER BY (denomination = 'Other'), 2 DESC, 1
+      ORDER BY 1
     template-tags:
       days:
         id: a5b45194-144b-4a72-86d3-6791597d210b
@@ -40,10 +27,15 @@ dataset_query:
         type: number
         default: '7'
 visualization_settings:
-  pie.dimension:
+  graph.dimensions:
   - denomination
-  pie.metric: certificates
-  pie.slice_threshold: 0
+  graph.metrics:
+  - certificates
+  graph.x_axis.scale: ordinal
+  graph.show_values: false
+  series_settings:
+    certificates:
+      color: '#509EE3'
   column_settings:
     '["name","certificates"]':
       suffix: ' certificates'
