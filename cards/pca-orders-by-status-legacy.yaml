@@ -1,0 +1,83 @@
+kind: card
+key: pca-orders-by-status-legacy
+name: Legacy · Orders over time by status
+description: Legacy client orders per creation bucket, segmented by the status they are in now (cohort view, not a transition log - FAILED_MANUAL and the other terminal states carry no terminal timestamp). In flight - AWAITING_PAYMENT, PAID, WAITING_CERT, SENDING; success - COMPLETED; failures - REJECTED, EXPIRED, EXPIRED_TTL, FAILED_MANUAL. A status outside this list still gets its own series. Excludes the DEALER pseudo-client; dealer orders are on the Dealer card beside it. Buckets follow the Granularity filter, Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 2 (legacy orchestrator). Client orders per creation bucket by current status, Europe/Moscow
+      -- (order_.created_at is naive UTC). Excludes the DEALER pseudo-client: those are the dealer's own
+      -- purchases; the dealer's client orders are on "Dealer · Orders over time by status". Bulk orders have
+      -- no order_ row and are not counted.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      o AS (
+        SELECT date_bin({{granularity}}::text::interval, (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               o.status
+        FROM order_ o
+        WHERE o.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
+        ),
+      statuses AS (
+        SELECT unnest(ARRAY['AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING', 'COMPLETED', 'REJECTED', 'EXPIRED', 'EXPIRED_TTL', 'FAILED_MANUAL']) AS status
+        UNION
+        SELECT DISTINCT status FROM o)
+      SELECT s.h AS day, st.status, count(o.h) AS orders
+      FROM spine s
+      CROSS JOIN statuses st
+      LEFT JOIN o ON o.h = s.h AND o.status = st.status
+      GROUP BY 1, 2
+      ORDER BY 1, COALESCE(array_position(ARRAY['AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING', 'COMPLETED', 'REJECTED', 'EXPIRED', 'EXPIRED_TTL', 'FAILED_MANUAL'], st.status), 99), 2
+    template-tags:
+      days:
+        id: 4b7e2c19-6d35-4a8f-9e01-3c5d7a9b1f20
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: c18a5f3e-2b94-4d60-8a7c-e6f09d4b3a51
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - status
+  graph.metrics:
+  - orders
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Orders
+  stackable.stack_type: stacked
+  series_settings:
+    AWAITING_PAYMENT:
+      color: '#DCDFE5'
+    PAID:
+      color: '#B8BBC3'
+    WAITING_CERT:
+      color: '#F9D45C'
+    SENDING:
+      color: '#949AAB'
+    COMPLETED:
+      color: '#88BF4D'
+    REJECTED:
+      color: '#E75454'
+    EXPIRED:
+      color: '#ED8535'
+    EXPIRED_TTL:
+      color: '#F2A86F'
+    FAILED_MANUAL:
+      color: '#A7313E'
+parameters: []

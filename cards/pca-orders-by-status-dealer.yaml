@@ -1,0 +1,71 @@
+kind: card
+key: pca-orders-by-status-dealer
+name: Dealer · Orders over time by status
+description: Dealer client orders per creation bucket, segmented by the status they are in now (cohort view, not a transition log). In flight - IN_QUEUE, IN_PROGRESS; success - COMPLETED; failures - FAILED, REJECTED. A status outside this list still gets its own series. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Client orders per creation bucket by current status: dealer_order.created_at
+      -- (timestamptz), Europe/Moscow. Statuses per dealer_order_status_valid.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      o AS (
+        SELECT date_bin({{granularity}}::text::interval, (created_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               status
+        FROM dealer_order
+        WHERE created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')),
+      statuses AS (
+        SELECT unnest(ARRAY['IN_QUEUE', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'REJECTED']) AS status
+        UNION
+        SELECT DISTINCT status FROM o)
+      SELECT s.h AS day, st.status, count(o.h) AS orders
+      FROM spine s
+      CROSS JOIN statuses st
+      LEFT JOIN o ON o.h = s.h AND o.status = st.status
+      GROUP BY 1, 2
+      ORDER BY 1, COALESCE(array_position(ARRAY['IN_QUEUE', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'REJECTED'], st.status), 99), 2
+    template-tags:
+      days:
+        id: 9f2d6a84-1c7b-4e35-b0a8-5d3e8c1f7a62
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 7a3c9e15-8d42-4f06-a1b9-2e6f4c8d0b73
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - status
+  graph.metrics:
+  - orders
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Orders
+  stackable.stack_type: stacked
+  series_settings:
+    IN_QUEUE:
+      color: '#DCDFE5'
+    IN_PROGRESS:
+      color: '#949AAB'
+    COMPLETED:
+      color: '#88BF4D'
+    FAILED:
+      color: '#A7313E'
+    REJECTED:
+      color: '#E75454'
+parameters: []

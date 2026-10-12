@@ -33,6 +33,7 @@ DEALER_EXCLUDED: set[str] = {
     "pca-orders-in-progress",
     "pca-time-since-last-order-by-partner",
     "pca-orders-by-day-legacy",
+    "pca-orders-by-status-legacy",
 }
 # Legacy cards whose numbers already include dealer volume; header says so (spec section 1).
 DEALER_INCLUDED_NOTE: set[str] = {
@@ -62,7 +63,10 @@ LEGACY_HEADER_ONLY: set[str] = {
     "pca-emails-late-bounce-lag",
 }
 # Twin key -> legacy counterpart, where it is not the twin key minus "-dealer".
-LEGACY_OF: dict[str, str] = {"pca-orders-by-day-dealer": "pca-orders-by-day-legacy"}
+LEGACY_OF: dict[str, str] = {
+    "pca-orders-by-day-dealer": "pca-orders-by-day-legacy",
+    "pca-orders-by-status-dealer": "pca-orders-by-status-legacy",
+}
 
 
 def _card(key):

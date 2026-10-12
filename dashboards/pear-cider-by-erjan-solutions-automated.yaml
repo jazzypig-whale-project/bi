@@ -411,9 +411,64 @@ dashcards:
       - granularity
   series: []
   inline_parameters: []
-- key: dc-heading-orders-certificates
+- key: dc-heading-orders-statuses
   tab: orders
   row: 16
+  col: 0
+  size_x: 24
+  size_y: 1
+  visualization_settings:
+    virtual_card:
+      display: heading
+    text: Order statuses
+    dashcard.background: false
+- key: dc-orders-by-status-legacy
+  card: pca-orders-by-status-legacy
+  tab: orders
+  row: 17
+  col: 0
+  size_x: 12
+  size_y: 8
+  visualization_settings:
+    card.title: Legacy · Orders over time by status
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
+  series: []
+  inline_parameters: []
+- key: dc-orders-by-status-dealer
+  card: pca-orders-by-status-dealer
+  tab: orders
+  row: 17
+  col: 12
+  size_x: 12
+  size_y: 8
+  visualization_settings:
+    card.title: Dealer · Orders over time by status
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
+  series: []
+  inline_parameters: []
+- key: dc-heading-orders-certificates
+  tab: orders
+  row: 25
   col: 0
   size_x: 24
   size_y: 1
@@ -425,7 +480,7 @@ dashcards:
 - key: dc-certificates-sent-by-hour
   card: pca-certificates-sent-by-hour
   tab: orders
-  row: 17
+  row: 26
   col: 0
   size_x: 24
   size_y: 6
@@ -445,7 +500,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-partners
   tab: orders
-  row: 23
+  row: 32
   col: 0
   size_x: 24
   size_y: 1
@@ -457,7 +512,7 @@ dashcards:
 - key: dc-average-check-by-day
   card: pca-average-check-by-day
   tab: orders
-  row: 24
+  row: 33
   col: 0
   size_x: 24
   size_y: 7
@@ -477,7 +532,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-orders-denominations
   tab: orders
-  row: 31
+  row: 40
   col: 0
   size_x: 24
   size_y: 1
@@ -489,7 +544,7 @@ dashcards:
 - key: dc-certificates-sold-by-denomination
   card: pca-certificates-sold-by-denomination
   tab: orders
-  row: 32
+  row: 41
   col: 0
   size_x: 12
   size_y: 7
@@ -505,7 +560,7 @@ dashcards:
 - key: dc-certificate-turnover-by-denomination
   card: pca-certificate-turnover-by-denomination
   tab: orders
-  row: 32
+  row: 41
   col: 12
   size_x: 12
   size_y: 7

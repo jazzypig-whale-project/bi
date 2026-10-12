@@ -237,6 +237,12 @@ cards:
   pca-time-since-last-order-by-partner-dealer:
     id: 189
     entity_id: ryYWDBPBM6RXpZ3vtGx8C
+  pca-orders-by-status-dealer:
+    id: 190
+    entity_id: EGsUJNqnoA99IeZERYWQU
+  pca-orders-by-status-legacy:
+    id: 191
+    entity_id: Goddlw4jhZkfT4Mm9E0kd
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -307,6 +313,7 @@ dashboards:
       dc-orders-by-day: 196
       dc-certificate-face-value-by-day-by-provider: 124
       dc-certificate-face-value-by-day-by-client: 129
+      dc-certificate-face-value-by-day-by-client-dealer: 199
       dc-heading-orders-certificates: 91
       dc-certificates-sent-by-hour: 71
       dc-heading-orders-partners: 92
@@ -316,7 +323,9 @@ dashboards:
       dc-certificate-turnover-by-denomination: 75
       dc-heading-emails-delivery: 102
       dc-emails-sent-by-hour-by-domain: 101
+      dc-emails-sent-by-hour-by-domain-dealer: 200
       dc-emails-failed-by-hour-by-domain: 103
+      dc-emails-failed-by-hour-by-domain-dealer: 201
       dc-heading-emails-domains: 117
       dc-emails-delivery-by-domain: 118
       dc-emails-delivery-by-domain-dealer: 197
@@ -356,8 +365,8 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-certificate-face-value-by-day-by-client-dealer: 199
-      dc-emails-sent-by-hour-by-domain-dealer: 200
-      dc-emails-failed-by-hour-by-domain-dealer: 201
+      dc-heading-orders-statuses: 202
+      dc-orders-by-status-legacy: 203
+      dc-orders-by-status-dealer: 204
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
