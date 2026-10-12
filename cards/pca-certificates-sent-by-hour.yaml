@@ -17,7 +17,13 @@ dataset_query:
       -- from legacy as an order of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002, so those
       -- certificates are counted here. There is no dealer-DB twin: adding one would double-count.
       -- Top 8 denominations by count over the window, individually; the rest are grouped as Other.
-      WITH sent AS (
+      -- Every bucket of the window is returned for every denomination series, with 0 where nothing was sent.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      sent AS (
         SELECT date_bin({{granularity}}::text::interval, (sent_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
                amount
         FROM certificate
@@ -26,12 +32,17 @@ dataset_query:
       ranked AS (
         SELECT amount, row_number() OVER (ORDER BY count(*) DESC, amount) AS rn
         FROM sent
-        GROUP BY amount)
-      SELECT s.h AS hour,
-             CASE WHEN r.rn <= 8 THEN s.amount::text ELSE 'Other' END AS denomination,
-             count(*) AS certificates
-      FROM sent s
-      JOIN ranked r ON r.amount = s.amount
+        GROUP BY amount),
+      labelled AS (
+        SELECT s.h,
+               CASE WHEN r.rn <= 8 THEN s.amount::text ELSE 'Other' END AS denomination
+        FROM sent s
+        JOIN ranked r ON r.amount = s.amount),
+      series AS (SELECT DISTINCT denomination FROM labelled)
+      SELECT sp.h AS hour, x.denomination, count(l.h) AS certificates
+      FROM spine sp
+      CROSS JOIN series x
+      LEFT JOIN labelled l ON l.h = sp.h AND l.denomination = x.denomination
       GROUP BY 1, 2
       ORDER BY 1, 2
     template-tags:

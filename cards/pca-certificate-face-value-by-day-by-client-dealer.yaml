@@ -19,23 +19,29 @@ dataset_query:
       -- face_amount is BIGINT minor units: RUB is shown in rubles (/ 100.0). Another currency is never
       -- added to rubles: it becomes its own series, labelled with its currency code. Orders without a face
       -- value (face_amount NULL, a NONE-kind SKU) are not counted.
-      -- Bucketed on completed_at (timestamptz) in Europe/Moscow.
-      WITH o AS (
+      -- Bucketed on completed_at (timestamptz) in Europe/Moscow. Every bucket of the window is returned for
+      -- every series, with 0 where nothing completed.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS day),
+      o AS (
         SELECT date_bin({{granularity}}::text::interval, (o.completed_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
                o.face_amount,
-               o.face_currency,
-               c.name AS client_name
+               'Dealer · ' || CASE WHEN c.name = 'sber' THEN 'Sber' ELSE initcap(c.name) END
+                 || CASE WHEN o.face_currency = 'RUB' THEN '' ELSE ' (' || COALESCE(o.face_currency, 'no currency') || ')' END AS client
         FROM dealer_order o
         JOIN api_client c ON c.client_id = o.client_id
         WHERE o.status = 'COMPLETED'
           AND o.face_amount IS NOT NULL
           AND o.completed_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
-      )
-      SELECT day,
-             'Dealer · ' || CASE WHEN client_name = 'sber' THEN 'Sber' ELSE initcap(client_name) END
-               || CASE WHEN face_currency = 'RUB' THEN '' ELSE ' (' || COALESCE(face_currency, 'no currency') || ')' END AS client,
-             sum(face_amount) / 100.0 AS face_value
-      FROM o
+      ),
+      series AS (SELECT DISTINCT client FROM o)
+      SELECT s.day, x.client, COALESCE(sum(o.face_amount), 0) / 100.0 AS face_value
+      FROM spine s
+      CROSS JOIN series x
+      LEFT JOIN o ON o.day = s.day AND o.client = x.client
       GROUP BY 1, 2
       ORDER BY 1, 2
     template-tags:

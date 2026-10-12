@@ -24,7 +24,13 @@ dataset_query:
       --   3. else the account named in intake_reply_to, via its current number.
       -- Rows still unresolved on a day before the first non-Beeline production success are Beeline
       -- by definition — MTS did not exist yet. Anything unresolved after it stays Unknown.
-      WITH mts_start AS (
+      -- Every bucket of the window is returned for every provider, with 0 where nothing was sent.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS day),
+      mts_start AS (
         SELECT date_bin({{granularity}}::text::interval, (min(t.succeeded_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day
         FROM task t
         JOIN number n ON n.number_id = t.number_id
@@ -57,10 +63,16 @@ dataset_query:
         FROM cert c
         CROSS JOIN mts_start m
         LEFT JOIN phone_provider p ON p.code = c.provider_code
+      ),
+      series AS (
+        SELECT DISTINCT provider
+        FROM labelled
+        WHERE TRUE [[AND provider = {{provider}}]]
       )
-      SELECT day, provider, sum(amount)::bigint AS face_value
-      FROM labelled
-      WHERE TRUE [[AND provider = {{provider}}]]
+      SELECT s.day, x.provider, COALESCE(sum(l.amount), 0)::bigint AS face_value
+      FROM spine s
+      CROSS JOIN series x
+      LEFT JOIN labelled l ON l.day = s.day AND l.provider = x.provider
       GROUP BY 1, 2
       ORDER BY 1, 2
     template-tags:

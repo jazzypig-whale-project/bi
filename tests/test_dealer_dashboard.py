@@ -154,7 +154,7 @@ def test_by_client_exclusion_keeps_null_order():
 def test_by_client_twin_never_mixes_currencies():
     sql = _sql(_card("pca-certificate-face-value-by-day-by-client-dealer"))
     # The series label carries the currency for anything not RUB, and the label is a GROUP BY key.
-    assert "CASE WHEN face_currency = 'RUB' THEN ''" in sql
+    assert "CASE WHEN o.face_currency = 'RUB' THEN ''" in sql
     assert "GROUP BY 1, 2" in sql
 
 
