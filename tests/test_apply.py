@@ -298,6 +298,21 @@ def test_dashboard_put_body_leaves_an_explicit_card_id_in_a_mapping_untouched():
     assert body["dashcards"][0]["parameter_mappings"][0]["card_id"] == 5
 
 
+def test_dashboard_put_body_resolves_a_series_card_mapping_by_key():
+    doc = minimal_dashboard(key="overview", collection="root", dashcards=[
+        minimal_dashcard(series=["dealer-revenue"], parameter_mappings=[
+            {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]]},
+            {"parameter_id": "days", "card": "dealer-revenue",
+             "target": ["variable", ["template-tag", "days"]]},
+        ]),
+    ])
+    state = _state(cards={"daily-revenue": {"id": 69}, "dealer-revenue": {"id": 70}})
+    body, _, _ = apply_mod._dashboard_put_body(doc, {}, apply_mod.StrictLookup(state))
+    mappings = body["dashcards"][0]["parameter_mappings"]
+    assert [m["card_id"] for m in mappings] == [69, 70]
+    assert all("card" not in m for m in mappings)
+
+
 # --- Fix 2: id recording after a PUT -------------------------------------------
 
 def _dash_tree(dashcards, tabs=None):

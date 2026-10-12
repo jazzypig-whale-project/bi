@@ -276,11 +276,27 @@ def _dashcard_doc(dc, key, card_key_by_id, tab_key_by_id) -> dict:
         "row": dc.get("row"), "col": dc.get("col"),
         "size_x": dc.get("size_x"), "size_y": dc.get("size_y"),
         "visualization_settings": dc.get("visualization_settings") or {},
-        "parameter_mappings": dc.get("parameter_mappings") or [],
+        "parameter_mappings": [_mapping_doc(m, card_id, card_key_by_id)
+                               for m in dc.get("parameter_mappings") or []],
         "series": _series_keys(dc.get("series") or [], card_key_by_id),
         "inline_parameters": dc.get("inline_parameters") or [],
     })
     return doc
+
+
+def _mapping_doc(mapping, dashcard_card_id, card_key_by_id) -> dict:
+    """A live mapping with its server `card_id` made id-free: dropped when it is the
+    dashcard's own card (apply injects it back), `card: <key>` for another card (a series
+    card), kept raw with a warning when the card is outside the export."""
+    mapping_card_id = mapping.get("card_id")
+    rest = {k: v for k, v in mapping.items() if k != "card_id"}
+    if mapping_card_id is None or mapping_card_id == dashcard_card_id:
+        return rest
+    key = card_key_by_id.get(mapping_card_id)
+    if key is None:
+        print(f"warning: mapping card id {mapping_card_id} is outside the exported set; kept as is")
+        return mapping
+    return {**rest, "card": key}
 
 
 def _series_keys(series, card_key_by_id) -> list:

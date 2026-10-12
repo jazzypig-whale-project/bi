@@ -232,7 +232,7 @@ def _dashboard_put_body(doc, entry, lookup):
             "row": dc.get("row"), "col": dc.get("col"),
             "size_x": dc.get("size_x"), "size_y": dc.get("size_y"),
             "visualization_settings": dc.get("visualization_settings") or {},
-            "parameter_mappings": model.resolved_parameter_mappings(dc, card_id),
+            "parameter_mappings": model.resolved_parameter_mappings(dc, card_id, lookup.card_id),
             "series": [{"id": lookup.card_id(k)} for k in dc.get("series") or []],
             "inline_parameters": dc.get("inline_parameters") or [],
         }

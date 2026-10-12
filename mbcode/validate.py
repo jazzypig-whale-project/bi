@@ -193,6 +193,21 @@ def _check_dashcard_refs(tree, label, dc, tab_keys, problems):
     for skey in dc.get("series") or []:
         if skey not in tree.cards:
             problems.append(f"{label} series card {skey!r} does not resolve")
+    _check_mapping_cards(tree, label, dc, problems)
+
+
+def _check_mapping_cards(tree, label, dc, problems):
+    on_dashcard = {dc.get("card"), *(dc.get("series") or [])}
+    for mapping in dc.get("parameter_mappings") or []:
+        mkey = mapping.get("card") if isinstance(mapping, dict) else None
+        if mkey is None:
+            continue
+        if mkey not in tree.cards:
+            problems.append(f"{label} mapping card {mkey!r} does not resolve")
+            continue
+        if mkey not in on_dashcard:
+            problems.append(f"{label} mapping card {mkey!r} is neither the dashcard's card"
+                            " nor one of its series")
 
 
 def _check_dashcard_grid(label, dc, problems):

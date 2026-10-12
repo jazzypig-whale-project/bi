@@ -250,7 +250,7 @@ dashcards:
 | `size_x` | integer | yes | Width in grid columns. |
 | `size_y` | integer | yes | Height in grid rows. |
 | `visualization_settings` | object | no | Per-dashcard visualization overrides; also where virtual cards are defined. |
-| `parameter_mappings` | list | no | Maps dashboard parameters to card query fields. |
+| `parameter_mappings` | list | no | Maps dashboard parameters to card query fields. An entry targets the dashcard's `card` unless it names a `series` card with `card: <key>` (see below). |
 | `series` | list | no | List of card keys for a combo/multi-series chart. |
 | `inline_parameters` | list | no | Parameters shown inline on the dashcard itself. |
 
@@ -260,6 +260,30 @@ individual dashcards. A dashcard added to a managed dashboard through the
 Metabase UI is therefore not merely "unmanaged" — the next `apply` deletes
 it, because it is absent from the file. Run `./mbc export --overwrite` to
 adopt such a dashcard into the file before applying again.
+
+### Filters on series cards
+
+Metabase applies a dashboard parameter to a card only through a mapping whose
+`card_id` is that card's id, so each `series` card needs its own mapping
+entries, or it silently runs with its template-tag defaults. Name the series
+card with `card: <key>`; an entry without `card:` targets the dashcard's own
+`card`. Series cards may live on a different database than the main card.
+
+```yaml
+- key: dc-face-value-by-day
+  card: pca-certificate-face-value-by-day
+  series: [pca-dealer-face-value-by-day]
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target: [variable, [template-tag, days]]
+  - parameter_id: 821ec3b1
+    card: pca-dealer-face-value-by-day
+    target: [variable, [template-tag, days]]
+```
+
+`validate` requires a mapping's `card:` to be the dashcard's `card` or one of
+its `series`. `export` writes it back the same way: the dashcard's own card id
+is dropped, another card's id becomes `card: <key>`.
 
 ## Reference sugar
 
@@ -272,6 +296,7 @@ These are resolved through the state file:
 | `card: <key>` | `card_id` |
 | `tab: <key>` | `dashboard_tab_id` |
 | `series: [<key>, ...]` | `[{"id": N}, ...]` |
+| parameter mapping `card: <key>` | that mapping's `card_id` (default: the dashcard's `card`) |
 | dashcard `key: <key>` | the dashcard's own server id, via the state file |
 
 ## The dashboard grid

@@ -214,6 +214,39 @@ def test_card_referenced_by_two_dashcards_is_exported_once(tmp_path):
     assert [c for c in client.calls if c[1] == "/api/card/40"] == [("GET", "/api/card/40", None)]
 
 
+# --- parameter_mappings card_id becomes key-relative on export --------------------
+
+def _mapping(card_id):
+    return {"parameter_id": "days", "card_id": card_id,
+            "target": ["variable", ["template-tag", "days"]]}
+
+
+def test_export_maps_mapping_card_ids_back_to_keys(tmp_path, capsys):
+    """The main card's id is dropped (apply injects it), a series card's id becomes
+    `card: <key>`, and an id outside the export is kept raw with a warning."""
+    dashcard = dict(_dashcard(11, 40, 0, series=[{"id": 41}]),
+                    parameter_mappings=[_mapping(40), _mapping(41), _mapping(99)])
+    dash = {"id": 3, "name": "Overview", "description": None, "collection_id": None,
+            "entity_id": "dash-3", "width": "fixed", "auto_apply_filters": True,
+            "cache_ttl": None, "archived": False, "parameters": [], "tabs": [],
+            "dashcards": [dashcard]}
+    gets = _base_gets(items={"/api/dashboard/3": dash, "/api/card/40": _card(40, "Legacy"),
+                             "/api/card/41": _card(41, "Dealer")})
+    gets["/api/collection/root/items?models=dashboard"] = {"data": [{"id": 3, "name": "Overview"}]}
+    client = FakeClient(gets=gets)
+
+    assert export_mod.run_export(_config(), client, str(tmp_path), overwrite=True) == 0
+
+    mappings = _read_doc(tmp_path, "dashboards", "overview")["dashcards"][0]["parameter_mappings"]
+    target = ["variable", ["template-tag", "days"]]
+    assert mappings == [
+        {"parameter_id": "days", "target": target},
+        {"parameter_id": "days", "card": "dealer", "target": target},
+        {"parameter_id": "days", "card_id": 99, "target": target},
+    ]
+    assert "mapping card id 99 is outside the exported set" in capsys.readouterr().out
+
+
 # --- clobber refusal ------------------------------------------------------------
 
 def test_export_refuses_to_overwrite_existing_files_without_the_flag(tmp_path, capsys):

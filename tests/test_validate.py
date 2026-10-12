@@ -101,6 +101,33 @@ def test_unresolvable_card_reference(tmp_path):
     assert any("card 'daily-revenue' does not resolve" in p for p in problems)
 
 
+def _series_mapping_tree(tmp_path, mapping_card, series=("dealer-revenue",)):
+    write_doc(tmp_path, "cards", "daily-revenue", minimal_card())
+    write_doc(tmp_path, "cards", "dealer-revenue", minimal_card(key="dealer-revenue"))
+    dc = minimal_dashcard(series=list(series), parameter_mappings=[
+        {"parameter_id": "days", "card": mapping_card, "target": []}])
+    write_doc(tmp_path, "dashboards", "overview", minimal_dashboard(dashcards=[dc]))
+
+
+@pytest.mark.parametrize("mapping_card", ["dealer-revenue", "daily-revenue"])
+def test_mapping_card_on_the_dashcard_is_valid(tmp_path, mapping_card):
+    _series_mapping_tree(tmp_path, mapping_card)
+    assert _problems(tmp_path) == []
+
+
+def test_mapping_card_that_does_not_resolve(tmp_path):
+    _series_mapping_tree(tmp_path, "ghost")
+    problems = _problems(tmp_path)
+    assert any("mapping card 'ghost' does not resolve" in p for p in problems)
+
+
+def test_mapping_card_that_is_not_on_the_dashcard(tmp_path):
+    _series_mapping_tree(tmp_path, "dealer-revenue", series=())
+    problems = _problems(tmp_path)
+    assert any("mapping card 'dealer-revenue' is neither the dashcard's card nor one of its series"
+               in p for p in problems)
+
+
 def test_unresolvable_tab_reference(tmp_path):
     write_doc(tmp_path, "cards", "daily-revenue", minimal_card())
     dc = minimal_dashcard(tab="ghost")

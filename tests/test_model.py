@@ -160,6 +160,44 @@ def test_resolved_parameter_mappings_none_card_id_does_not_crash():
     assert mappings == dc["parameter_mappings"]
 
 
+def test_resolved_parameter_mappings_resolves_a_card_key_to_that_cards_id():
+    dc = {"parameter_mappings": [
+        {"parameter_id": "days", "card": "dealer", "target": ["variable", ["template-tag", "days"]]},
+    ]}
+    mappings = resolved_parameter_mappings(dc, 69, {"dealer": 70}.get)
+    assert mappings == [
+        {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]], "card_id": 70},
+    ]
+
+
+def test_desired_dashcards_resolves_a_series_card_mapping_by_key():
+    state = _state(cards={"card-a": {"id": 69}, "card-b": {"id": 70}})
+    resolver = Resolver(state)
+    doc = {"key": "overview", "dashcards": [
+        {"key": "chart", "card": "card-a", "row": 0, "col": 0, "size_x": 4, "size_y": 4,
+         "series": ["card-b"],
+         "parameter_mappings": [
+             {"parameter_id": "days", "target": ["variable", ["template-tag", "days"]]},
+             {"parameter_id": "days", "card": "card-b",
+              "target": ["variable", ["template-tag", "days"]]},
+         ]},
+    ]}
+    _, written = desired_dashcards(doc, resolver)[0]
+    assert [m["card_id"] for m in written["parameter_mappings"]] == [69, 70]
+    assert all("card" not in m for m in written["parameter_mappings"])
+
+
+def test_desired_dashcards_unknown_series_mapping_key_is_a_placeholder():
+    resolver = Resolver(_state(cards={"card-a": {"id": 69}}))
+    doc = {"key": "overview", "dashcards": [
+        {"key": "chart", "card": "card-a", "row": 0, "col": 0, "size_x": 4, "size_y": 4,
+         "series": ["card-new"],
+         "parameter_mappings": [{"parameter_id": "days", "card": "card-new", "target": []}]},
+    ]}
+    _, written = desired_dashcards(doc, resolver)[0]
+    assert written["parameter_mappings"][0]["card_id"] == "<new:card:card-new>"
+
+
 def test_desired_dashcards_injects_card_id_into_parameter_mappings():
     state = _state(cards={"card-a": {"id": 69}})
     resolver = Resolver(state)
