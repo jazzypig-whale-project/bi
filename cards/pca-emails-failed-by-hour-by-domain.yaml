@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Orders whose certificate email failed terminally, by recipient
+      -- domain. No DEALER filter needed: DEALER pseudo-client orders send no email. Dealer email failures
+      -- are the stacked "Dealer · …" series from the dealer DB.
       WITH failed AS (
         SELECT date_bin({{granularity}}::text::interval,
                  (COALESCE(sent_confirmed_at, paid_at) AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
@@ -36,7 +39,7 @@ dataset_query:
         SELECT domain AS series FROM top_domains
         UNION ALL
         SELECT 'Other' WHERE (SELECT count(DISTINCT domain) FROM failed) > 7)
-      SELECT s.h AS hour, se.series AS domain, count(l.series) AS emails
+      SELECT s.h AS hour, 'Legacy · ' || se.series AS domain, count(l.series) AS emails
       FROM spine s
       CROSS JOIN series se
       LEFT JOIN labelled l ON l.h = s.h AND l.series = se.series
@@ -65,6 +68,6 @@ visualization_settings:
   graph.y_axis.title_text: Failed emails
   stackable.stack_type: stacked
   series_settings:
-    Other:
+    Legacy · Other:
       color: '#A0A8B0'
 parameters: []

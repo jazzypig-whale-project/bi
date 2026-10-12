@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-in-progress
-name: Orders in progress
-description: Orders in a non-terminal state, all partners, including AWAITING_PAYMENT.
+name: Legacy · Orders in progress
+description: "Legacy orders in a non-terminal state, including AWAITING_PAYMENT. Excludes the DEALER pseudo-client; open dealer orders are on the Dealer card beside it."
 collection: pear-cider-automated
 type: question
 display: scalar
@@ -13,8 +13,12 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Legacy orders in a non-terminal state, including AWAITING_PAYMENT.
+      -- Excludes the DEALER pseudo-client: those are the dealer's own purchases; the dealer's open client
+      -- orders are on the "Dealer · Orders in progress" card next to this one.
       SELECT count(*) AS orders_in_progress
       FROM order_
       WHERE status IN ('AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING')
+        AND client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
 visualization_settings: {}
 parameters: []

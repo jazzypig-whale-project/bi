@@ -1,6 +1,6 @@
 kind: card
 key: pca-emails-late-bounce-lag
-name: Late bounce lag
+name: Legacy · Late bounce lag
 description: Late bounces over the Days window (late_bounce_at) bucketed by how long after delivered_at the bounce landed. A large 01 <1 min bucket points at the SES delivered-then-bounced race (both events arrive within seconds) rather than a genuine asynchronous DSN hours later.
 collection: pear-cider-automated
 type: question
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Late bounces of legacy order emails by lag after delivered_at.
+      -- No DEALER filter needed: DEALER pseudo-client orders send no email. The dealer's lag is the
+      -- "Dealer · Late bounce lag" series on the same buckets.
       WITH buckets AS (
         SELECT * FROM (VALUES
           ('01 <1 min'), ('02 1-5 min'), ('03 5-60 min'), ('04 1-6 h'),

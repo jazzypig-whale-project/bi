@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-by-hour-other
 name: Orders over time — Other partners
-description: Non-Sber orders bucketed by when they were created, segmented by where they ended up. Buckets follow the Granularity filter, Europe/Moscow. Bulk orders (which have no order_ row) appear as one extra series per client, "Bulk — <client>", bucketed by creation time and valued in certificates rather than orders; cancelled bulks are excluded. Volumes are much lower than Sber's; the Y-axis is scaled to this chart's own data.
+description: Non-Sber orders bucketed by when they were created, segmented by where they ended up. Buckets follow the Granularity filter, Europe/Moscow. Bulk orders (which have no order_ row) appear as one extra series per client, "Bulk — <client>", bucketed by creation time and valued in certificates rather than orders; cancelled bulks are excluded. Volumes are much lower than Sber's; the Y-axis is scaled to this chart's own data. Legacy client orders only; DEALER pseudo-client purchases are excluded.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Legacy client orders only: orders of the DEALER pseudo-client
+      -- (the dealer's own wholesale purchases) are excluded; clients switched to the dealer have their
+      -- orders in the dealer DB, which this card does not read.
       -- IS DISTINCT FROM, not <>: a NULL client name (missing api_client row) belongs here.
       WITH spine AS (
         SELECT generate_series(
@@ -31,6 +34,7 @@ dataset_query:
         LEFT JOIN api_client c ON c.client_id = o.client_id
         WHERE o.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND c.name IS DISTINCT FROM 'sber'
+          AND o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
         UNION ALL
         -- Bulk orders have no order_ row, so they are a separate series per client, valued in
         -- certificates (sum of line quantities) — not comparable with the order counts above.

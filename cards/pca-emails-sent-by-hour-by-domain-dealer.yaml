@@ -1,0 +1,59 @@
+kind: card
+key: pca-emails-sent-by-hour-by-domain-dealer
+name: Dealer · Emails sent over time, by sender domain
+description: Dealer email send attempts per bucket over the Days window, split by the domain of the From address. Every attempt counts, including retries and courtesy resends. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Email send attempts per bucket by sender domain: shipment_attempt rows with a
+      -- sent_at (timestamptz), domain of from_address. Unlike legacy (one per order), every attempt counts:
+      -- retries and courtesy resends of a delivered voucher are separate emails.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      mail AS (
+        SELECT date_bin({{granularity}}::text::interval, (a.sent_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               'Dealer · ' || lower(split_part(a.from_address, '@', 2)) AS domain
+        FROM shipment_attempt a
+        WHERE a.sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
+          AND a.from_address IS NOT NULL),
+      domains AS (SELECT DISTINCT domain FROM mail)
+      SELECT s.h AS hour, d.domain, count(m.domain) AS emails
+      FROM spine s
+      CROSS JOIN domains d
+      LEFT JOIN mail m ON m.h = s.h AND m.domain = d.domain
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 043ab384-9db9-4de1-a40f-d2cebdc33018
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 374796c8-ea0b-4817-b26e-76546e843856
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - domain
+  graph.metrics:
+  - emails
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Emails sent
+  stackable.stack_type: stacked
+parameters: []

@@ -1,0 +1,37 @@
+kind: card
+key: pca-time-since-last-order-by-partner-dealer
+name: Dealer · Time since last order, by partner
+description: Most recent dealer order per API client, stalest first. Read from the dealer database. Last order time and hours since are both Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Most recent dealer order per API client, stalest first, every status.
+      -- created_at is timestamptz: shown in Europe/Moscow; hours since = Moscow now minus Moscow last order.
+      SELECT partner, last_order_at, hours_since
+      FROM (
+        SELECT CASE WHEN c.name = 'sber' THEN 'Sber' ELSE initcap(c.name) END AS partner,
+               max((o.created_at AT TIME ZONE 'Europe/Moscow')) AS last_order_at,
+               round(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'Europe/Moscow') - max((o.created_at AT TIME ZONE 'Europe/Moscow')))) / 3600.0, 1)
+                 AS hours_since
+        FROM dealer_order o
+        JOIN api_client c ON c.client_id = o.client_id
+        GROUP BY 1) t
+      ORDER BY hours_since DESC
+visualization_settings:
+  column_settings:
+    '["name","partner"]':
+      column_title: Partner
+    '["name","last_order_at"]':
+      column_title: Last order at
+    '["name","hours_since"]':
+      column_title: Hours since last order
+      suffix: ' h'
+parameters: []

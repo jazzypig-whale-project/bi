@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Pool and production exist only here. Demand from dealer sales
+      -- reaches them through orders of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002,
+      -- so it is included; the dealer DB has no equivalent to twin.
       -- Produced = a PRODUCTION or VALIDATION task that succeeded; task.amount is the certificate
       -- face value, so it doubles as the denomination (no join needed). A successful validation
       -- purchase yields a real certificate (one per task) and is charged by the operator like any

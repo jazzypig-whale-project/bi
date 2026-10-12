@@ -1,0 +1,57 @@
+kind: card
+key: pca-emails-late-bounces-by-day-dealer
+name: Dealer · Late bounces over time
+description: "Dealer late bounces per bucket over the Days window (late_bounce_at bucketed). One series, Dealer · Late bounce, since the dealer has no resolution step. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow."
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Late bounces per bucket: shipment.late_bounce_at (timestamptz), Europe/Moscow.
+      -- One state only: the dealer has no resolution step (legacy splits Unresolved / Resent / Resolved manually).
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS d),
+      lb AS (
+        SELECT date_bin({{granularity}}::text::interval, (late_bounce_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS d
+        FROM shipment
+        WHERE late_bounce_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow'))
+      SELECT s.d AS day, 'Dealer · Late bounce' AS state, count(l.d) AS late_bounces
+      FROM spine s
+      LEFT JOIN lb l ON l.d = s.d
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 1902ec1e-1e42-4ab3-9bbf-44de21518f2c
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 535bc89a-d81c-4cb8-ae74-b061ffdcf037
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - state
+  graph.metrics:
+  - late_bounces
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Late bounces
+  stackable.stack_type: stacked
+  series_settings:
+    Dealer · Late bounce:
+      color: '#F2A86F'
+parameters: []

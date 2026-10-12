@@ -1,0 +1,72 @@
+kind: card
+key: pca-emails-failed-by-hour-by-domain-dealer
+name: Dealer · Failed emails over time, by recipient domain
+description: "Dealer shipments that failed terminally (status FAILED) per bucket over the Days window, by recipient domain — top 7 domains get their own series, the rest are Dealer · Other. Anchored to sent_at when known, else created_at. BOUNCED is a retryable state and is not counted. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow."
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Shipments that failed terminally, by recipient domain.
+      -- Failed = shipment.status 'FAILED' (Shipment.markFailed). BOUNCED is excluded on purpose: it is a
+      -- retryable bounce waiting for its next attempt (Shipment.markBounced), like legacy SENDING, which the
+      -- legacy card also leaves out. Anchored to sent_at (timestamptz) when known, else created_at.
+      WITH failed AS (
+        SELECT date_bin({{granularity}}::text::interval,
+                 (COALESCE(s.sent_at, s.created_at) AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               lower(split_part(s.recipient, '@', 2)) AS domain
+        FROM shipment s
+        WHERE s.status = 'FAILED'
+          AND COALESCE(s.sent_at, s.created_at) >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')),
+      top_domains AS (
+        SELECT domain FROM failed GROUP BY domain ORDER BY count(*) DESC, domain LIMIT 7),
+      labelled AS (
+        SELECT f.h, COALESCE(t.domain, 'Other') AS series
+        FROM failed f LEFT JOIN top_domains t ON t.domain = f.domain),
+      spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      series AS (
+        SELECT domain AS series FROM top_domains
+        UNION ALL
+        SELECT 'Other' WHERE (SELECT count(DISTINCT domain) FROM failed) > 7)
+      SELECT s.h AS hour, 'Dealer · ' || se.series AS domain, count(l.series) AS emails
+      FROM spine s
+      CROSS JOIN series se
+      LEFT JOIN labelled l ON l.h = s.h AND l.series = se.series
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 89084468-6543-4ba9-b176-d2fa00e23b22
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 24fd8557-3fb8-4054-8627-f34ffa1e7817
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - domain
+  graph.metrics:
+  - emails
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Failed emails
+  stackable.stack_type: stacked
+  series_settings:
+    Dealer · Other:
+      color: '#C7CDD3'
+parameters: []

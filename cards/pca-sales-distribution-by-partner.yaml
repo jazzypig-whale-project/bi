@@ -1,7 +1,7 @@
 kind: card
 key: pca-sales-distribution-by-partner
 name: Order value by partner (all time), ₽
-description: Sum of order_.amount per API client, all clients, all time, every outcome included (COMPLETED, FAILED_MANUAL and still in flight alike). This measures customer orders, not certificates, so it is not comparable with the certificate face-value cards — certificates issued outside the order flow (bulk orders) never appear here, which is why certificate face value can exceed this total. Translated from "Распределение продаж по партнерам".
+description: Sum of order_.amount per API client, all clients, all time, every outcome included (COMPLETED, FAILED_MANUAL and still in flight alike). This measures customer orders, not certificates, so it is not comparable with the certificate face-value cards — certificates issued outside the order flow (bulk orders) never appear here, which is why certificate face value can exceed this total. Translated from "Распределение продаж по партнерам". Legacy client orders only; DEALER pseudo-client purchases are excluded.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,10 +13,14 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Legacy client orders only: orders of the DEALER pseudo-client
+      -- (the dealer's own wholesale purchases) are excluded; clients switched to the dealer have their
+      -- orders in the dealer DB, which this card does not read.
       SELECT CASE WHEN c.name = 'sber' THEN 'Sber' ELSE COALESCE(initcap(c.name), 'Unknown') END AS partner,
              sum(o.amount)::bigint                                                              AS revenue
       FROM order_ o
       LEFT JOIN api_client c ON c.client_id = o.client_id
+      WHERE o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
       GROUP BY 1
       ORDER BY 2 DESC
 visualization_settings:

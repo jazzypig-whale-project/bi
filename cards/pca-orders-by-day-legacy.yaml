@@ -1,0 +1,63 @@
+kind: card
+key: pca-orders-by-day-legacy
+name: Legacy · Client orders over time
+description: Legacy client orders created per bucket, Europe/Moscow, excluding the DEALER pseudo-client. Stacked with the dealer's client orders to show the migration. Buckets follow the Granularity filter.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 2 (legacy orchestrator). Client orders created per bucket, every status, Europe/Moscow
+      -- (order_.created_at is naive UTC). Excludes the DEALER pseudo-client: those are the dealer's own
+      -- purchases; the dealer's client orders are the stacked "Dealer · Orders" series. Bulk orders have no
+      -- order_ row and are not counted.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      o AS (
+        SELECT date_bin({{granularity}}::text::interval, (o.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h
+        FROM order_ o
+        WHERE o.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
+          AND o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
+        )
+      SELECT s.h AS day, 'Legacy · Orders' AS source, count(o.h) AS orders
+      FROM spine s
+      LEFT JOIN o ON o.h = s.h
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 34890523-003f-4d4b-adf9-92f21b18f468
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 854b3c4f-de74-4122-b160-319ef88d947e
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - source
+  graph.metrics:
+  - orders
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Client orders
+  stackable.stack_type: stacked
+  series_settings:
+    Legacy · Orders:
+      color: '#509EE3'
+    Dealer · Orders:
+      color: '#A989C5'
+parameters: []

@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Emails sent per bucket by sender domain, one per order
+      -- (order_.sent_confirmed_at). No DEALER filter needed: DEALER pseudo-client orders are delivered over
+      -- the API and send no email. Dealer emails are the stacked "Dealer · …" series from the dealer DB.
       WITH spine AS (
         SELECT generate_series(
           date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
@@ -20,7 +23,7 @@ dataset_query:
           {{granularity}}::text::interval) AS h),
       mail AS (
         SELECT date_bin({{granularity}}::text::interval, (sent_confirmed_at AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
-               lower(split_part(sent_from_address, '@', 2)) AS domain
+               'Legacy · ' || lower(split_part(sent_from_address, '@', 2)) AS domain
         FROM order_
         WHERE sent_confirmed_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND sent_from_address IS NOT NULL),
@@ -54,8 +57,8 @@ visualization_settings:
   graph.y_axis.title_text: Emails sent
   stackable.stack_type: stacked
   series_settings:
-    apple-gift.org:
+    Legacy · apple-gift.org:
       color: '#509EE3'
-    engine.smartfruit.org:
+    Legacy · engine.smartfruit.org:
       color: '#88BF4D'
 parameters: []

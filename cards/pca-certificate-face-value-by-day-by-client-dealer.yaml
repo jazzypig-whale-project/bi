@@ -1,0 +1,69 @@
+kind: card
+key: pca-certificate-face-value-by-day-by-client-dealer
+name: Dealer · Certificate face value over time by client, ₽
+description: Face value of COMPLETED dealer orders per bucket, Europe/Moscow, stacked by API client. Read from the dealer database; stacked on the legacy by-client chart. RUB in rubles; any other currency is its own series labelled with its currency code.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Face value of COMPLETED dealer orders per bucket, by API client.
+      -- These are the orders of clients switched to the dealer. Legacy holds the same vouchers under the
+      -- DEALER pseudo-client, which the legacy by-client card excludes, so the stacked total is not doubled.
+      -- face_amount is BIGINT minor units: RUB is shown in rubles (/ 100.0). Another currency is never
+      -- added to rubles: it becomes its own series, labelled with its currency code. Orders without a face
+      -- value (face_amount NULL, a NONE-kind SKU) are not counted.
+      -- Bucketed on completed_at (timestamptz) in Europe/Moscow.
+      WITH o AS (
+        SELECT date_bin({{granularity}}::text::interval, (o.completed_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
+               o.face_amount,
+               o.face_currency,
+               c.name AS client_name
+        FROM dealer_order o
+        JOIN api_client c ON c.client_id = o.client_id
+        WHERE o.status = 'COMPLETED'
+          AND o.face_amount IS NOT NULL
+          AND o.completed_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
+      )
+      SELECT day,
+             'Dealer · ' || CASE WHEN client_name = 'sber' THEN 'Sber' ELSE initcap(client_name) END
+               || CASE WHEN face_currency = 'RUB' THEN '' ELSE ' (' || COALESCE(face_currency, 'no currency') || ')' END AS client,
+             sum(face_amount) / 100.0 AS face_value
+      FROM o
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 0370f0c7-71b0-477e-8fca-f483a508acfe
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 7fbe7444-7de7-4478-a01c-d61ae3859563
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - client
+  graph.metrics:
+  - face_value
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificate face value, ₽
+  graph.y_axis.auto_split: false
+  graph.show_values: false
+  stackable.stack_type: stacked
+  column_settings:
+    '["name","face_value"]':
+      suffix: ' ₽'
+      decimals: 0
+parameters: []

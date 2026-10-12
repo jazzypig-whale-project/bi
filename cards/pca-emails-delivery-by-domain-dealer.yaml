@@ -1,0 +1,69 @@
+kind: card
+key: pca-emails-delivery-by-domain-dealer
+name: Dealer · Email delivery by recipient domain
+description: Per-recipient-domain delivery funnel of dealer email shipments over the Days window, one row per shipment (= order), anchored to sent_at, else created_at. Same columns as the legacy table; late_bounce_open is always empty because the dealer has no late-bounce resolution step. Read from the dealer database. Top 25 domains by attempted.
+collection: pear-cider-automated
+type: question
+display: table
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Per-recipient-domain delivery funnel of dealer EMAIL shipments over the Days
+      -- window, one row per shipment (= order), anchored to sent_at when known, else created_at (timestamptz).
+      -- Legacy column -> dealer source:
+      --   delivered    = status DELIVERED
+      --   in_progress  = status PENDING, SENT or BOUNCED (BOUNCED = retryable bounce awaiting its next attempt)
+      --   failed       = status FAILED
+      --   retried      = more than one attempt (shipment.attempt > 1; courtesy resends also raise it)
+      --   late_bounced = late_bounce_at set (a bounce after DELIVERED)
+      --   late_bounce_open = NULL: the dealer has no resolution step for a late bounce
+      --   median_delivery_sec = median seconds from an attempt's sent_at to its success verdict
+      --                         (shipment_attempt.verdict_at where category IS NULL)
+      WITH ship AS (
+        SELECT s.id, lower(split_part(s.recipient, '@', 2)) AS domain, s.status, s.attempt, s.late_bounce_at
+        FROM shipment s
+        WHERE COALESCE(s.sent_at, s.created_at) >= (((now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow')),
+      counts AS (
+        SELECT domain,
+               count(*) AS attempted,
+               count(*) FILTER (WHERE status = 'DELIVERED') AS delivered,
+               count(*) FILTER (WHERE status IN ('PENDING', 'SENT', 'BOUNCED')) AS in_progress,
+               count(*) FILTER (WHERE status = 'FAILED') AS failed,
+               count(*) FILTER (WHERE attempt > 1) AS retried,
+               count(*) FILTER (WHERE late_bounce_at IS NOT NULL) AS late_bounced,
+               NULL::bigint AS late_bounce_open,
+               round(100.0 * count(*) FILTER (WHERE status = 'DELIVERED') / nullif(count(*), 0), 1) AS delivered_pct,
+               round(100.0 * count(*) FILTER (WHERE status = 'DELIVERED' AND late_bounce_at IS NULL)
+                     / nullif(count(*), 0), 1) AS net_success_pct
+        FROM ship
+        GROUP BY domain),
+      med AS (
+        SELECT sh.domain,
+               round(percentile_cont(0.5) WITHIN GROUP (
+                       ORDER BY extract(epoch FROM a.verdict_at - a.sent_at))::numeric, 1) AS median_delivery_sec
+        FROM ship sh
+        JOIN shipment_attempt a ON a.shipment_id = sh.id
+        WHERE a.verdict IS NOT NULL AND a.category IS NULL AND a.sent_at IS NOT NULL
+        GROUP BY sh.domain)
+      SELECT c.domain, c.attempted AS attempted, c.delivered AS delivered, c.in_progress AS in_progress,
+             c.failed AS failed, c.retried AS retried, c.late_bounced AS late_bounced,
+             c.late_bounce_open AS late_bounce_open, c.delivered_pct AS delivered_pct,
+             c.net_success_pct AS net_success_pct, m.median_delivery_sec AS median_delivery_sec
+      FROM counts c
+      LEFT JOIN med m ON m.domain = c.domain
+      ORDER BY c.attempted DESC, c.domain
+      LIMIT 25
+    template-tags:
+      days:
+        id: a3c5ac4f-1915-4e75-9a19-96b6d3b457fa
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings: {}
+parameters: []

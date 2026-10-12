@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Includes dealer sales: the dealer buys every voucher it sells
+      -- from legacy as an order of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002, so those
+      -- certificates are counted here. There is no dealer-DB twin: adding one would double-count.
       SELECT amount AS denomination, sum(amount)::bigint AS turnover
       FROM certificate
       WHERE status = 'SENT'

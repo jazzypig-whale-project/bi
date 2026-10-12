@@ -1,6 +1,6 @@
 kind: card
 key: pca-emails-delivery-by-domain
-name: Email delivery by recipient domain
+name: Legacy · Email delivery by recipient domain
 description: Per-recipient-domain (delivery_email, else buyer_email) delivery funnel over the Days window — attempted, delivered, still in progress (SENDING), failed (FAILED_MANUAL with an email_* or delivery_forced_failed failure_reason), retried at least once, late-bounced (delivered then bounced after the order completed) and still-unresolved late bounces, plus delivered_pct and net_success_pct (delivered and never late-bounced). median_delivery_sec is the median seconds from sent_confirmed_at to delivered_at, ignoring undelivered rows. Anchored to sent_confirmed_at when known, else paid_at. Top 25 domains by attempted volume.
 collection: pear-cider-automated
 type: question
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Per-recipient-domain delivery funnel of legacy order emails.
+      -- No DEALER filter needed: DEALER pseudo-client orders are delivered over the API and send no email.
+      -- Dealer emails are in the "Dealer · Email delivery by recipient domain" table beside this one.
       WITH mail AS (
         SELECT lower(split_part(COALESCE(delivery_email, buyer_email), '@', 2)) AS domain,
                status, failure_reason, sent_confirmed_at, delivered_at,

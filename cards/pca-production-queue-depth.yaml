@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Pool and production exist only here. Demand from dealer sales
+      -- reaches them through orders of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002,
+      -- so it is included; the dealer DB has no equivalent to twin.
       SELECT count(*) AS pending_requests
       FROM production_request
       WHERE status = 'PENDING'

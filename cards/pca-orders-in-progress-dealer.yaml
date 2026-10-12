@@ -1,0 +1,22 @@
+kind: card
+key: pca-orders-in-progress-dealer
+name: Dealer · Orders in progress
+description: "Dealer orders not yet in a terminal state (IN_QUEUE, IN_PROGRESS), all clients. Read from the dealer database."
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Dealer orders not yet in a terminal state, all clients.
+      -- Non-terminal: IN_QUEUE, IN_PROGRESS. Terminal: COMPLETED, FAILED, REJECTED (dealer_order_status_valid).
+      SELECT count(*) AS orders_in_progress
+      FROM dealer_order
+      WHERE status IN ('IN_QUEUE', 'IN_PROGRESS')
+visualization_settings: {}
+parameters: []

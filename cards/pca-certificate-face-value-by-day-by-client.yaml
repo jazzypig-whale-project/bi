@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day-by-client
 name: Certificate face value over time by client, ₽
-description: Sum of SENT certificate face values per bucket, Europe/Moscow, stacked by API client. Buckets follow the Granularity filter. Client is resolved through the order the certificate was reserved for, else its bulk order; certificates with neither link are counted as Unknown.
+description: "Sum of SENT certificate face values per bucket, Europe/Moscow, stacked by API client. Buckets follow the Granularity filter. Client is resolved through the order the certificate was reserved for, else its bulk order; certificates with neither link are counted as Unknown. Legacy only: certificates bought by the dealer (DEALER pseudo-client) are excluded; the dealer's clients are the stacked Dealer series."
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,6 +13,10 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Face value of SENT certificates per bucket, by API client.
+      -- Excludes certificates reserved for DEALER pseudo-client orders: those are vouchers the dealer bought
+      -- for its own clients, shown by client in the "Dealer · …" series from the dealer DB. Stacked together,
+      -- the two equal "Certificate face value over time".
       -- Days are Europe/Moscow days; certificate.sent_at is naive UTC.
       -- Client = the API client of the order the certificate was reserved for, else of its bulk order
       -- (falling back to bulk_order.client_name). No link at all = Unknown.
@@ -28,9 +32,10 @@ dataset_query:
         WHERE c.status = 'SENT'
           AND c.sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')
           AND c.sent_at <  (now() AT TIME ZONE 'UTC')
+          AND o.client_id IS DISTINCT FROM '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
       )
       SELECT day,
-             CASE WHEN client_name = 'sber' THEN 'Sber' ELSE COALESCE(initcap(client_name), 'Unknown') END AS client,
+             'Legacy · ' || CASE WHEN client_name = 'sber' THEN 'Sber' ELSE COALESCE(initcap(client_name), 'Unknown') END AS client,
              sum(amount)::bigint AS face_value
       FROM cert
       GROUP BY 1, 2
@@ -64,8 +69,8 @@ visualization_settings:
       suffix: ' ₽'
       decimals: 0
   series_settings:
-    Sber:
+    Legacy · Sber:
       color: '#509EE3'
-    Unknown:
+    Legacy · Unknown:
       color: '#949AAB'
 parameters: []

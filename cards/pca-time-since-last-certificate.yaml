@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Includes dealer sales: the dealer buys every voucher it sells
+      -- from legacy as an order of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002, so those
+      -- certificates are counted here. There is no dealer-DB twin: adding one would double-count.
       -- certificate.sent_at is naive UTC, so "now" must be naive UTC too.
       SELECT floor(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'UTC') - max(sent_at))) / 60)::bigint AS minutes
       FROM certificate

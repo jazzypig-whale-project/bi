@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-in-progress-by-status-partner
 name: Orders in progress now, by status and partner
-description: Live non-terminal orders. Each of the four statuses is always shown, even at zero.
+description: Live non-terminal orders. Each of the four statuses is always shown, even at zero. Legacy client orders only; DEALER pseudo-client purchases are excluded.
 collection: pear-cider-automated
 type: question
 display: table
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Legacy client orders only: orders of the DEALER pseudo-client
+      -- (the dealer's own wholesale purchases) are excluded; clients switched to the dealer have their
+      -- orders in the dealer DB, which this card does not read.
       WITH statuses AS (
         SELECT * FROM (VALUES
           ('AWAITING_PAYMENT', 'Awaiting payment'),
@@ -25,7 +28,9 @@ dataset_query:
                CASE WHEN c.name = 'sber' THEN 'Sber' ELSE 'Other partners' END AS partner
         FROM order_ o
         LEFT JOIN api_client c ON c.client_id = o.client_id
-        WHERE o.status IN ('AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING'))
+        WHERE o.status IN ('AWAITING_PAYMENT', 'PAID', 'WAITING_CERT', 'SENDING')
+          AND o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
+        )
       SELECT st.status_label AS status, p.partner, count(l.status) AS orders
       FROM statuses st
       CROSS JOIN partners p

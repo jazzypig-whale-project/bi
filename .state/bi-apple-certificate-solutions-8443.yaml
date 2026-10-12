@@ -198,6 +198,45 @@ cards:
   pca-certificate-face-value-by-day-by-client:
     id: 133
     entity_id: zpW-8pdvjYPQMowv4bs4N
+  pca-certificate-face-value-by-day-by-client-dealer:
+    id: 177
+    entity_id: nYTIFEgsOgURKyc2qpFEG
+  pca-dealer-clients-switched:
+    id: 178
+    entity_id: IhIglhS4SSLx83dmBCglT
+  pca-emails-delivery-by-domain-dealer:
+    id: 179
+    entity_id: 7uZEBPTNNhcCw2dZ8dd9p
+  pca-emails-failed-by-hour-by-domain-dealer:
+    id: 180
+    entity_id: bNe58zECIOXAFtLdwE5Xd
+  pca-emails-late-bounce-lag-dealer:
+    id: 181
+    entity_id: _yc_qCm8KSqIkLMG_7vT6
+  pca-emails-late-bounces-by-day-dealer:
+    id: 182
+    entity_id: VKjLQz9c6_huNrdi4Re11
+  pca-emails-late-bounces-unresolved-dealer:
+    id: 183
+    entity_id: bQvqabiGdDo1lamFc-fJf
+  pca-emails-sent-by-hour-by-domain-dealer:
+    id: 184
+    entity_id: xE3chnj6kjZRPWEpx3mrR
+  pca-flow-by-hour-dealer:
+    id: 185
+    entity_id: xYmPCSXsoPoAp9wln6KbB
+  pca-orders-by-day-dealer:
+    id: 186
+    entity_id: twFI0XNoJPaWEljlBaXto
+  pca-orders-by-day-legacy:
+    id: 187
+    entity_id: pN0NP82lWkOn2xrG4JEmR
+  pca-orders-in-progress-dealer:
+    id: 188
+    entity_id: PxdkNd4x0NFPTZSvqDldH
+  pca-time-since-last-order-by-partner-dealer:
+    id: 189
+    entity_id: ryYWDBPBM6RXpZ3vtGx8C
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -255,12 +294,17 @@ dashboards:
       dc-certificates-sent-window: 56
       dc-time-since-last-certificate: 57
       dc-orders-in-progress: 58
+      dc-orders-in-progress-dealer: 192
       dc-capacity-now-quota: 61
       dc-capacity-now-quota-balance: 62
       dc-heading-overview-partners: 86
       dc-time-since-last-order-by-partner: 63
+      dc-time-since-last-order-by-partner-dealer: 193
       dc-heading-overview-pipeline: 87
       dc-flow-by-hour: 64
+      dc-heading-overview-migration: 194
+      dc-dealer-clients-switched: 195
+      dc-orders-by-day: 196
       dc-certificate-face-value-by-day-by-provider: 124
       dc-certificate-face-value-by-day-by-client: 129
       dc-heading-orders-certificates: 91
@@ -275,8 +319,10 @@ dashboards:
       dc-emails-failed-by-hour-by-domain: 103
       dc-heading-emails-domains: 117
       dc-emails-delivery-by-domain: 118
+      dc-emails-delivery-by-domain-dealer: 197
       dc-heading-emails-late-bounces: 119
       dc-emails-late-bounces-unresolved: 120
+      dc-emails-late-bounces-unresolved-dealer: 198
       dc-emails-late-bounces-by-day: 121
       dc-emails-late-bounce-lag: 122
       dc-heading-production-produced: 115
@@ -310,5 +356,8 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
+      dc-certificate-face-value-by-day-by-client-dealer: 199
+      dc-emails-sent-by-hour-by-domain-dealer: 200
+      dc-emails-failed-by-hour-by-domain-dealer: 201
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

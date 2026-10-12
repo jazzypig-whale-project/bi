@@ -1,0 +1,58 @@
+kind: card
+key: pca-flow-by-hour-dealer
+name: Dealer · Flow over time — ordered
+description: Dealer orders created per bucket (all statuses), Europe/Moscow. Read from the dealer database; stacked on the legacy Flow chart as the Dealer · Ordered line. Idle buckets render as zero.
+collection: pear-cider-automated
+type: question
+display: line
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). The "Ordered" stream for clients switched to the dealer: dealer_order rows by
+      -- created_at (timestamptz), Europe/Moscow buckets, every status. Requested/Produced/Sent stay on the
+      -- legacy card only: production and certificates live there and already include dealer volume.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      events AS (
+        SELECT date_bin({{granularity}}::text::interval, (created_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h
+        FROM dealer_order
+        WHERE created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow'))
+      SELECT s.h AS hour, 'Dealer · Ordered' AS series, count(e.h) AS n
+      FROM spine s
+      LEFT JOIN events e ON e.h = s.h
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 8e93ce46-4c0c-40a2-b2b7-e7b7cc1465d3
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 0a47da98-8357-4f2e-a272-50fc03b2c4f5
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - series
+  graph.metrics:
+  - n
+  graph.x_axis.scale: timeseries
+  graph.y_axis.scale: log
+  graph.y_axis.title_text: Events per bucket
+  series_settings:
+    Dealer · Ordered:
+      color: '#A989C5'
+parameters: []

@@ -1,0 +1,23 @@
+kind: card
+key: pca-emails-late-bounces-unresolved-dealer
+name: Dealer · Late bounces (no resolution step)
+description: "Dealer shipments flagged late_bounce_at (bounced after DELIVERED). The dealer has no late-bounce resolution step, so this counts every late-bounced shipment ever, not an open backlog. Read from the dealer database."
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Shipments flagged late_bounce_at: a bounce after DELIVERED (Shipment.stampLateBounce).
+      -- The dealer has no resolution step for a late bounce, so this is every late-bounced shipment ever,
+      -- not an open backlog. late_delivered_at is a different flag (delivered after FAILED) and is not used.
+      SELECT count(*) AS late_bounces
+      FROM shipment
+      WHERE late_bounce_at IS NOT NULL
+visualization_settings: {}
+parameters: []

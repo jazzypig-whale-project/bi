@@ -1,7 +1,7 @@
 kind: card
 key: pca-completion-time-percentiles
 name: Completion time percentiles — Sber vs Other partners
-description: paid_at to completed_at for COMPLETED orders, the same span DeliveryVerdictApplier measures. Seconds.
+description: paid_at to completed_at for COMPLETED orders, the same span DeliveryVerdictApplier measures. Seconds. Legacy client orders only; DEALER pseudo-client purchases are excluded.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Legacy client orders only: orders of the DEALER pseudo-client
+      -- (the dealer's own wholesale purchases) are excluded; clients switched to the dealer have their
+      -- orders in the dealer DB, which this card does not read.
       -- Both endpoints are naive UTC, so the difference needs no conversion; only the
       -- window predicate is compared against a converted "now".
       WITH spans AS (
@@ -22,6 +25,7 @@ dataset_query:
         LEFT JOIN api_client c ON c.client_id = o.client_id
         WHERE o.status = 'COMPLETED'
           AND o.paid_at IS NOT NULL
+          AND o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
           AND o.completed_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')),
       pct AS (
         SELECT partner,

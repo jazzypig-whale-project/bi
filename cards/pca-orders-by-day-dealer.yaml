@@ -1,0 +1,54 @@
+kind: card
+key: pca-orders-by-day-dealer
+name: Dealer · Client orders over time
+description: Dealer client orders created per bucket, every status, Europe/Moscow. Read from the dealer database; stacked on the legacy client orders chart. Buckets follow the Granularity filter.
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Client orders created per bucket, every status: dealer_order.created_at
+      -- (timestamptz), Europe/Moscow.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      o AS (
+        SELECT date_bin({{granularity}}::text::interval, (created_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h
+        FROM dealer_order
+        WHERE created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow'))
+      SELECT s.h AS day, 'Dealer · Orders' AS source, count(o.h) AS orders
+      FROM spine s
+      LEFT JOIN o ON o.h = s.h
+      GROUP BY 1, 2
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 59bd15e5-32ad-479e-a56f-f0da69d701b3
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 7511e021-c1e8-4a5e-8a74-ed879818c54e
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - day
+  - source
+  graph.metrics:
+  - orders
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Client orders
+  stackable.stack_type: stacked
+parameters: []

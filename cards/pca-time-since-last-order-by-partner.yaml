@@ -1,7 +1,7 @@
 kind: card
 key: pca-time-since-last-order-by-partner
-name: Time since last order, by partner
-description: Most recent order per partner, stalest partner first. Last order time is Europe/Moscow; hours since is measured from UTC now().
+name: Legacy · Time since last order, by partner
+description: "Most recent order per partner, stalest partner first. Last order time is Europe/Moscow; hours since is measured from UTC now(). Excludes the DEALER pseudo-client; switched clients appear on the Dealer table beside it."
 collection: pear-cider-automated
 type: question
 display: table
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Most recent legacy order per partner, stalest first.
+      -- Excludes the DEALER pseudo-client (the dealer's own purchases). A client switched to the dealer stops
+      -- ordering here and grows stale on purpose; its new orders are on the "Dealer · …" table beside it.
       -- order_.created_at is naive UTC: compare against naive-UTC now, display in Moscow.
       SELECT partner, last_order_at, hours_since
       FROM (
@@ -22,6 +25,7 @@ dataset_query:
                  AS hours_since
         FROM order_ o
         LEFT JOIN api_client c ON c.client_id = o.client_id
+        WHERE o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
         GROUP BY 1) t
       ORDER BY hours_since DESC
 visualization_settings:

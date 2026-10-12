@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-aging-other
 name: Orders aging — Other partners
-description: How old the open non-Sber orders were at each whole hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp. EXPIRED_TTL orders have their end reconstructed as created_at + client_billing.order_ttl_minutes, the exact deadline the TTL sweep writes them off at. The backlog is sampled once per hour, so an order that opens and closes between two hour marks never appears; non-Sber orders currently complete within seconds, so an empty chart is the expected result and means no non-Sber order was open at an hour mark, not a broken query.
+description: How old the open non-Sber orders were at each whole hour. REJECTED/EXPIRED/FAILED_MANUAL orders are excluded — they carry no end timestamp. EXPIRED_TTL orders have their end reconstructed as created_at + client_billing.order_ttl_minutes, the exact deadline the TTL sweep writes them off at. The backlog is sampled once per hour, so an order that opens and closes between two hour marks never appears; non-Sber orders currently complete within seconds, so an empty chart is the expected result and means no non-Sber order was open at an hour mark, not a broken query. Legacy client orders only; DEALER pseudo-client purchases are excluded.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -13,6 +13,9 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
+      -- Database 2 (legacy orchestrator). Legacy client orders only: orders of the DEALER pseudo-client
+      -- (the dealer's own wholesale purchases) are excluded; clients switched to the dealer have their
+      -- orders in the dealer DB, which this card does not read.
       -- Open interval is [created_at, ended_at), left open while ended_at is null.
       -- COMPLETED orders always carry completed_at and the interval is exact for them.
       -- EXPIRED_TTL orders carry no end timestamp (see order/OrderRepository.java
@@ -37,6 +40,7 @@ dataset_query:
         LEFT JOIN client_billing b ON b.client_id = o.client_id
         WHERE o.status NOT IN ('REJECTED', 'EXPIRED', 'FAILED_MANUAL')
           AND c.name IS DISTINCT FROM 'sber'
+          AND o.client_id <> '00000000-0000-0000-0000-000000000002'  -- DEALER pseudo-client: dealer purchases, counted in the dealer DB
           AND (o.completed_at IS NULL OR o.completed_at >= (date_trunc('hour', (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC')))
       SELECT s.h AS hour,
              CASE

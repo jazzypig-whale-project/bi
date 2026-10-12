@@ -1,0 +1,22 @@
+kind: card
+key: pca-dealer-clients-switched
+name: Dealer · Clients switched to the dealer
+description: API clients moved from legacy to the dealer (api_client.v1_switched_at set). Read from the dealer database.
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). API clients switched from legacy to the dealer: api_client.v1_switched_at is set
+      -- when a client's config is copied over. No order history moves with it.
+      SELECT count(*) AS clients_switched
+      FROM api_client
+      WHERE v1_switched_at IS NOT NULL
+visualization_settings: {}
+parameters: []

@@ -1,0 +1,59 @@
+kind: card
+key: pca-emails-late-bounce-lag-dealer
+name: Dealer · Late bounce lag
+description: "Dealer late bounces over the Days window bucketed by how long after the delivery verdict they landed. The delivery time is the success verdict of the shipment's attempts (shipment_attempt.verdict_at, category empty), the dealer's counterpart of legacy delivered_at. Same buckets as the legacy card. Read from the dealer database."
+collection: pear-cider-automated
+type: question
+display: bar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 3
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 3 (dealer). Late bounces by lag after delivery. The dealer's shipment has no delivered_at:
+      -- the delivery time is the latest success verdict (shipment_attempt.verdict_at, category IS NULL)
+      -- at or before late_bounce_at. No such verdict = '07 no delivered_at', the legacy label, so the
+      -- buckets line up with the legacy series.
+      WITH buckets AS (
+        SELECT * FROM (VALUES
+          ('01 <1 min'), ('02 1-5 min'), ('03 5-60 min'), ('04 1-6 h'),
+          ('05 6-24 h'), ('06 >24 h'), ('07 no delivered_at')) AS t(bucket)),
+      lb AS (
+        SELECT s.late_bounce_at,
+               (SELECT max(a.verdict_at)
+                FROM shipment_attempt a
+                WHERE a.shipment_id = s.id
+                  AND a.verdict IS NOT NULL AND a.category IS NULL
+                  AND a.verdict_at <= s.late_bounce_at) AS delivered_at
+        FROM shipment s
+        WHERE s.late_bounce_at >= (((now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day')) AT TIME ZONE 'Europe/Moscow')),
+      bucketed AS (
+        SELECT CASE
+                 WHEN delivered_at IS NULL                                  THEN '07 no delivered_at'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '1 minute'   THEN '01 <1 min'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '5 minutes'  THEN '02 1-5 min'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '1 hour'     THEN '03 5-60 min'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '6 hours'    THEN '04 1-6 h'
+                 WHEN late_bounce_at - delivered_at < INTERVAL '24 hours'   THEN '05 6-24 h'
+                 ELSE '06 >24 h' END AS bucket
+        FROM lb)
+      SELECT b.bucket, count(x.bucket) AS late_bounces
+      FROM buckets b LEFT JOIN bucketed x ON x.bucket = b.bucket
+      GROUP BY 1 ORDER BY 1
+    template-tags:
+      days:
+        id: 1645ba32-886a-4dc0-99c5-96cbaf9b56e8
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  graph.dimensions:
+  - bucket
+  graph.metrics:
+  - late_bounces
+  graph.y_axis.title_text: Late bounces
+parameters: []
