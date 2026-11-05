@@ -290,3 +290,17 @@ def test_stacked_dashcard_legend_shows_bare_labels(dashcard):
     # series.ts: name = series_settings[<key>].title ?? "<card name>: <label>".
     for key, entry in dashcard["visualization_settings"].get("series_settings", {}).items():
         assert entry.get("title") == key.partition(": ")[2], f"{dashcard['key']}: {key!r}"
+
+
+def test_dealer_status_card_counts_bulk_packs_in_vouchers():
+    sql = _sql(_card("pca-orders-by-status-dealer"))
+    assert "FROM dealer_pack p" in sql
+    assert "p.status <> 'CANCELLED'" in sql
+    assert "sum(quantity)" in sql
+
+
+def test_dealer_by_client_card_adds_delivered_bulk_series():
+    sql = _sql(_card("pca-certificate-face-value-by-day-by-client-dealer"))
+    assert "FROM dealer_pack p" in sql
+    assert "p.status = 'DELIVERED'" in sql
+    assert "'Dealer · Bulk — '" in sql

@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-by-status-dealer
 name: Dealer · Orders over time by status
-description: Dealer client orders per creation bucket, segmented by the status they are in now (cohort view, not a transition log). In flight - IN_QUEUE, IN_PROGRESS; success - COMPLETED; failures - FAILED, REJECTED. A status outside this list still gets its own series. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow.
+description: Dealer client orders per creation bucket, segmented by the status they are in now (cohort view, not a transition log). In flight - IN_QUEUE, IN_PROGRESS; success - COMPLETED; failures - FAILED, REJECTED. A status outside this list still gets its own series. Bulk orders (dealer packs, which have no dealer_order row) appear as one extra series per client, "Bulk — <client>", bucketed by creation time and valued in vouchers rather than orders; cancelled packs are excluded. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -15,6 +15,8 @@ dataset_query:
     native: |
       -- Database 3 (dealer). Client orders per creation bucket by current status: dealer_order.created_at
       -- (timestamptz), Europe/Moscow. Statuses per dealer_order_status_valid.
+      -- Bulk orders (dealer_pack) have no dealer_order row, so they are a separate series per client, valued in
+      -- vouchers (sum of dealer_pack_line.quantity), not comparable with the order counts. Cancelled packs are left out.
       WITH spine AS (
         SELECT generate_series(
           date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
@@ -22,14 +24,24 @@ dataset_query:
           {{granularity}}::text::interval) AS h),
       o AS (
         SELECT date_bin({{granularity}}::text::interval, (created_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               1 AS n,
                status
         FROM dealer_order
-        WHERE created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')),
+        WHERE created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
+        UNION ALL
+        SELECT date_bin({{granularity}}::text::interval, (p.created_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               l.qty AS n,
+               'Bulk — ' || CASE WHEN c.name = 'sber' THEN 'Sber' ELSE initcap(c.name) END AS status
+        FROM dealer_pack p
+        JOIN (SELECT pack_id, sum(quantity) AS qty FROM dealer_pack_line GROUP BY 1) l ON l.pack_id = p.id
+        JOIN api_client c ON c.client_id = p.client_id
+        WHERE p.status <> 'CANCELLED'
+          AND p.created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')),
       statuses AS (
         SELECT unnest(ARRAY['IN_QUEUE', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'REJECTED']) AS status
         UNION
         SELECT DISTINCT status FROM o)
-      SELECT s.h AS day, st.status, count(o.h) AS orders
+      SELECT s.h AS day, st.status, COALESCE(sum(o.n), 0) AS orders
       FROM spine s
       CROSS JOIN statuses st
       LEFT JOIN o ON o.h = s.h AND o.status = st.status
@@ -55,7 +67,7 @@ visualization_settings:
   graph.metrics:
   - orders
   graph.x_axis.scale: timeseries
-  graph.y_axis.title_text: Orders
+  graph.y_axis.title_text: Orders (bulk in vouchers)
   stackable.stack_type: stacked
   series_settings:
     IN_QUEUE:

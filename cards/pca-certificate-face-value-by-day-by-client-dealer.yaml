@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day-by-client-dealer
 name: Dealer · Certificate face value over time by client, ₽
-description: Face value of COMPLETED dealer orders per bucket, Europe/Moscow, stacked by API client. Read from the dealer database. RUB in rubles; any other currency is its own series labelled with its currency code.
+description: Face value of COMPLETED dealer orders per bucket, Europe/Moscow, stacked by API client. Read from the dealer database. Bulk orders (dealer packs) are added as "Dealer · Bulk — <client>" series (lines of DELIVERED packs, bucketed by delivery time). RUB in rubles; any other currency is its own series labelled with its currency code.
 collection: pear-cider-automated
 type: question
 display: bar
@@ -19,6 +19,8 @@ dataset_query:
       -- face_amount is BIGINT minor units: RUB is shown in rubles (/ 100.0). Another currency is never
       -- added to rubles: it becomes its own series, labelled with its currency code. Orders without a face
       -- value (face_amount NULL, a NONE-kind SKU) are not counted.
+      -- Bulk orders: dealer_pack_line of DELIVERED packs (face_amount * quantity), bucketed on delivered_at, own
+      -- "Dealer · Bulk — <client>" series. Packs have no dealer_order row.
       -- Bucketed on completed_at (timestamptz) in Europe/Moscow. Every bucket of the window is returned for
       -- every series, with 0 where nothing completed.
       WITH spine AS (
@@ -36,6 +38,17 @@ dataset_query:
         WHERE o.status = 'COMPLETED'
           AND o.face_amount IS NOT NULL
           AND o.completed_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
+        UNION ALL
+        SELECT date_bin({{granularity}}::text::interval, (p.delivered_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS day,
+               l.face_amount * l.quantity AS face_amount,
+               'Dealer · Bulk — ' || CASE WHEN c.name = 'sber' THEN 'Sber' ELSE initcap(c.name) END
+                 || CASE WHEN l.face_currency = 'RUB' THEN '' ELSE ' (' || COALESCE(l.face_currency, 'no currency') || ')' END AS client
+        FROM dealer_pack p
+        JOIN dealer_pack_line l ON l.pack_id = p.id
+        JOIN api_client c ON c.client_id = p.client_id
+        WHERE p.status = 'DELIVERED'
+          AND l.face_amount IS NOT NULL
+          AND p.delivered_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
       ),
       series AS (SELECT DISTINCT client FROM o)
       SELECT s.day, x.client, COALESCE(sum(o.face_amount), 0) / 100.0 AS face_value
