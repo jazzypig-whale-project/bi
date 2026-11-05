@@ -1,7 +1,7 @@
 kind: card
 key: pca-orders-by-day-dealer
 name: Dealer · Client orders over time
-description: Dealer client orders created per bucket, every status, Europe/Moscow. Read from the dealer database; stacked on the legacy client orders chart. Buckets follow the Granularity filter.
+description: Dealer client orders created per bucket, every status, Europe/Moscow. Read from the dealer database. Buckets follow the Granularity filter.
 collection: pear-cider-automated
 type: question
 display: bar

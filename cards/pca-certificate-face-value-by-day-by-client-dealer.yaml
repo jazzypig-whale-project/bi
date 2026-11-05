@@ -1,7 +1,7 @@
 kind: card
 key: pca-certificate-face-value-by-day-by-client-dealer
 name: Dealer · Certificate face value over time by client, ₽
-description: Face value of COMPLETED dealer orders per bucket, Europe/Moscow, stacked by API client. Read from the dealer database; stacked on the legacy by-client chart. RUB in rubles; any other currency is its own series labelled with its currency code.
+description: Face value of COMPLETED dealer orders per bucket, Europe/Moscow, stacked by API client. Read from the dealer database. RUB in rubles; any other currency is its own series labelled with its currency code.
 collection: pear-cider-automated
 type: question
 display: bar

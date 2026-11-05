@@ -1,7 +1,7 @@
 kind: card
 key: pca-flow-by-hour-dealer
 name: Dealer · Flow over time — ordered
-description: Dealer orders created per bucket (all statuses), Europe/Moscow. Read from the dealer database; stacked on the legacy Flow chart as the Dealer · Ordered line. Idle buckets render as zero.
+description: Dealer orders created per bucket (all statuses), Europe/Moscow. Read from the dealer database; stacked on the Flow chart as the Dealer · Ordered line. Idle buckets render as zero.
 collection: pear-cider-automated
 type: question
 display: line

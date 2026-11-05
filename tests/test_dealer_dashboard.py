@@ -29,7 +29,6 @@ DEALER_EXCLUDED: set[str] = {
     "pca-completion-time-percentiles",
     "pca-sales-distribution-by-partner",
     "pca-certificate-face-value-by-day-by-client",
-    "pca-flow-by-hour",
     "pca-orders-in-progress",
     "pca-time-since-last-order-by-partner",
     "pca-orders-by-day-legacy",
@@ -162,62 +161,42 @@ def test_by_client_twin_never_mixes_currencies():
     assert "GROUP BY 1, 2" in sql
 
 
-# Dashcards whose series labels come from data (client names, top domains): per-label legend titles
-# cannot cover future values, so the twin sits next to the legacy card instead of being stacked onto it.
-PAIRED_INSTEAD_OF_STACKED = {
-    "dc-certificate-face-value-by-day-by-client": "pca-certificate-face-value-by-day-by-client-dealer",
-    "dc-emails-sent-by-hour-by-domain": "pca-emails-sent-by-hour-by-domain-dealer",
-    "dc-emails-failed-by-hour-by-domain": "pca-emails-failed-by-hour-by-domain-dealer",
-}
+def _legacy_of(twin_key):
+    return LEGACY_OF.get(twin_key, twin_key.removesuffix("-dealer"))
 
 
-@pytest.mark.parametrize("legacy_key, twin_card", sorted(PAIRED_INSTEAD_OF_STACKED.items()))
-def test_data_labelled_twin_sits_beside_its_legacy_dashcard(legacy_key, twin_card):
-    by_key = {d["key"]: d for d in _dashcards()}
-    legacy, twin = by_key[legacy_key], by_key[f"{legacy_key}-dealer"]
-    assert twin["card"] == twin_card
-    assert not legacy.get("series") and not twin.get("series")
-    assert (legacy["col"], legacy["size_x"]) == (0, 12)
-    assert (twin["tab"], twin["row"], twin["col"], twin["size_x"], twin["size_y"]) == (
-        legacy["tab"], legacy["row"], 12, 12, legacy["size_y"])
-    for dc in (legacy, twin):
-        mappings = dc["parameter_mappings"]
-        assert all("card" not in m for m in mappings), dc["key"]
-        assert {m["parameter_id"] for m in mappings} == {"821ec3b1", "3f9a20c7"}, dc["key"]
-        assert dc["visualization_settings"].get("card.title"), dc["key"]
-        assert "series_settings" not in dc["visualization_settings"], dc["key"]
+def _dashboard_cards():
+    return {key for dc in _dashcards() for key in [dc.get("card"), *(dc.get("series") or [])] if key}
 
 
-def test_flow_excludes_dealer_only_from_ordered_stream():
+# The Flow card stays: its Requested/Produced/Sent streams have no dealer counterpart.
+KEPT_LEGACY_TWINS = {"pca-flow-by-hour-dealer"}
+
+
+@pytest.mark.parametrize("key", sorted(set(_dealer_twins()) - KEPT_LEGACY_TWINS))
+def test_legacy_counterpart_is_archived_and_off_the_dashboard(key):
+    # Every partner now goes through the dealer: a legacy card with a dealer twin is retired.
+    legacy = _legacy_of(key)
+    assert _card(legacy)["archived"] is True, legacy
+    assert legacy not in _dashboard_cards(), legacy
+    assert key in _dashboard_cards(), key
+
+
+def test_dashboard_shows_no_archived_card():
+    archived = {key for key in _dashboard_cards() if _card(key)["archived"]}
+    assert archived == set()
+
+
+def test_flow_has_no_legacy_ordered_stream():
     sql = _sql(_card("pca-flow-by-hour"))
-    assert sql.count(DEALER_CLIENT) == 1
-    ordered_branch = sql.split("SELECT 'Legacy · Ordered'")[1]
-    assert DEALER_CLIENT in ordered_branch.split("series AS")[0]
+    assert "Legacy · Ordered" not in sql
+    assert "FROM order_" not in sql
+    assert DEALER_CLIENT not in sql
 
 
 def test_flow_dashcard_stacks_the_twin():
     dc = next(d for d in _dashcards() if d["key"] == "dc-flow-by-hour")
     assert dc["series"] == ["pca-flow-by-hour-dealer"]
-
-
-def _pair(legacy_dashcard_key, twin_dashcard_key):
-    by_key = {d["key"]: d for d in _dashcards()}
-    return by_key[legacy_dashcard_key], by_key[twin_dashcard_key]
-
-
-def test_orders_in_progress_pair_sits_side_by_side():
-    legacy, twin = _pair("dc-orders-in-progress", "dc-orders-in-progress-dealer")
-    assert (legacy["row"], legacy["col"], legacy["size_x"]) == (13, 12, 6)
-    assert (twin["row"], twin["col"], twin["size_x"], twin["size_y"]) == (13, 18, 6, legacy["size_y"])
-    assert twin["card"] == "pca-orders-in-progress-dealer"
-    assert _card("pca-orders-in-progress")["name"] == "Legacy · Orders in progress"
-
-
-def test_time_since_last_order_pair_sits_side_by_side():
-    legacy, twin = _pair("dc-time-since-last-order-by-partner", "dc-time-since-last-order-by-partner-dealer")
-    assert (legacy["row"], legacy["col"], legacy["size_x"]) == (20, 0, 12)
-    assert (twin["row"], twin["col"], twin["size_x"], twin["size_y"]) == (20, 12, 12, legacy["size_y"])
-    assert _card("pca-time-since-last-order-by-partner")["name"] == "Legacy · Time since last order, by partner"
 
 
 def test_dealer_failed_emails_count_terminal_failures_only():
@@ -238,12 +217,6 @@ def test_delivery_twin_returns_legacy_columns_in_order():
     assert -1 not in positions and positions == sorted(positions), positions
 
 
-def test_delivery_pair_sits_side_by_side():
-    legacy, twin = _pair("dc-emails-delivery-by-domain", "dc-emails-delivery-by-domain-dealer")
-    assert (legacy["row"], legacy["col"], legacy["size_x"]) == (14, 0, 12)
-    assert (twin["row"], twin["col"], twin["size_x"], twin["size_y"]) == (14, 12, 12, legacy["size_y"])
-
-
 def test_dealer_late_bounces_ignore_late_delivered_at():
     # late_delivered_at = delivered after FAILED (Shipment.stampLateDelivered), not a late-bounce resolution.
     for key in ("pca-emails-late-bounces-unresolved-dealer", "pca-emails-late-bounces-by-day-dealer",
@@ -257,23 +230,14 @@ def test_lag_twin_uses_legacy_bucket_labels():
         assert f"'{label}'" in legacy and f"'{label}'" in twin, label
 
 
-def test_late_bounce_unresolved_pair_and_series():
-    legacy, twin = _pair("dc-emails-late-bounces-unresolved", "dc-emails-late-bounces-unresolved-dealer")
-    assert (legacy["row"], legacy["col"], legacy["size_x"]) == (23, 0, 3)
-    assert (twin["row"], twin["col"], twin["size_x"], twin["size_y"]) == (23, 3, 3, legacy["size_y"])
+def test_late_bounce_dashcards_show_the_dealer_card_alone():
     by_key = {d["key"]: d for d in _dashcards()}
-    assert by_key["dc-emails-late-bounces-by-day"]["series"] == ["pca-emails-late-bounces-by-day-dealer"]
-    assert by_key["dc-emails-late-bounce-lag"]["series"] == ["pca-emails-late-bounce-lag-dealer"]
-
-
-def test_migration_section_on_overview():
-    by_key = {d["key"]: d for d in _dashcards()}
-    heading = by_key["dc-heading-overview-migration"]
-    assert (heading["tab"], heading["row"], heading["visualization_settings"]["text"]) == (
-        "overview", 33, "Migration to dealer")
-    assert by_key["dc-dealer-clients-switched"]["card"] == "pca-dealer-clients-switched"
-    assert by_key["dc-orders-by-day"]["series"] == ["pca-orders-by-day-dealer"]
-    assert _card("pca-dealer-clients-switched")["dataset_query"]["database"] == DEALER_DB
+    for dc_key, card in (("dc-emails-late-bounces-by-day", "pca-emails-late-bounces-by-day-dealer"),
+                         ("dc-emails-late-bounce-lag", "pca-emails-late-bounce-lag-dealer"),
+                         ("dc-orders-by-day", "pca-orders-by-day-dealer")):
+        dc = by_key[dc_key]
+        assert (dc["card"], dc["series"]) == (card, []), dc_key
+        assert all("card" not in m for m in dc["parameter_mappings"]), dc_key
 
 
 def test_dealer_clients_switched_follows_twin_conventions():
