@@ -1,0 +1,31 @@
+kind: card
+key: pca-production-request-oldest-open
+name: Oldest open production request
+description: 'Age of the oldest production request still in a non-final status (PENDING, PLACING, PRODUCING, AWAITING_INTAKE), counted from its creation. Shown as minutes under a day ("42 min"), days and hours from a day up ("11 d 1 h"); "0 min" when none is open. Age counts from created_at, not from the last status change (the table has no such timestamp). A request stuck for good keeps the value high until someone handles it — that is the point. Live value, no time window.'
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 2 (legacy orchestrator). Pool and production exist only here. Demand from dealer sales
+      -- reaches them through orders of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002,
+      -- so it is included; the dealer DB has no equivalent to twin.
+      -- production_request.created_at is naive UTC, so "now" must be naive UTC too.
+      WITH oldest AS (
+        SELECT COALESCE(floor(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'UTC') - min(created_at))) / 60), 0)::bigint AS minutes
+        FROM production_request
+        WHERE status NOT IN ('CLOSED', 'FAILED')
+      )
+      SELECT CASE
+        WHEN minutes < 1440 THEN minutes || ' min'
+        ELSE (minutes / 1440) || ' d ' || ((minutes % 1440) / 60) || ' h'
+      END AS age
+      FROM oldest
+visualization_settings: {}
+parameters: []

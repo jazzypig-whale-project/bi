@@ -243,6 +243,9 @@ cards:
   pca-orders-by-status-legacy:
     id: 191
     entity_id: Goddlw4jhZkfT4Mm9E0kd
+  pca-production-request-oldest-open:
+    id: 200
+    entity_id: u6LQmP-LlBdZraCMlHjpK
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -306,6 +309,7 @@ dashboards:
       dc-time-since-last-order-by-partner-dealer: 193
       dc-heading-overview-pipeline: 87
       dc-flow-by-hour: 64
+      dc-orders-by-day: 205
       dc-certificate-face-value-by-day-by-provider: 124
       dc-certificate-face-value-by-day-by-client-dealer: 199
       dc-heading-orders-statuses: 202
@@ -324,10 +328,13 @@ dashboards:
       dc-emails-delivery-by-domain-dealer: 197
       dc-heading-emails-late-bounces: 119
       dc-emails-late-bounces-unresolved-dealer: 198
+      dc-emails-late-bounces-by-day: 206
+      dc-emails-late-bounce-lag: 207
       dc-heading-production-produced: 115
       dc-certificates-produced-by-day: 116
       dc-produced-face-value-by-day-by-provider: 125
       dc-heading-production-requests: 94
+      dc-production-request-oldest-open: 208
       dc-production-requests-by-hour: 76
       dc-heading-production-pool: 95
       dc-certificates-in-pool-by-denomination: 77
@@ -355,8 +362,5 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-orders-by-day: 205
-      dc-emails-late-bounces-by-day: 206
-      dc-emails-late-bounce-lag: 207
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
