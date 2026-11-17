@@ -246,6 +246,9 @@ cards:
   pca-production-request-oldest-open:
     id: 200
     entity_id: u6LQmP-LlBdZraCMlHjpK
+  pca-production-queue-length-over-time:
+    id: 201
+    entity_id: VQIVsNmOUrk2SwKY2fFco
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -362,5 +365,6 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
+      dc-production-queue-length-over-time: 209
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

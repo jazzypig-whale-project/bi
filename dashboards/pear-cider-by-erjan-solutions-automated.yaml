@@ -703,9 +703,30 @@ dashcards:
       - granularity
   series: []
   inline_parameters: []
-- key: dc-heading-production-pool
+- key: dc-production-queue-length-over-time
+  card: pca-production-queue-length-over-time
   tab: production
   row: 26
+  col: 0
+  size_x: 24
+  size_y: 7
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
+  series: []
+  inline_parameters: []
+- key: dc-heading-production-pool
+  tab: production
+  row: 33
   col: 0
   size_x: 24
   size_y: 1
@@ -717,7 +738,7 @@ dashcards:
 - key: dc-certificates-in-pool-by-denomination
   card: pca-certificates-in-pool-by-denomination
   tab: production
-  row: 27
+  row: 34
   col: 0
   size_x: 8
   size_y: 7
@@ -728,7 +749,7 @@ dashcards:
 - key: dc-production-queue-by-denomination
   card: pca-production-queue-by-denomination
   tab: production
-  row: 27
+  row: 34
   col: 8
   size_x: 8
   size_y: 7
@@ -739,7 +760,7 @@ dashcards:
 - key: dc-pool-total-value
   card: pca-pool-total-value
   tab: production
-  row: 27
+  row: 34
   col: 16
   size_x: 8
   size_y: 7
@@ -749,7 +770,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-capacity
   tab: production
-  row: 34
+  row: 41
   col: 0
   size_x: 24
   size_y: 1
@@ -761,7 +782,7 @@ dashcards:
 - key: dc-capacity-by-hour
   card: pca-capacity-by-hour
   tab: production
-  row: 35
+  row: 42
   col: 0
   size_x: 24
   size_y: 7
@@ -781,7 +802,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-devices
   tab: production
-  row: 42
+  row: 49
   col: 0
   size_x: 24
   size_y: 1
@@ -793,7 +814,7 @@ dashcards:
 - key: dc-devices-total
   card: pca-devices-total
   tab: production
-  row: 43
+  row: 50
   col: 0
   size_x: 8
   size_y: 3
@@ -804,7 +825,7 @@ dashcards:
 - key: dc-devices-online
   card: pca-devices-online
   tab: production
-  row: 43
+  row: 50
   col: 8
   size_x: 8
   size_y: 3
@@ -815,7 +836,7 @@ dashcards:
 - key: dc-devices-need-switch
   card: pca-devices-need-switch
   tab: production
-  row: 43
+  row: 50
   col: 16
   size_x: 8
   size_y: 3
@@ -826,7 +847,7 @@ dashcards:
 - key: dc-devices-by-state
   card: pca-devices-by-state
   tab: production
-  row: 46
+  row: 53
   col: 0
   size_x: 24
   size_y: 7
@@ -836,7 +857,7 @@ dashcards:
   inline_parameters: []
 - key: dc-heading-production-accounts
   tab: production
-  row: 53
+  row: 60
   col: 0
   size_x: 24
   size_y: 1
@@ -848,7 +869,7 @@ dashcards:
 - key: dc-accounts-by-slot-status
   card: pca-accounts-by-slot-status
   tab: production
-  row: 54
+  row: 61
   col: 0
   size_x: 12
   size_y: 7
@@ -859,7 +880,7 @@ dashcards:
 - key: dc-accounts-by-validation-status
   card: pca-accounts-by-validation-status
   tab: production
-  row: 54
+  row: 61
   col: 12
   size_x: 12
   size_y: 7

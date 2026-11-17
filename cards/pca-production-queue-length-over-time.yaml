@@ -1,0 +1,76 @@
+kind: card
+key: pca-production-queue-length-over-time
+name: Production queue length over time
+description: 'Production requests not yet finished (PENDING, PLACING, PRODUCING, AWAITING_INTAKE — not only PENDING, since requests return to PENDING after retries) at each moment. Rising means production is falling behind, falling means it is catching up. Rebuilt from timestamps: production_request has no exit time, so a finished request counts as leaving at its last certificate or production task; about 2% of finished requests have neither and are not counted. Each point is a snapshot at the start of its bucket (with 1 day, the last point is today 00:00). Buckets follow the Granularity filter, Europe/Moscow.'
+collection: pear-cider-automated
+type: question
+display: line
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 2 (legacy orchestrator). Pool and production exist only here. Demand from dealer sales
+      -- reaches them through orders of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002,
+      -- so it is included; the dealer DB has no equivalent to twin.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      -- Closed requests created more than 30 days before the window are ignored (p99 time-to-close is ~3 days).
+      lo AS (SELECT (min(h) AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC') - INTERVAL '30 days' AS t FROM spine),
+      pr AS (
+        SELECT pr_id, created_at, status FROM production_request, lo
+        WHERE status NOT IN ('CLOSED', 'FAILED') OR created_at >= lo.t),
+      c AS (SELECT production_request_id AS id, max(created_at) AS at FROM certificate
+            WHERE production_request_id IN (SELECT pr_id FROM pr) GROUP BY 1),
+      t AS (SELECT production_request_id AS id, max(GREATEST(succeeded_at, started_at)) AS at FROM task
+            WHERE purpose = 'PRODUCTION' AND production_request_id IN (SELECT pr_id FROM pr) GROUP BY 1),
+      iv AS (
+        SELECT pr.created_at AS in_at,
+               CASE WHEN pr.status IN ('CLOSED', 'FAILED') THEN COALESCE(GREATEST(c.at, t.at), pr.created_at) END AS out_at
+        FROM pr LEFT JOIN c ON c.id = pr.pr_id LEFT JOIN t ON t.id = pr.pr_id),
+      -- Sweep: +1 on entry, -1 on exit; a delta at ts lands on the next bucket boundary, so point h counts ts < h.
+      delta AS (
+        SELECT in_at AS ts, 1 AS d FROM iv
+        UNION ALL
+        SELECT out_at, -1 FROM iv WHERE out_at IS NOT NULL),
+      bucketed AS (
+        SELECT date_bin({{granularity}}::text::interval, (ts AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03')
+                 + {{granularity}}::text::interval AS h,
+               sum(d) AS d
+        FROM delta GROUP BY 1)
+      SELECT s.h AS at,
+             sum(COALESCE(b.d, 0)) OVER (ORDER BY s.h)
+               + (SELECT COALESCE(sum(d), 0) FROM bucketed WHERE h < (SELECT min(h) FROM spine)) AS open_requests
+      FROM spine s
+      LEFT JOIN bucketed b ON b.h = s.h
+      ORDER BY 1
+    template-tags:
+      days:
+        id: 9336df6f-deda-4acb-b402-43885f2c666c
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 33811e64-1936-40ba-a36c-c5606d94214d
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - at
+  graph.metrics:
+  - open_requests
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Open requests
+  series_settings:
+    open_requests:
+      color: '#509EE3'
+parameters: []
