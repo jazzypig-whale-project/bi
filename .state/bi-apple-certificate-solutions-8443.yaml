@@ -303,7 +303,6 @@ dashboards:
       dc-certificate-face-value-by-day: 54
       dc-heading-overview-live-state: 85
       dc-production-queue-depth: 55
-      dc-certificates-sent-window: 56
       dc-time-since-last-certificate: 57
       dc-orders-in-progress-dealer: 192
       dc-capacity-now-quota: 61
@@ -318,6 +317,7 @@ dashboards:
       dc-heading-orders-statuses: 202
       dc-orders-by-status-dealer: 204
       dc-heading-orders-certificates: 91
+      dc-certificates-sent-window: 56
       dc-certificates-sent-by-hour: 71
       dc-heading-orders-partners: 92
       dc-average-check-by-day: 73
@@ -339,6 +339,7 @@ dashboards:
       dc-heading-production-requests: 94
       dc-production-request-oldest-open: 208
       dc-production-requests-by-hour: 76
+      dc-production-queue-length-over-time: 209
       dc-heading-production-pool: 95
       dc-certificates-in-pool-by-denomination: 77
       dc-production-queue-by-denomination: 78
@@ -365,6 +366,6 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-production-queue-length-over-time: 209
+      dc-pool-total-value-overview: 210
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
