@@ -15,9 +15,9 @@ services:
     build:
       context: ./nginx
       args:
-        NGINX_CERTBOT_BASE_TAG: ${NGINX_CERTBOT_BASE_TAG:-6.2.0}
+        NGINX_CERTBOT_BASE_TAG: ${NGINX_CERTBOT_BASE_TAG:-6.2.0-nginx1.31.9}
         CERTBOT_DNS_SPACESHIP_VERSION: ${CERTBOT_DNS_SPACESHIP_VERSION:-1.0.4}
-    image: bi-nginx-certbot-spaceship:${NGINX_CERTBOT_BASE_TAG:-6.2.0}
+    image: bi-nginx-certbot-spaceship:${NGINX_CERTBOT_BASE_TAG:-6.2.0-nginx1.31.9}
     restart: unless-stopped
     depends_on:
       metabase:
