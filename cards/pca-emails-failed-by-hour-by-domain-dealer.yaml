@@ -1,7 +1,7 @@
 kind: card
 key: pca-emails-failed-by-hour-by-domain-dealer
 name: Dealer · Failed emails over time, by recipient domain
-description: "Dealer shipments that failed terminally (status FAILED) per bucket over the Days window, by recipient domain — top 7 domains get their own series, the rest are Dealer · Other. Anchored to sent_at when known, else created_at. BOUNCED is a retryable state and is not counted. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow."
+description: "Dealer shipments that failed terminally (status FAILED) per bucket over the Days window, by recipient domain — top 7 domains get their own series, the rest are Other. Anchored to sent_at when known, else created_at. BOUNCED is a retryable state and is not counted. Read from the dealer database. Buckets follow the Granularity filter, Europe/Moscow."
 collection: pear-cider-automated
 type: question
 display: bar
@@ -38,7 +38,7 @@ dataset_query:
         SELECT domain AS series FROM top_domains
         UNION ALL
         SELECT 'Other' WHERE (SELECT count(DISTINCT domain) FROM failed) > 7)
-      SELECT s.h AS hour, 'Dealer · ' || se.series AS domain, count(l.series) AS emails
+      SELECT s.h AS hour, se.series AS domain, count(l.series) AS emails
       FROM spine s
       CROSS JOIN series se
       LEFT JOIN labelled l ON l.h = s.h AND l.series = se.series
@@ -67,6 +67,6 @@ visualization_settings:
   graph.y_axis.title_text: Failed emails
   stackable.stack_type: stacked
   series_settings:
-    Dealer · Other:
+    Other:
       color: '#C7CDD3'
 parameters: []

@@ -24,7 +24,7 @@ dataset_query:
         SELECT date_bin({{granularity}}::text::interval, (created_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h
         FROM dealer_order
         WHERE created_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow'))
-      SELECT s.h AS day, 'Dealer · Orders' AS source, count(o.h) AS orders
+      SELECT s.h AS day, 'Orders' AS source, count(o.h) AS orders
       FROM spine s
       LEFT JOIN o ON o.h = s.h
       GROUP BY 1, 2

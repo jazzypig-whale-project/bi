@@ -303,4 +303,4 @@ def test_dealer_by_client_card_adds_delivered_bulk_series():
     sql = _sql(_card("pca-certificate-face-value-by-day-by-client-dealer"))
     assert "FROM dealer_pack p" in sql
     assert "p.status = 'DELIVERED'" in sql
-    assert "'Dealer · Bulk — '" in sql
+    assert "'Bulk — '" in sql

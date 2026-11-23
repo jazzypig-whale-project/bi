@@ -23,7 +23,7 @@ dataset_query:
           {{granularity}}::text::interval) AS h),
       mail AS (
         SELECT date_bin({{granularity}}::text::interval, (a.sent_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
-               'Dealer · ' || lower(split_part(a.from_address, '@', 2)) AS domain
+               lower(split_part(a.from_address, '@', 2)) AS domain
         FROM shipment_attempt a
         WHERE a.sent_at >= (date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03') AT TIME ZONE 'Europe/Moscow')
           AND a.from_address IS NOT NULL),
