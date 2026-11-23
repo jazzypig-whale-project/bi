@@ -249,6 +249,9 @@ cards:
   pca-production-queue-length-over-time:
     id: 201
     entity_id: VQIVsNmOUrk2SwKY2fFco
+  pca-production-request-last-success:
+    id: 202
+    entity_id: HlKApP6kXmy7pbq4HL6L2
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -303,6 +306,7 @@ dashboards:
       dc-certificate-face-value-by-day: 54
       dc-heading-overview-live-state: 85
       dc-production-queue-depth: 55
+      dc-pool-total-value-overview: 210
       dc-time-since-last-certificate: 57
       dc-orders-in-progress-dealer: 192
       dc-capacity-now-quota: 61
@@ -366,6 +370,6 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-pool-total-value-overview: 210
+      dc-production-request-last-success: 211
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

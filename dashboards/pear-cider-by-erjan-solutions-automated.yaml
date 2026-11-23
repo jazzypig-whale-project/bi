@@ -693,6 +693,17 @@ dashcards:
   parameter_mappings: []
   series: []
   inline_parameters: []
+- key: dc-production-request-last-success
+  card: pca-production-request-last-success
+  tab: production
+  row: 23
+  col: 12
+  size_x: 12
+  size_y: 3
+  visualization_settings: {}
+  parameter_mappings: []
+  series: []
+  inline_parameters: []
 - key: dc-production-requests-by-hour
   card: pca-production-requests-by-hour
   tab: production

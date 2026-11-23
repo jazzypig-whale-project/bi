@@ -1,0 +1,40 @@
+kind: card
+key: pca-production-request-last-success
+name: Last successful production request
+description: 'Time since the most recent production request that finished successfully (status CLOSED). production_request has no finish timestamp, so the finish time is inferred the same way as in "Production queue length over time": the later of the request''s last certificate and its last production task. A CLOSED request with neither (about 2%) is ignored. Shown as minutes under a day ("42 min"), days and hours from a day up ("11 d 1 h"); "never" when nothing has finished. Read together with "Oldest open production request": old open request plus old success means production is stalled. Live value, no time window.'
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 2 (legacy orchestrator). Pool and production exist only here. Demand from dealer sales
+      -- reaches them through orders of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002,
+      -- so it is included; the dealer DB has no equivalent to twin.
+      -- All timestamps are naive UTC, so "now" must be naive UTC too.
+      WITH last AS (
+        SELECT GREATEST(
+          (SELECT max(c.created_at) FROM certificate c
+             JOIN production_request pr ON pr.pr_id = c.production_request_id
+            WHERE pr.status = 'CLOSED'),
+          (SELECT max(GREATEST(t.succeeded_at, t.started_at)) FROM task t
+             JOIN production_request pr ON pr.pr_id = t.production_request_id
+            WHERE t.purpose = 'PRODUCTION' AND pr.status = 'CLOSED')
+        ) AS at
+      ),
+      m AS (
+        SELECT floor(EXTRACT(EPOCH FROM ((now() AT TIME ZONE 'UTC') - at)) / 60)::bigint AS minutes FROM last
+      )
+      SELECT CASE
+        WHEN minutes IS NULL THEN 'never'
+        WHEN minutes < 1440 THEN minutes || ' min'
+        ELSE (minutes / 1440) || ' d ' || ((minutes % 1440) / 60) || ' h'
+      END AS age
+      FROM m
+visualization_settings: {}
+parameters: []
