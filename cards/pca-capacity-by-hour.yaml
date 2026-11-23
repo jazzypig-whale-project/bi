@@ -1,7 +1,7 @@
 kind: card
 key: pca-capacity-by-hour
 name: Quota headroom over time (24h rotation ceiling)
-description: Sums remaining quota across every account with validation_status currently GOOD that is attached to a device (up to app.registry.max-accounts-per-device = 4 per device), not only the one currently signed in. Accounts on an operator-blocked number (any account on that SIM hit BLOCKED_BY_OPERATOR or NO_PAYMENT_METHOD_AVAILABLE, open-ended, until cleared) and archived accounts count as 0 in all three series, hour by hour from their real timestamps. A device runs one account at a time, so this total is reachable only if devices rotate through all their accounts over 24h — it is not certificates issuable this instant. Fleet readiness and account validation_status are not historised, so this is an upper bound — today's account status and device attachment are applied retroactively to every past hour, and no device-state gate is applied at all (by design — this card carries no fleet gates). The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Sampled once per the selected Granularity interval. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars measure a different question — certificates placeable right this instant, gated by device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap, and restricted to only the active account per device — so they read several times lower and are not the last point of this chart. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance.
+description: Sums remaining quota across every account with validation_status currently GOOD that is attached to a device (up to app.registry.max-accounts-per-device = 4 per device), not only the one currently signed in. Accounts on an operator-blocked number (any account on that SIM hit BLOCKED_BY_OPERATOR or NO_PAYMENT_METHOD_AVAILABLE, open-ended, until cleared) and archived accounts count as 0 in all four series, hour by hour from their real timestamps. A device runs one account at a time, so this total is reachable only if devices rotate through all their accounts over 24h — it is not certificates issuable this instant. Fleet readiness and account validation_status are not historised, so this is an upper bound — today's account status and device attachment are applied retroactively to every past hour, and no device-state gate is applied at all (by design — this card carries no fleet gates). The balance series also does not subtract open RESERVED NUMBER reservations from balance_ledger.balance_after (unlike Capacity now — quota + cooldown + balance), which further inflates it relative to that scalar. Sampled once per the selected Granularity interval. Shows at most the last 14 days regardless of the Days filter. The Capacity now scalars measure a different question — certificates placeable right this instant, gated by device IDLE, agent online, validation, cooldown, holds, backoff, concurrency cap, and restricted to only the active account per device — so they read several times lower and are not the last point of this chart. The online series counts only accounts whose device is not OFFLINE/DISABLED and whose agent is ONLINE and not disabled; that state is not historised, so today's online set is applied to every past hour. Series ordering matches the scalars in both places, because adding a cap can only lower a value — Quota is at least Quota + cooldown, which is at least Quota + cooldown + balance, which is at least Quota + cooldown + balance + online.
 collection: pear-cider-automated
 type: question
 display: line
@@ -35,7 +35,16 @@ dataset_query:
         -- status. validation_status is not historised, so this is today's set applied to every
         -- past hour (see card description). No device-state gate: this card carries no fleet
         -- gates by design.
-        SELECT acc.account_id, acc.current_number_id AS number_id, acc.archived_at
+        SELECT acc.account_id, acc.current_number_id AS number_id, acc.archived_at,
+               -- Online = device not OFFLINE/DISABLED and its agent ONLINE and not disabled (current
+               -- state only). Dangling device/agent -> EXISTS is false -> offline.
+               EXISTS (SELECT 1
+                       FROM device d
+                       JOIN agent a ON a.agent_id = d.agent_id
+                       WHERE d.device_id = acc.device_id
+                         AND d.state NOT IN ('OFFLINE', 'DISABLED')
+                         AND a.status = 'ONLINE'
+                         AND a.disabled_at IS NULL) AS is_online
         FROM account acc
         WHERE acc.device_id IS NOT NULL
           AND acc.current_number_id IS NOT NULL
@@ -167,7 +176,7 @@ dataset_query:
         FROM balance_running
         WHERE is_checkpoint),
       account_headroom AS (
-        SELECT s.h, sub.number_id,
+        SELECT s.h, sub.number_id, sub.is_online,
                CASE WHEN ex.account_id IS NOT NULL OR cd.account_id IS NOT NULL THEN 0
                     ELSE greatest(0, least(lim.max_tasks_per_account - COALESCE(aw.count24h, 0),
                                            floor((lim.day_limit_account - COALESCE(aw.money24h, 0))
@@ -189,13 +198,15 @@ dataset_query:
       account_headroom_agg AS (
         SELECT h, number_id,
                sum(tasks_possible)      AS tasks_from_accounts,
-               sum(tasks_possible_nocd) AS tasks_from_accounts_nocd
+               sum(tasks_possible_nocd) AS tasks_from_accounts_nocd,
+               COALESCE(sum(tasks_possible) FILTER (WHERE is_online), 0) AS tasks_from_accounts_online
         FROM account_headroom
         GROUP BY 1, 2),
       per_number AS (
         SELECT ag.h, ag.number_id,
                ag.tasks_from_accounts,
                ag.tasks_from_accounts_nocd,
+               ag.tasks_from_accounts_online,
                COALESCE(b.balance_after, 0) AS balance
         FROM account_headroom_agg ag
         LEFT JOIN balance b ON b.h = ag.h AND b.number_id = ag.number_id),
@@ -209,6 +220,10 @@ dataset_query:
                                  floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
                                  floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount)))
                  AS quota_capacity_nocd,
+               greatest(0, least(pn.tasks_from_accounts_online,
+                                 floor((lim.day_limit_number   - COALESCE(nw.money24h, 0)) / lim.min_certificate_amount),
+                                 floor((lim.month_limit_number - COALESCE(nw.money30d, 0)) / lim.min_certificate_amount)))
+                 AS quota_capacity_online,
                greatest(0, floor(pn.balance / lim.min_certificate_amount)) AS balance_capacity
         FROM per_number pn
         CROSS JOIN limits lim
@@ -225,6 +240,11 @@ dataset_query:
       UNION ALL
       SELECT h, 'Quota + cooldown + balance (upper bound)',
              sum(least(quota_capacity, balance_capacity))::bigint
+      FROM capped
+      GROUP BY 1
+      UNION ALL
+      SELECT h, 'Quota + cooldown + balance + online (upper bound)',
+             sum(least(quota_capacity_online, balance_capacity))::bigint
       FROM capped
       GROUP BY 1
       ORDER BY 1, 2
@@ -259,4 +279,7 @@ visualization_settings:
     Quota + cooldown + balance (upper bound):
       title: Quota + cooldown + balance
       color: '#7172AD'
+    Quota + cooldown + balance + online (upper bound):
+      title: Quota + cooldown + balance + online
+      color: '#EF8C8C'
 parameters: []
