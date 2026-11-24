@@ -63,13 +63,10 @@ visualization_settings:
   column_settings:
     '["name","p50_min"]':
       suffix: ' min'
-      decimals: 1
     '["name","p90_min"]':
       suffix: ' min'
-      decimals: 1
     '["name","p99_min"]':
       suffix: ' min'
-      decimals: 1
   series_settings:
     p50_min:
       display: line
