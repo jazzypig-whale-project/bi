@@ -252,6 +252,9 @@ cards:
   pca-production-request-last-success:
     id: 202
     entity_id: HlKApP6kXmy7pbq4HL6L2
+  pca-topup-completion-time-over-time:
+    id: 203
+    entity_id: 0VC66Hc__TavioHDHGFqQ
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -342,6 +345,7 @@ dashboards:
       dc-produced-face-value-by-day-by-provider: 125
       dc-heading-production-requests: 94
       dc-production-request-oldest-open: 208
+      dc-production-request-last-success: 211
       dc-production-requests-by-hour: 76
       dc-production-queue-length-over-time: 209
       dc-heading-production-pool: 95
@@ -370,6 +374,6 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-production-request-last-success: 211
+      dc-topup-completion-time-over-time: 212
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

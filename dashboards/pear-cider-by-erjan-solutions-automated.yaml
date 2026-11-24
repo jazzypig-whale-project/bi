@@ -1034,6 +1034,27 @@ dashcards:
       - days
   series: []
   inline_parameters: []
+- key: dc-topup-completion-time-over-time
+  card: pca-topup-completion-time-over-time
+  tab: topups
+  row: 22
+  col: 12
+  size_x: 12
+  size_y: 6
+  visualization_settings: {}
+  parameter_mappings:
+  - parameter_id: 821ec3b1
+    target:
+    - variable
+    - - template-tag
+      - days
+  - parameter_id: 3f9a20c7
+    target:
+    - variable
+    - - template-tag
+      - granularity
+  series: []
+  inline_parameters: []
 - key: dc-heading-topups-provider-deposits
   tab: topups
   row: 28

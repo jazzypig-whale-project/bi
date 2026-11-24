@@ -1,0 +1,94 @@
+kind: card
+key: pca-topup-completion-time-over-time
+name: Top-up completion time over time
+description: Completion time (created to credited) of completed top-ups, as p50 / p90 / p99 per bucket in minutes, with the number of completions per bucket as bars. Bucketed by completion time, so a top-up that is stuck now appears only once it completes -- the aging and in-progress cards show the live side. A spike drawn from a handful of completions is weak evidence; check the bars. All providers combined, one row per provider attempt. Buckets follow the Granularity filter, Europe/Moscow.
+collection: pear-cider-automated
+type: question
+display: combo
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- One row per provider attempt (topup_payout). credited_at is the dedicated credit timestamp
+      -- (V90); bucketing on it, not created_at, keeps the newest buckets honest while a provider stalls.
+      -- tz-ok: created_at and credited_at are timestamptz; the bare now() compares timestamptz to timestamptz.
+      WITH spine AS (
+        SELECT generate_series(
+          date_bin({{granularity}}::text::interval, (now() AT TIME ZONE 'Europe/Moscow') - ({{days}} * INTERVAL '1 day'), TIMESTAMP '2000-01-03'),
+          (now() AT TIME ZONE 'Europe/Moscow'),
+          {{granularity}}::text::interval) AS h),
+      done AS (
+        SELECT date_bin({{granularity}}::text::interval, (credited_at AT TIME ZONE 'Europe/Moscow'), TIMESTAMP '2000-01-03') AS h,
+               EXTRACT(EPOCH FROM (credited_at - created_at)) / 60 AS minutes
+        FROM topup_payout
+        WHERE status = 'COMPLETED'
+          AND credited_at IS NOT NULL
+          AND credited_at >= ((SELECT min(h) FROM spine) AT TIME ZONE 'Europe/Moscow'))
+      SELECT s.h AS at,
+             round(percentile_cont(0.50) WITHIN GROUP (ORDER BY d.minutes)::numeric, 1) AS p50_min,
+             round(percentile_cont(0.90) WITHIN GROUP (ORDER BY d.minutes)::numeric, 1) AS p90_min,
+             round(percentile_cont(0.99) WITHIN GROUP (ORDER BY d.minutes)::numeric, 1) AS p99_min,
+             count(d.minutes) AS completed
+      FROM spine s
+      LEFT JOIN done d ON d.h = s.h
+      GROUP BY 1
+      ORDER BY 1
+    template-tags:
+      days:
+        id: 6ed7fd50-1144-4446-bb73-06ed624724d0
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 534e3a32-0574-44a4-89b0-75c1e54bbf88
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - at
+  graph.metrics:
+  - p50_min
+  - p90_min
+  - p99_min
+  - completed
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Completion time, min
+  column_settings:
+    '["name","p50_min"]':
+      suffix: ' min'
+      decimals: 1
+    '["name","p90_min"]':
+      suffix: ' min'
+      decimals: 1
+    '["name","p99_min"]':
+      suffix: ' min'
+      decimals: 1
+  series_settings:
+    p50_min:
+      display: line
+      axis: left
+      title: p50
+      color: '#88BF4D'
+    p90_min:
+      display: line
+      axis: left
+      title: p90
+      color: '#F9D45C'
+    p99_min:
+      display: line
+      axis: left
+      title: p99
+      color: '#E03131'
+    completed:
+      display: bar
+      axis: right
+      title: Completions
+      color: '#DCDFE0'
+parameters: []

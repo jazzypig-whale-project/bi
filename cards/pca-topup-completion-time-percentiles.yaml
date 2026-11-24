@@ -1,7 +1,7 @@
 kind: card
 key: pca-topup-completion-time-percentiles
 name: Topup completion time percentiles
-description: created_at to updated_at for COMPLETED topups (updated_at is the last touch, which for a terminal row is the moment it became terminal). Shown as d/h/m/s.
+description: created_at to credited_at for COMPLETED topups. Shown as d/h/m/s.
 collection: pear-cider-automated
 type: question
 display: table
@@ -13,13 +13,13 @@ dataset_query:
   stages:
   - lib/type: mbql.stage/native
     native: |
-      -- updated_at is used as the completion proxy (no dedicated completed_at column exists
-      -- on topup_payout); both endpoints are naive UTC, so no timezone conversion needed.
+      -- credited_at is the dedicated credit timestamp (V90); both endpoints are timestamptz.
+      -- tz-ok: created_at and credited_at are timestamptz; the bare now() compares timestamptz to timestamptz.
       WITH spans AS (
-        SELECT EXTRACT(EPOCH FROM (t.updated_at - t.created_at)) AS seconds
+        SELECT EXTRACT(EPOCH FROM (t.credited_at - t.created_at)) AS seconds
         FROM topup_payout t
         WHERE t.status = 'COMPLETED'
-          AND t.updated_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')),
+          AND t.credited_at >= now() - ({{days}} * INTERVAL '1 day')),
       pct AS (
         SELECT percentile_cont(ARRAY[0.50, 0.75, 0.90, 0.95, 0.99])
                  WITHIN GROUP (ORDER BY seconds) AS p
