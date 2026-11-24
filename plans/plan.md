@@ -83,6 +83,13 @@ DNS `bi-dev.apple-certificate.solutions → 91.196.35.191` готов. Дост�
       `AUDIT-bi-prod-deploy-2026-07-27.md` (прод-БД — целостности ничего не угрожает; F1/F2 применены,
       F3 TEMP-via-PUBLIC и F5 default-ACL приняты как низкий риск).
 
+## Cards
+
+- [ ] **Capacity what-if timeline** — replaces `pca-capacity-by-hour` (third attempt). Design:
+      [`active/2026-11-24-capacity-what-if-timeline-design.md`](active/2026-11-24-capacity-what-if-timeline-design.md).
+      **BLOCKED** on orchestrator feature `tasks/2026-11-24-fleet-state-history` (state history
+      journals for device/agent/account/number/provider) — no honest history until it ships to prod.
+
 ## Открытые вопросы / решения (по мере фаз)
 
 - Версия Metabase — решено: **`v0.60.7`**. Бамп — по мере.
