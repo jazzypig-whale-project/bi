@@ -1,0 +1,389 @@
+kind: card
+key: pca-capacity-what-if-by-hour
+name: Capacity what-if over time (next 24h at each hour's state)
+description: |-
+  For each hour, how many certificates the fleet could produce in the 24 hours after it, if the conditions at that hour held for those 24 hours, under a ladder of what-if assumptions. Every past point is computed from the state the system actually had at that hour (state tenure journals), not from today's values. History starts 2026-11-26 07:45 UTC, so earlier hours are not shown; Days is capped at 14. Amount per certificate is the mean amount of SUCCESS tasks in the 7 days before the hour (1000 if none).
+  Ceiling (quota): accounts that were GOOD, not archived, on a number and not on an operator-blocked number, each capped by max 6 tasks and 35,000 per day, each number capped by 500,000 per day and by what is left of its 600,000 30-day limit.
+  + cooldowns: the same without accounts that had an open cooldown at that hour.
+  + money (24h flow): each number additionally capped by its money at that hour plus the top-ups of the previous 24h. DEFAULT-mode numbers use their own balance and PROVIDER_TOPUP credits; DEPOSIT-mode providers use one pooled deposit stock plus DEPOSIT credits, shared by all their numbers. Floored at 0.
+  + fleet ready: only accounts whose device at that hour was not OFFLINE/DISABLED, VALIDATED, not held, with its agent ONLINE and not disabled. A device with no journal row counts as not ready.
+  Real output (previous 24h): SUCCESS tasks completed in the 24h before the hour.
+  Lines can only go down from top to bottom. Two approximations: the provider mode (DEFAULT or DEPOSIT) is today's value applied to every past hour, and open RESERVED reservations are not subtracted from money in the past because their past status cannot be reconstructed. Retiring SIMs count in every line, as placement still uses them. Sampled once per Granularity interval.
+collection: pear-cider-automated
+type: question
+display: line
+cache_ttl: 300
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      WITH limits AS (
+        -- orchestrator/src/main/resources/application.yml, app.quota.
+        SELECT 6::bigint      AS max_tasks_per_account,   -- maxTasksPerAccount
+               35000::bigint  AS day_limit_account,       -- dayLimitAccount
+               500000::bigint AS day_limit_number,        -- dayLimitNumber
+               600000::bigint AS month_limit_number,      -- monthLimitNumber
+               1000::bigint   AS min_certificate_amount   -- minCertificateAmount
+      ),
+      -- History start: the V153 seed of the state journals (data-driven, so tests can move it).
+      history AS (
+        SELECT (min(valid_from) AT TIME ZONE 'Europe/Moscow') AS start_msk
+        FROM device_state_tenure
+        WHERE source = 'SEED'),
+      spine_start AS (
+        SELECT CASE WHEN b.h < hs.start_msk
+                    THEN b.h + {{granularity}}::text::interval
+                    ELSE b.h END AS first_h
+        FROM history hs
+        CROSS JOIN LATERAL (
+          SELECT date_bin({{granularity}}::text::interval,
+                          greatest((now() AT TIME ZONE 'Europe/Moscow') - (least({{days}}, 14) * INTERVAL '1 day'),
+                                   hs.start_msk),
+                          TIMESTAMP '2000-01-03') AS h) b),
+      -- h: naive Moscow (the output axis); h_tz: the same instant as timestamptz (journals,
+      -- balance and deposit ledgers); h_utc: naive UTC (quota_ledger, cooldowns, tasks).
+      spine AS (
+        SELECT h,
+               (h AT TIME ZONE 'Europe/Moscow') AS h_tz,
+               (h AT TIME ZONE 'Europe/Moscow' AT TIME ZONE 'UTC') AS h_utc
+        FROM spine_start ss
+        CROSS JOIN LATERAL generate_series(ss.first_h, (now() AT TIME ZONE 'Europe/Moscow'),
+                                           {{granularity}}::text::interval) AS h),
+      spine_range AS (
+        SELECT min(h_utc) AS min_utc, max(h_utc) AS max_utc, min(h_tz) AS min_tz, max(h_tz) AS max_tz
+        FROM spine),
+      -- avg_amount(h): mean amount of SUCCESS tasks in [h - 7 days, h). One ordered pass: running
+      -- totals over task events merged with two checkpoints per hour (end = h, start = h - 7 days);
+      -- the window total is end minus start. Checkpoints sort before tasks with the same timestamp
+      -- (rank 0 < 1), so a task at exactly h is excluded and one at exactly h - 7 days is included.
+      -- (A RANGE window with EXCLUDE GROUP does the same but is quadratic: no inverse transition.)
+      avg_timeline AS (
+        SELECT t.succeeded_at AS ts, 1 AS rank, NULL::text AS edge, NULL::timestamp AS h_utc, t.amount
+        FROM task t, spine_range r
+        WHERE t.status = 'SUCCESS'
+          AND t.succeeded_at >= r.min_utc - INTERVAL '7 days'
+          AND t.succeeded_at <= r.max_utc
+        UNION ALL
+        SELECT h_utc, 0, 'end', h_utc, NULL::bigint FROM spine
+        UNION ALL
+        SELECT h_utc - INTERVAL '7 days', 0, 'start', h_utc, NULL::bigint FROM spine),
+      avg_running AS (
+        SELECT edge, h_utc,
+               COALESCE(sum(amount) OVER w, 0) AS amount_sum,
+               count(amount) OVER w            AS amount_count
+        FROM avg_timeline
+        WINDOW w AS (ORDER BY ts, rank ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)),
+      avg_amount AS (
+        SELECT s.h,
+               CASE WHEN e.amount_count > st.amount_count
+                    THEN (e.amount_sum - st.amount_sum)::numeric / (e.amount_count - st.amount_count)
+                    ELSE lim.min_certificate_amount END AS amount
+        FROM spine s
+        CROSS JOIN limits lim
+        JOIN avg_running e  ON e.edge  = 'end'   AND e.h_utc  = s.h_utc
+        JOIN avg_running st ON st.edge = 'start' AND st.h_utc = s.h_utc),
+      -- Operator block on the SIM: an open-ended phone-side block on any account blocks the number
+      -- that account held when the block was applied (account_number_tenure), for every account on it.
+      number_block AS (
+        SELECT t.number_id, c.applied_at, c.cleared_at
+        FROM account_cooldown c
+        JOIN account_number_tenure t
+          ON t.account_id = c.account_id
+         AND t.valid_from <= (c.applied_at AT TIME ZONE 'UTC')
+         AND (t.valid_to IS NULL OR t.valid_to > (c.applied_at AT TIME ZONE 'UTC'))
+        CROSS JOIN spine_range r
+        WHERE c.until IS NULL
+          AND c.reason IN ('BLOCKED_BY_OPERATOR', 'NO_PAYMENT_METHOD_AVAILABLE')
+          AND c.applied_at <= r.max_utc
+          AND (c.cleared_at IS NULL OR c.cleared_at > r.min_utc)),
+      blocked_number AS (
+        SELECT DISTINCT s.h, nb.number_id
+        FROM spine s
+        JOIN number_block nb
+          ON nb.applied_at <= s.h_utc
+         AND (nb.cleared_at IS NULL OR nb.cleared_at > s.h_utc)),
+      blocked_account AS (
+        SELECT DISTINCT s.h, c.account_id
+        FROM spine s
+        JOIN account_cooldown c
+          ON c.applied_at <= s.h_utc
+         AND (c.cleared_at IS NULL OR c.cleared_at > s.h_utc)
+        WHERE c.until IS NULL
+          AND c.reason IN ('BLOCKED_BY_OPERATOR', 'NO_PAYMENT_METHOD_AVAILABLE')),
+      -- Any cooldown in effect at h (line 2).
+      cooldown_at AS (
+        SELECT DISTINCT s.h, c.account_id
+        FROM spine s
+        CROSS JOIN spine_range r
+        JOIN account_cooldown c
+          ON c.applied_at <= s.h_utc
+         AND (c.until      IS NULL OR c.until      > s.h_utc)
+         AND (c.cleared_at IS NULL OR c.cleared_at > s.h_utc)
+        WHERE c.applied_at <= r.max_utc
+          AND (c.cleared_at IS NULL OR c.cleared_at > r.min_utc)
+          AND (c.until IS NULL OR c.until > r.min_utc)),
+      -- Base set: accounts that were GOOD and not archived at h, on a number at h, not blocked.
+      account_at AS (
+        SELECT s.h, s.h_tz, s.h_utc, ast.account_id, ast.device_id, ant.number_id
+        FROM spine s
+        JOIN account_state_tenure ast
+          ON ast.valid_from <= s.h_tz
+         AND (ast.valid_to IS NULL OR ast.valid_to > s.h_tz)
+        JOIN account_number_tenure ant
+          ON ant.account_id = ast.account_id
+         AND ant.valid_from <= s.h_tz
+         AND (ant.valid_to IS NULL OR ant.valid_to > s.h_tz)
+        WHERE ast.validation_status = 'GOOD'
+          AND (ast.archived_at IS NULL OR ast.archived_at > s.h_tz)
+          AND NOT EXISTS (SELECT 1 FROM blocked_number bn
+                          WHERE bn.h = s.h AND bn.number_id = ant.number_id)
+          AND NOT EXISTS (SELECT 1 FROM blocked_account ba
+                          WHERE ba.h = s.h AND ba.account_id = ast.account_id)),
+      -- One row per (hour, number) with a surrogate key: every per-number CTE below carries nh_id
+      -- and is joined on that single unique key (a two-column join against a window result let the
+      -- planner merge on number_id alone, hours-squared).
+      number_h AS (
+        SELECT row_number() OVER () AS nh_id, d.*
+        FROM (SELECT DISTINCT h, h_tz, h_utc, number_id FROM account_at) d),
+      device_h AS (
+        SELECT DISTINCT h_tz, device_id FROM account_at),
+      -- Device readiness at h: journal rows merged with checkpoints, the one real row in each group
+      -- (the latest valid_from <= h) carried forward to its checkpoints, then kept only if still open
+      -- at h (valid_to > h, same as the point-in-time predicate). A device with no row at h is absent.
+      device_timeline AS (
+        SELECT dst.device_id, dst.valid_from AS ts, false AS is_checkpoint,
+               COALESCE(dst.valid_to, 'infinity'::timestamptz) AS end_ts,
+               (dst.state NOT IN ('OFFLINE', 'DISABLED')
+                AND dst.validation_status = 'VALIDATED'
+                AND dst.held_at IS NULL
+                AND dst.agent_status = 'ONLINE'
+                AND dst.agent_disabled_at IS NULL) AS ready
+        FROM device_state_tenure dst, spine_range r
+        WHERE dst.valid_from <= r.max_tz
+          AND (dst.valid_to IS NULL OR dst.valid_to > r.min_tz)
+          AND dst.device_id IN (SELECT device_id FROM device_h)
+        UNION ALL
+        SELECT device_id, h_tz, true, NULL::timestamptz, NULL::boolean FROM device_h),
+      device_grouped AS (
+        SELECT device_id, ts, is_checkpoint, end_ts, ready,
+               count(*) FILTER (WHERE NOT is_checkpoint)
+                 OVER (PARTITION BY device_id ORDER BY ts, is_checkpoint, end_ts
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS grp
+        FROM device_timeline),
+      device_running AS (
+        SELECT device_id, ts, is_checkpoint,
+               max(end_ts)     OVER (PARTITION BY device_id, grp) AS end_ts,
+               bool_or(ready)  OVER (PARTITION BY device_id, grp) AS ready
+        FROM device_grouped),
+      device_ready AS (
+        SELECT device_id, ts AS h_tz
+        FROM device_running
+        WHERE is_checkpoint AND ready AND end_ts > ts),
+      -- Per account: daily cap, cooldown flag, device readiness at h.
+      account_cap AS (
+        SELECT nh.nh_id,
+               least(lim.max_tasks_per_account, floor(lim.day_limit_account / av.amount)) AS cap,
+               (cd.account_id IS NULL) AS no_cooldown,
+               (dr.device_id IS NOT NULL) AS fleet_ready
+        FROM account_at a
+        JOIN number_h nh ON nh.h = a.h AND nh.number_id = a.number_id
+        CROSS JOIN limits lim
+        JOIN avg_amount av ON av.h = a.h
+        LEFT JOIN cooldown_at cd ON cd.h = a.h AND cd.account_id = a.account_id
+        LEFT JOIN device_ready dr ON dr.device_id = a.device_id AND dr.h_tz = a.h_tz),
+      -- number_money30d(h): quota ledger over the last 30 days per number, one ordered running window.
+      number_timeline AS (
+        SELECT ql.subject_id AS number_id, ql.ts, ql.amount, false AS is_checkpoint, NULL::bigint AS nh_id
+        FROM quota_ledger ql, spine_range r
+        WHERE ql.subject_type = 'NUMBER'
+          AND ql.status IN ('RESERVED', 'COMMITTED')
+          AND ql.ts > r.min_utc - INTERVAL '30 days'
+          AND ql.ts <= r.max_utc
+          AND ql.subject_id IN (SELECT number_id FROM number_h)
+        UNION ALL
+        SELECT number_id, h_utc, 0::bigint, true, nh_id FROM number_h),
+      number_running AS (
+        SELECT nh_id, is_checkpoint,
+               sum(amount) OVER (PARTITION BY number_id ORDER BY ts
+                                 RANGE BETWEEN INTERVAL '30 days' PRECEDING AND CURRENT ROW) AS money30d
+        FROM number_timeline),
+      number_cap AS (
+        SELECT nh.nh_id,
+               greatest(0, floor(least(lim.day_limit_number, lim.month_limit_number - nr.money30d)
+                                 / av.amount)) AS cap
+        FROM number_h nh
+        CROSS JOIN limits lim
+        JOIN avg_amount av ON av.h = nh.h
+        JOIN number_running nr ON nr.is_checkpoint AND nr.nh_id = nh.nh_id),
+      -- DEFAULT-mode money: balance_after forward-filled to h (merge ledger rows with checkpoints,
+      -- number the real events, carry the one real value in each group forward) + top-up credits.
+      balance_timeline AS (
+        SELECT bl.number_id, bl.created_at AS ts, bl.balance_after, false AS is_checkpoint, NULL::bigint AS nh_id
+        FROM balance_ledger bl, spine_range r
+        WHERE bl.created_at <= r.max_tz
+          AND bl.number_id IN (SELECT number_id FROM number_h)
+        UNION ALL
+        SELECT number_id, h_tz, NULL::bigint, true, nh_id FROM number_h),
+      balance_grouped AS (
+        SELECT number_id, ts, is_checkpoint, balance_after, nh_id,
+               count(*) FILTER (WHERE NOT is_checkpoint)
+                 OVER (PARTITION BY number_id ORDER BY ts, is_checkpoint
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS grp
+        FROM balance_timeline),
+      balance_running AS (
+        SELECT nh_id, is_checkpoint,
+               max(balance_after) OVER (PARTITION BY number_id, grp) AS balance_after
+        FROM balance_grouped),
+      topup_flow AS (
+        SELECT nh.nh_id, sum(bl.delta) AS flow
+        FROM number_h nh
+        JOIN balance_ledger bl
+          ON bl.number_id = nh.number_id
+         AND bl.source = 'PROVIDER_TOPUP'
+         AND bl.created_at >  nh.h_tz - INTERVAL '24 hours'
+         AND bl.created_at <= nh.h_tz
+        GROUP BY 1),
+      -- Provider at h from number_provider_tenure; mode is today's value (stated in the description).
+      number_at AS (
+        SELECT nh.nh_id, nh.h, nh.h_tz, nh.number_id, npt.provider_code,
+               COALESCE(pp.mode = 'DEPOSIT', false) AS is_deposit
+        FROM number_h nh
+        LEFT JOIN number_provider_tenure npt
+          ON npt.number_id = nh.number_id
+         AND npt.valid_from <= nh.h_tz
+         AND (npt.valid_to IS NULL OR npt.valid_to > nh.h_tz)
+        LEFT JOIN phone_provider pp ON pp.code = npt.provider_code),
+      provider_h AS (
+        SELECT DISTINCT h, h_tz, provider_code FROM number_at WHERE is_deposit),
+      -- DEPOSIT-mode money: DEPOSIT amounts minus TASK / WRITE_OFF amounts (stored positive) up to h
+      -- (equals phone_provider.deposit_balance) + DEPOSIT credits in (h - 24h, h].
+      deposit_timeline AS (
+        SELECT dl.provider_code, dl.created_at AS ts,
+               CASE WHEN dl.kind = 'DEPOSIT' THEN dl.amount ELSE -dl.amount END AS amount,
+               false AS is_checkpoint
+        FROM phone_provider_deposit_ledger dl, spine_range r
+        WHERE dl.created_at <= r.max_tz
+          AND dl.provider_code IN (SELECT provider_code FROM provider_h)
+        UNION ALL
+        SELECT provider_code, h_tz, 0::bigint, true FROM provider_h),
+      deposit_running AS (
+        SELECT provider_code, ts, is_checkpoint,
+               sum(amount) OVER (PARTITION BY provider_code ORDER BY ts, is_checkpoint
+                                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS stock
+        FROM deposit_timeline),
+      deposit_flow AS (
+        SELECT ph.h, ph.provider_code, sum(dl.amount) AS flow
+        FROM provider_h ph
+        JOIN phone_provider_deposit_ledger dl
+          ON dl.provider_code = ph.provider_code
+         AND dl.kind = 'DEPOSIT'
+         AND dl.created_at >  ph.h_tz - INTERVAL '24 hours'
+         AND dl.created_at <= ph.h_tz
+        GROUP BY 1, 2),
+      provider_money AS (
+        SELECT ph.h, ph.provider_code,
+               greatest(0, floor((dr.stock + COALESCE(df.flow, 0)) / av.amount)) AS money_cap
+        FROM provider_h ph
+        JOIN avg_amount av ON av.h = ph.h
+        JOIN deposit_running dr
+          ON dr.is_checkpoint AND dr.provider_code = ph.provider_code AND dr.ts = ph.h_tz
+        LEFT JOIN deposit_flow df ON df.h = ph.h AND df.provider_code = ph.provider_code),
+      number_accounts AS (
+        SELECT nh_id,
+               sum(cap)                                                    AS cap1,
+               COALESCE(sum(cap) FILTER (WHERE no_cooldown), 0)            AS cap2,
+               COALESCE(sum(cap) FILTER (WHERE no_cooldown AND fleet_ready), 0) AS cap4
+        FROM account_cap
+        GROUP BY nh_id),
+      -- One row per (h, number): the contribution of the number to each line before money.
+      number_line AS (
+        SELECT na.h, na.provider_code, na.is_deposit,
+               least(nc.cap, nacc.cap1) AS c1,
+               least(nc.cap, nacc.cap2) AS c2,
+               least(nc.cap, nacc.cap4) AS c4,
+               greatest(0, floor((COALESCE(br.balance_after, 0) + COALESCE(tf.flow, 0)) / av.amount)) AS default_money_cap
+        FROM number_at na
+        JOIN number_cap nc ON nc.nh_id = na.nh_id
+        JOIN number_accounts nacc ON nacc.nh_id = na.nh_id
+        JOIN avg_amount av ON av.h = na.h
+        LEFT JOIN balance_running br ON br.is_checkpoint AND br.nh_id = na.nh_id
+        LEFT JOIN topup_flow tf ON tf.nh_id = na.nh_id),
+      -- Per hour totals. Money cap: per number for DEFAULT mode, pooled once per provider for
+      -- DEPOSIT mode (sum of the provider's numbers, capped by the provider's money).
+      line_totals AS (
+        SELECT h,
+               sum(c1) AS line1,
+               sum(c2) AS line2,
+               COALESCE(sum(least(c2, default_money_cap)) FILTER (WHERE NOT is_deposit), 0) AS default3,
+               COALESCE(sum(least(c4, default_money_cap)) FILTER (WHERE NOT is_deposit), 0) AS default4
+        FROM number_line
+        GROUP BY h),
+      provider_pool AS (
+        SELECT h, provider_code, sum(c2) AS pool2, sum(c4) AS pool4
+        FROM number_line
+        WHERE is_deposit
+        GROUP BY h, provider_code),
+      deposit_totals AS (
+        SELECT pp.h,
+               sum(least(pp.pool2, pm.money_cap)) AS deposit3,
+               sum(least(pp.pool4, pm.money_cap)) AS deposit4
+        FROM provider_pool pp
+        JOIN provider_money pm ON pm.h = pp.h AND pm.provider_code = pp.provider_code
+        GROUP BY pp.h),
+      real_output AS (
+        SELECT s.h, count(t.status) AS capacity
+        FROM spine s
+        LEFT JOIN task t
+          ON t.status = 'SUCCESS'
+         AND t.succeeded_at >  s.h_utc - INTERVAL '24 hours'
+         AND t.succeeded_at <= s.h_utc
+        GROUP BY s.h)
+      SELECT s.h AS hour, v.series, v.capacity::bigint AS capacity
+      FROM spine s
+      LEFT JOIN line_totals lt  ON lt.h = s.h
+      LEFT JOIN deposit_totals dt ON dt.h = s.h
+      LEFT JOIN real_output ro  ON ro.h = s.h
+      CROSS JOIN LATERAL (VALUES
+        ('Ceiling (quota)',             COALESCE(lt.line1, 0)),
+        ('+ cooldowns',                 COALESCE(lt.line2, 0)),
+        ('+ money (24h flow)',          COALESCE(lt.default3, 0) + COALESCE(dt.deposit3, 0)),
+        ('+ fleet ready',               COALESCE(lt.default4, 0) + COALESCE(dt.deposit4, 0)),
+        ('Real output (previous 24h)',  COALESCE(ro.capacity, 0))
+      ) AS v(series, capacity)
+      ORDER BY 1, 2
+    template-tags:
+      days:
+        id: 5c1f6a52-7b0e-4a0b-9d0a-2f6a1d4e8b31
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+      granularity:
+        id: 9a7d3e18-4c52-4f0b-8e6d-1b2c3d4e5f60
+        name: granularity
+        display-name: Granularity
+        type: text
+        default: '1 day'
+visualization_settings:
+  graph.dimensions:
+  - hour
+  - series
+  graph.metrics:
+  - capacity
+  graph.x_axis.scale: timeseries
+  graph.y_axis.title_text: Certificates
+  series_settings:
+    Ceiling (quota):
+      color: '#88BF4D'
+    + cooldowns:
+      color: '#509EE3'
+    + money (24h flow):
+      color: '#7172AD'
+    + fleet ready:
+      color: '#EF8C8C'
+    Real output (previous 24h):
+      color: '#4C5773'
+parameters: []

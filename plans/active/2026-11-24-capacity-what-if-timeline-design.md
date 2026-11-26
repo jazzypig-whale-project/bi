@@ -123,8 +123,8 @@ Source: `orchestrator/tasks/2026-11-24-fleet-state-history/design.md` (D1–D24)
   - `account_cooldown`: open cooldowns and operator blocks at h, as today.
   - `balance_ledger`: DEFAULT-mode number money stock at h via `balance_after`; top-up flow via
     `source = 'PROVIDER_TOPUP'` over (h-24h, h].
-  - `phone_provider_deposit_ledger`: DEPOSIT-mode provider stock at h = signed `sum(amount)` of rows
-    with `created_at <= h` (the ledger sum equals `phone_provider.deposit_balance`, orchestrator
+  - `phone_provider_deposit_ledger`: DEPOSIT-mode provider stock at h = `sum(CASE WHEN kind = 'DEPOSIT' THEN amount ELSE -amount END)` of rows
+    (TASK / WRITE_OFF amounts are stored positive) with `created_at <= h` (the ledger sum equals `phone_provider.deposit_balance`, orchestrator
     `PhoneProviderDepositLedgerRepository.java:18`). Deposit flow = `kind = 'DEPOSIT'` credits over
     (h-24h, h]. Kinds on main: `DEPOSIT`, `TASK`, `WRITE_OFF`.
   - `task`: real output and average amount.
