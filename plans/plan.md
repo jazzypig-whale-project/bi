@@ -87,8 +87,11 @@ DNS `bi-dev.apple-certificate.solutions → 91.196.35.191` готов. Дост�
 
 - [ ] **Capacity what-if timeline** — replaces `pca-capacity-by-hour` (third attempt). Design:
       [`active/2026-11-24-capacity-what-if-timeline-design.md`](active/2026-11-24-capacity-what-if-timeline-design.md).
-      **BLOCKED** on orchestrator feature `tasks/2026-11-24-fleet-state-history` (state history
-      journals for device/agent/account/number/provider) — no honest history until it ships to prod.
+      Unblocked 2026-11-26: orchestrator `tasks/2026-11-24-fleet-state-history` is live on prod
+      (V153 `device_state_tenure` / `account_state_tenure`, history from 2026-11-26 07:45 UTC).
+      Design revised against the shipped journals. Plan:
+      [`active/2026-11-26-capacity-what-if-timeline-plan.md`](active/2026-11-26-capacity-what-if-timeline-plan.md).
+      Acceptance (line 4 ≥ real output for 7 full days) can run from 2026-12-04 at the earliest.
 
 ## Открытые вопросы / решения (по мере фаз)
 
