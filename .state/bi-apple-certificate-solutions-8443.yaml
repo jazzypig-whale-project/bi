@@ -255,6 +255,9 @@ cards:
   pca-topup-completion-time-over-time:
     id: 203
     entity_id: 0VC66Hc__TavioHDHGFqQ
+  pca-capacity-what-if-by-hour:
+    id: 204
+    entity_id: IYaApwL9WeNaBwKdbVtnX
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -371,9 +374,9 @@ dashboards:
       dc-topups-aging: 82
       dc-topups-by-status: 83
       dc-topup-completion-time-percentiles: 100
+      dc-topup-completion-time-over-time: 212
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
-      dc-topup-completion-time-over-time: 212
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ
