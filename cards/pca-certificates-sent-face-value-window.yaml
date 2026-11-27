@@ -1,0 +1,35 @@
+kind: card
+key: pca-certificates-sent-face-value-window
+name: Certificates sent face value, ₽
+description: Sum of face values (₽) of SENT certificates inside the dashboard's Days window (parameter days, default 7).
+collection: pear-cider-automated
+type: question
+display: scalar
+cache_ttl: null
+archived: false
+dataset_query:
+  lib/type: mbql/query
+  database: 2
+  stages:
+  - lib/type: mbql.stage/native
+    native: |
+      -- Database 2 (legacy orchestrator). Includes dealer sales: the dealer buys every voucher it sells
+      -- from legacy as an order of the DEALER pseudo-client 00000000-0000-0000-0000-000000000002, so those
+      -- certificates are counted here. There is no dealer-DB twin: adding one would double-count.
+      SELECT COALESCE(sum(amount), 0)::bigint AS face_value_sent
+      FROM certificate
+      WHERE status = 'SENT'
+        AND sent_at >= (now() AT TIME ZONE 'UTC') - ({{days}} * INTERVAL '1 day')
+    template-tags:
+      days:
+        id: 7c1e5b94-3a2d-4f68-9b0e-52d8a6c4e1f3
+        name: days
+        display-name: Days
+        type: number
+        default: '7'
+visualization_settings:
+  column_settings:
+    '["name","face_value_sent"]':
+      suffix: ' ₽'
+      decimals: 0
+parameters: []

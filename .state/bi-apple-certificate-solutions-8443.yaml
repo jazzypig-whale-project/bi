@@ -258,6 +258,9 @@ cards:
   pca-capacity-what-if-by-hour:
     id: 204
     entity_id: IYaApwL9WeNaBwKdbVtnX
+  pca-certificates-sent-face-value-window:
+    id: 205
+    entity_id: N-NnMYc3NDM4O_nnjbFCT
 dashboards:
   pear-cider-by-erjan-solutions:
     id: 5
@@ -378,5 +381,6 @@ dashboards:
       dc-heading-topups-provider-deposits: 126
       dc-provider-deposit-total: 127
       dc-provider-deposits: 128
+      dc-certificates-sent-face-value-window: 213
     id: 8
     entity_id: tjgmZlVsggY9hQWW3CDUZ

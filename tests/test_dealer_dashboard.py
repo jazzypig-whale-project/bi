@@ -39,6 +39,7 @@ DEALER_INCLUDED_NOTE: set[str] = {
     "pca-certificate-face-value-by-day",
     "pca-average-check-by-day",
     "pca-certificates-sent-window",
+    "pca-certificates-sent-face-value-window",
     "pca-certificates-sent-by-hour",
     "pca-certificates-sold-by-denomination",
     "pca-certificate-turnover-by-denomination",
